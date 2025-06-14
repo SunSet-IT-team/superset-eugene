@@ -243,7 +243,12 @@ class Dashboard(AuditMixinNullable, ImportExportMixin, Model):
         Returns a thumbnail URL with a HEX digest. We want to avoid browser cache
         if the dashboard has changed
         """
-        return f"/api/v1/dashboard/{self.id}/thumbnail/{self.digest}/"
+        thumbnail_override = None
+        if self.json_metadata:
+            thumbnail_override = json.loads(self.json_metadata or {}).get('thumbnail_override')
+    
+        return thumbnail_override or \
+                f"/api/v1/dashboard/{self.id}/thumbnail/{self.digest}/"
 
     @property
     def changed_by_name(self) -> str:

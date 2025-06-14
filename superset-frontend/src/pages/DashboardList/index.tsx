@@ -210,6 +210,7 @@ function DashboardList(props: DashboardListProps) {
                 certified_by = '',
                 business_unit = '',
                 certification_details = '',
+                thumbnail_url = '',
                 owners,
                 tags,
               } = json.result;
@@ -227,6 +228,7 @@ function DashboardList(props: DashboardListProps) {
                 certification_details,
                 owners,
                 tags,
+                thumbnail_url,
               };
             }
             return dashboard;

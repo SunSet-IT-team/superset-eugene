@@ -133,7 +133,6 @@ THUMBNAIL_EXECUTE_AS = [ExecutorType.SELENIUM]
 
 WEBDRIVER_TYPE = "firefox"
 
-WEBDRIVER_BASEURL = 'http://172.30.226.76:9000'
 WEBDRIVER_OPTION_ARGS = [
         "--force-device-scale-factor=2.0",
         "--high-dpi-support=2.0",
