@@ -1176,7 +1176,7 @@ const FiltersConfigForm = (
               hidden
               initialValue={null}
             />
-             <CleanFormItemAdd commentMore actions
+             <CleanFormItem
               name={['filters', filterId, 'showViewFilterControl']}>
                 <CollapsibleControl
                 initialValue={filterToEdit?.showViewFilterControl || false}
