@@ -21,10 +21,12 @@
   Preset dashboard components (in addition to basic components like row, column, chart, etc...)
  */
 
+import NativeFilterView from '../dashboardComponents/NativeFilterView';
 import DashboardComponentsRegistry from '../dashboardComponents/DashboardComponentsRegistry';
 
 const dashboardComponents = DashboardComponentsRegistry([
   // Here can be added default dashboard components
+  { key: 'NativeFilterView', item: NativeFilterView },
 ]);
 
 export default dashboardComponents;
