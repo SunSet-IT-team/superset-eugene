@@ -90,7 +90,6 @@ LANGUAGES = {
     "uk": {"flag": "uk", "name": "Ukranian"},
 }
 
-
 class CeleryConfig:
     broker_url = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_CELERY_DB}"
     imports = ("superset.sql_lab",)
@@ -117,6 +116,12 @@ WEBDRIVER_BASEURL = "http://superset:8088/"
 # The base URL for the email report hyperlinks.
 WEBDRIVER_BASEURL_USER_FRIENDLY = WEBDRIVER_BASEURL
 
+# Откл.ограничение на использование источников картинок для markdown 
+TALISMAN_ENABLED = False
+TALISMAN_CONFIG  = {
+    "content_security_policy": None,
+    "force_https": True
+    }
 
 THUMBNAIL_CACHE_CONFIG = {
     'CACHE_TYPE': 'RedisCache',
