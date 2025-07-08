@@ -67,6 +67,7 @@ export type QueryObjectExtras = Partial<{
   relative_start?: string;
   relative_end?: string;
   time_grain_sqla?: TimeGranularity;
+  number_format?: string;
   /** WHERE condition */
   where?: string;
 }>;

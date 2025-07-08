@@ -83,6 +83,7 @@ const propTypes = {
   datasetsStatus: PropTypes.oneOf(['loading', 'error', 'complete']),
   isInView: PropTypes.bool,
   emitCrossFilters: PropTypes.bool,
+  extraChartControls: PropTypes.object,
 
   // custom
   selectedSelectors: PropTypes.object,
@@ -405,6 +406,7 @@ class Chart extends React.Component {
       datasetsStatus,
       isInView,
       emitCrossFilters,
+      extraChartControls,
       logEvent,
 
       selectedSelectors,
@@ -524,6 +526,7 @@ class Chart extends React.Component {
             datasetsStatus={datasetsStatus}
             isInView={isInView}
             emitCrossFilters={emitCrossFilters}
+            extraChartControls={extraChartControls}
             selectedSelectors={selectedSelectors}
             selectorsDataLoaded={selectorsDataLoaded}
           />

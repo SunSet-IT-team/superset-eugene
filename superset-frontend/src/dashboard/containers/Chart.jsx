@@ -26,6 +26,7 @@ import {refreshChart} from 'src/components/Chart/chartAction';
 import {logEvent} from 'src/logger/actions';
 import {getActiveFilters, getAppliedFilterValues,} from 'src/dashboard/util/activeDashboardFilters';
 import getFormDataWithExtraFilters from 'src/dashboard/util/charts/getFormDataWithExtraFilters';
+import getExtraChartControlsWithExtraFilters from 'src/dashboard/util/charts/getExtraChartControlsWithExtraFilters';
 import Chart from 'src/dashboard/components/gridComponents/Chart';
 import {PLACEHOLDER_DATASOURCE} from 'src/dashboard/constants';
 
@@ -87,6 +88,16 @@ function mapStateToProps(
     sharedLabelColors,
   });
 
+  const extraChartControls = getExtraChartControlsWithExtraFilters({
+    chart,
+    chartConfiguration: dashboardInfo.metadata?.chart_configuration,
+    nativeFilters: nativeFilters?.filters,
+    filters: getAppliedFilterValues(id),
+    sliceId: id,
+    dataMask,
+    allSliceIds: dashboardState.sliceIds,
+  });
+  
   formData.dashboardId = dashboardInfo.id;
   formData.selectedPeriod = selectedPeriod;
   formData.selectedMarket = selectedMarket;
@@ -123,6 +134,7 @@ function mapStateToProps(
     emitCrossFilters: !!dashboardInfo.crossFiltersEnabled,
     selectedSelectors: selectedSelectorsForSorting,
     selectorsDataLoaded,
+    extraChartControls,
   };
 }
 

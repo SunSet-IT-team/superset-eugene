@@ -19,7 +19,7 @@
 import { snakeCase, isEqual, cloneDeep } from 'lodash';
 import PropTypes from 'prop-types';
 import React from 'react';
-import {
+import {  
   SuperChart,
   logging,
   Behavior,
@@ -63,6 +63,7 @@ const propTypes = {
   postTransformProps: PropTypes.func,
   source: PropTypes.oneOf([ChartSource.Dashboard, ChartSource.Explore]),
   emitCrossFilters: PropTypes.bool,
+  extraChartControls: PropTypes.object,
 };
 
 const BLANK = {};
@@ -158,7 +159,8 @@ class ChartRenderer extends React.Component {
         nextProps.formData.color_scheme !== this.props.formData.color_scheme ||
         nextProps.formData.stack !== this.props.formData.stack ||
         nextProps.cacheBusterProp !== this.props.cacheBusterProp ||
-        nextProps.emitCrossFilters !== this.props.emitCrossFilters
+        nextProps.emitCrossFilters !== this.props.emitCrossFilters ||
+        !isEqual(nextProps.extraChartControls, this.props.extraChartControls)
       );
     }
     return false;
@@ -249,6 +251,7 @@ class ChartRenderer extends React.Component {
       chartId,
       emitCrossFilters,
       selectedSelectors,
+      extraChartControls,
     } = this.props;
 
     // Skip chart rendering
@@ -367,6 +370,7 @@ class ChartRenderer extends React.Component {
             noResults={noResultsComponent}
             postTransformProps={postTransformProps}
             emitCrossFilters={emitCrossFilters}
+            extraChartControls={extraChartControls}
             legendState={this.state.legendState}
             selectedSelectors={selectedSelectors}
             {...drillToDetailProps}

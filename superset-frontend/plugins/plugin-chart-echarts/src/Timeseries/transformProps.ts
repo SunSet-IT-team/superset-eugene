@@ -120,6 +120,7 @@ export default function transformProps(
     theme,
     inContextMenu,
     emitCrossFilters,
+    extraChartControls,
     selectedSelectors = {
       f: ['Misc|<--|some text', 'Shooter', 'Adventure'],
       a: ['Ubisoft|<--|fuck', 'Electronic Arts', 'Activision'],
@@ -147,6 +148,7 @@ export default function transformProps(
 
   const dataTypes = getColtypesMapping(queryData);
   const annotationData = getAnnotationData(chartProps);
+  const { number_format } = extraChartControls ?? {};
 
   const {
     area,
@@ -202,7 +204,11 @@ export default function transformProps(
     yAxisTitleMargin,
     yAxisTitlePosition,
     zoomable,
-  }: EchartsTimeseriesFormData = { ...DEFAULT_FORM_DATA, ...formData };
+  }: EchartsTimeseriesFormData = {
+    ...DEFAULT_FORM_DATA,
+    ...formData,
+    ...{ yAxisFormat: number_format || formData.yAxisFormat },
+  };
   const refs: Refs = {};
   const groupBy = ensureIsArray(groupby);
   const labelMap = Object.entries(label_map).reduce((acc, entry) => {

@@ -82,6 +82,7 @@ const propTypes = {
   datasetsStatus: PropTypes.oneOf(['loading', 'error', 'complete']),
   isInView: PropTypes.bool,
   emitCrossFilters: PropTypes.bool,
+  extraChartControls: PropTypes.object,
 };
 
 const BLANK = {};
