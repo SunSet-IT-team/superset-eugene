@@ -22,13 +22,25 @@ import {
   getMetricLabel,
   getNumberFormatter,
   getTimeFormatter,
+  getValueFormatter,
   NumberFormats,
   t,
   ValueFormatter,
-  getValueFormatter,
 } from '@superset-ui/core';
-import { CallbackDataParams } from 'echarts/types/src/util/types';
 import { EChartsCoreOption, PieSeriesOption } from 'echarts';
+import { CallbackDataParams } from 'echarts/types/src/util/types';
+import { DEFAULT_LEGEND_FORM_DATA, OpacityEnum } from '../constants';
+import { defaultGrid } from '../defaults';
+import { Refs } from '../types';
+import { convertInteger } from '../utils/convertInteger';
+import {
+  extractGroupbyLabel,
+  getAdvancedLegendProps,
+  getChartPadding,
+  getColtypesMapping,
+  sanitizeHtml,
+} from '../utils/series';
+import { getDefaultTooltip } from '../utils/tooltip';
 import {
   DEFAULT_FORM_DATA as DEFAULT_PIE_FORM_DATA,
   EchartsPieChartProps,
@@ -36,18 +48,6 @@ import {
   EchartsPieLabelType,
   PieChartTransformedProps,
 } from './types';
-import { DEFAULT_LEGEND_FORM_DATA, OpacityEnum } from '../constants';
-import {
-  extractGroupbyLabel,
-  getChartPadding,
-  getColtypesMapping,
-  getLegendProps,
-  sanitizeHtml,
-} from '../utils/series';
-import { defaultGrid } from '../defaults';
-import { convertInteger } from '../utils/convertInteger';
-import { getDefaultTooltip } from '../utils/tooltip';
-import { Refs } from '../types';
 
 const percentFormatter = getNumberFormatter(NumberFormats.PERCENT_2_POINT);
 
@@ -162,6 +162,7 @@ export default function transformProps(
     labelsOutside,
     labelLine,
     labelType,
+    legendFontSize = 12,
     legendMargin,
     legendOrientation,
     legendType,
@@ -328,7 +329,8 @@ export default function transformProps(
         }),
     },
     legend: {
-      ...getLegendProps(legendType, legendOrientation, showLegend, theme),
+      ...getAdvancedLegendProps(legendType, legendFontSize, legendOrientation, showLegend, theme),
+      padding: [5, 0, 0, 0],
       data: keys,
     },
     graphic: showTotal

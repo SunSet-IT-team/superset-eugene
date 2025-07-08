@@ -948,6 +948,273 @@ class ChartDataFilterSchema(Schema):
     )
 
 
+class ChartDataSelectorOptionSchema(Schema):
+    value = fields.String(
+        required=True,
+        metadata={"description": "The value of the option", "example": "last_month"}
+    )
+    label = fields.String(
+        required=True,
+        metadata={"description": "The display label for the option", "example": "Последний месяц"}
+    )
+    available = fields.Boolean(
+        required=True,
+        metadata={"description": "Is this option currently available", "example": True}
+    )
+
+class ChartDataFactConfigSchema(Schema):
+    datasource_id = fields.Integer(
+        metadata={"description": "Datasource id"},
+        required=True,
+    )
+    datasource_type = fields.String(
+        metadata={"description": "Datasource type"},
+        required=True,
+    )
+    row_id = fields.Integer(
+        metadata={"description": "Row id"},
+        required=True,
+    )
+
+class ChartDataСomparisonPeriodSchema(Schema):
+    period = fields.String(
+        required=True,
+        metadata={"description": "The period for comparison"}
+    )
+    comparisons = fields.List(
+        fields.Nested(ChartDataFactConfigSchema),
+        required=True,
+        metadata={"description": "List of available comparison options for the period"}
+    )
+
+class ChartDataSelectorSchema(Schema):
+    type_selector = fields.String(
+        required=True,
+        metadata={"description": "The type of selector", "example": "Period"}
+    )
+    label_selector = fields.String(
+        required=True,
+        metadata={"description": "The label for the selector", "example": "Период"}
+    )
+    selected_period = fields.String(
+        allow_none=False,
+        metadata={
+            "description": "The currently selected value",
+            "example": "last_month",
+        }
+    )
+    avaliable_periods = fields.List(
+        fields.Nested(ChartDataSelectorOptionSchema),
+        required=False,
+        metadata={
+            "description": "The available options for this selector",
+            "example": [
+                {"value": "last_3_month", "label": "Последний 3 месяца", "available": True},
+                {"value": "last_6_month", "label": "Последние 6 месяцев", "available": False},
+            ],
+        }
+    )
+    selected_comparison_period = fields.String(
+        allow_none=True,
+        metadata={
+            "description": "The currently selected value",
+            "example": "analogus_period_last_year",
+        }
+    )
+    period_selector_type = fields.String(
+        allow_none=True,
+        metadata={
+            "description": "Period selector type",
+            "example": "Predefined or Custom",
+        }
+    )
+    comparison_period_selector_type = fields.String(
+        allow_none=True,
+        metadata={
+            "description": "Comparison Period selector type",
+            "example": "Predefined or Custom",
+        }
+    )
+    available_comparison_period = fields.List(
+        fields.Nested(ChartDataСomparisonPeriodSchema),
+        required=False,
+        metadata= {
+            "description": "List of comparison periods with available options",
+            "example": [
+                {
+                    "period": "last_month",
+                    "comparisons": [{
+                            "value": "analogous_period_last_year",
+                            "label": "Аналогичный период прошлого года",
+                            "available": True },
+                            { "value": "previous_period",
+                            "label": "Предыдущий период",
+                            "available": False}]
+                },
+            ]
+        }
+    )
+    available_markets = fields.List(
+        fields.Dict(),
+        required=False,
+        metadata={
+            "description": "The available markets for market selector",
+            "example": [
+                { "es": "East", "lvl": "2", "region": "North" },
+                { "es": "West", "lvl": "3", "region": "South" },
+                { "es": "South Hyper", "lvl": "1", "region": "East" }
+            ],
+        },
+    )
+    available_markets_100 = fields.List(
+        fields.Dict(),
+        required=False,
+        metadata={
+            "description": "The available markets for market selector",
+            "example": [
+                { "es": "East", "lvl": "2", "region": "North" },
+                { "es": "West", "lvl": "3", "region": "South" },
+                { "es": "South Hyper", "lvl": "1", "region": "East" }
+            ],
+        },
+    )
+    selected_markets = fields.List(
+        fields.String(),
+        required=False,
+        metadata={
+            "description": "The selected markets for market selector",
+            "example": [
+                { "es": "East", "lvl": "2", "region": "North" },
+                { "es": "West", "lvl": "3", "region": "South" },
+                { "es": "South Hyper", "lvl": "1", "region": "East" }
+            ],
+        },
+    )
+    selected_products = fields.List(
+        fields.Raw(),
+        required=False,
+        metadata={
+            "description": "The selected products for product selector",
+            "example": [
+               {"PROD_LEVEL":2, "PROD_LEVEL_NAME":"STRENGTH","PROD_PARENT_TAG": "P001", "PROD_TAG":"P002", "PROD_NAME":"STRONG"},
+               {"PROD_LEVEL":1, "PROD_LEVEL_NAME":"TOTAL","PROD_PARENT_TAG": "", "PROD_TAG":"P001", "PROD_NAME":"BEER"}
+            ],
+        },
+    )
+    available_products = fields.List(
+        fields.Dict(),
+        required=False,
+        metadata={
+            "description": "The available products for product selector",
+            "example": [
+                {"PROD_LEVEL":2, "PROD_LEVEL_NAME":"STRENGTH","PROD_PARENT_TAG": "P001", "PROD_TAG":"P002", "PROD_NAME":"STRONG"},
+                {"PROD_LEVEL":1, "PROD_LEVEL_NAME":"TOTAL","PROD_PARENT_TAG": "", "PROD_TAG":"P001", "PROD_NAME":"BEER"}
+            ],
+        },
+    )
+    selected_fact = fields.Raw(
+        required=False,
+        metadata={
+                "description": "Configuration to extract the fact",
+                "example": {
+                    "datasource_id" : 2,
+                    "row_id": 34
+                }
+        }
+    )
+
+    selected_markets_100 = fields.List(
+        fields.String(),
+        required=False,
+        metadata={
+            "description": "The selected markets for market selector",
+            "example": [
+                { "es": "East", "lvl": "2", "region": "North" },
+                { "es": "West", "lvl": "3", "region": "South" },
+                { "es": "South Hyper", "lvl": "1", "region": "East" }
+            ],
+        },
+    )
+    selected_products_100 = fields.List(
+        fields.Raw(),
+        required=False,
+        metadata={
+            "description": "The selected products for product selector",
+            "example": [
+               {"PROD_LEVEL":2, "PROD_LEVEL_NAME":"STRENGTH","PROD_PARENT_TAG": "P001", "PROD_TAG":"P002", "PROD_NAME":"STRONG"},
+               {"PROD_LEVEL":1, "PROD_LEVEL_NAME":"TOTAL","PROD_PARENT_TAG": "", "PROD_TAG":"P001", "PROD_NAME":"BEER"}
+            ],
+        },
+    )
+    available_products_100 = fields.List(
+        fields.Dict(),
+        required=False,
+        metadata={
+            "description": "The available products for product selector",
+            "example": [
+                {"PROD_LEVEL":2, "PROD_LEVEL_NAME":"STRENGTH","PROD_PARENT_TAG": "P001", "PROD_TAG":"P002", "PROD_NAME":"STRONG"},
+                {"PROD_LEVEL":1, "PROD_LEVEL_NAME":"TOTAL","PROD_PARENT_TAG": "", "PROD_TAG":"P001", "PROD_NAME":"BEER"}
+            ],
+        },
+    )
+
+
+class ChartDataKorusExportInfoSelectorOptionItemSchema(Schema):
+    key = fields.String(
+        required=True,
+        metadata={
+            "description": "id of selected item", 
+            "example": "P001"
+        }
+    )
+    label = fields.String(
+        required=True,
+        metadata={
+            "description": "name of selected item", 
+            "example": "BEER"
+        }
+    )
+
+
+class ChartDataKorusExportInfoSelectorOptionSchema(Schema):
+    items = fields.List(
+        fields.Nested(ChartDataKorusExportInfoSelectorOptionItemSchema),
+        required=True,
+        allow_none=True,
+        metadata= {
+            "description": "List of dictionaries of selected items",
+            "example": [
+                {
+                    "key": "P001",
+                    "label": "BEER",
+                },
+            ]
+        }
+    )
+
+
+class ChartDataKorusExportInfoSelectorSchema(Schema):
+    products = fields.Nested(ChartDataKorusExportInfoSelectorOptionSchema)
+    products_100 = fields.Nested(ChartDataKorusExportInfoSelectorOptionSchema)
+    markets = fields.Nested(ChartDataKorusExportInfoSelectorOptionSchema)
+    markets_100 = fields.Nested(ChartDataKorusExportInfoSelectorOptionSchema)
+
+
+class ChartDataKorusExportInfoOptionSchema(Schema):
+    title = fields.String(
+        required=True,
+        metadata={"description": "The value of export option", "example": "SuperDashboard"}
+    )
+    
+
+class ChartDataKorusExportInfoSchema(Schema):
+    dashboard = fields.Nested(ChartDataKorusExportInfoOptionSchema)
+    chart = fields.Nested(ChartDataKorusExportInfoOptionSchema)
+    company = fields.Nested(ChartDataKorusExportInfoOptionSchema)
+    order = fields.Nested(ChartDataKorusExportInfoOptionSchema)
+    selected_selectors = fields.Nested(ChartDataKorusExportInfoSelectorSchema)
+
+
 class ChartDataExtrasSchema(Schema):
     relative_start = fields.String(
         metadata={
@@ -1143,6 +1410,12 @@ class ChartDataQueryObjectSchema(Schema):
         allow_none=True,
     )
     filters = fields.List(fields.Nested(ChartDataFilterSchema), allow_none=True)
+    selectors = fields.List(fields.Nested(ChartDataSelectorSchema), allow_none=True)
+    korus_export_info = fields.Nested(ChartDataKorusExportInfoSchema, allow_none=True)
+    rls_restriction = fields.Dict(
+        metadata={"description": "Row Level Security restrictions"},
+        allow_none=True,
+    )
     granularity = fields.String(
         metadata={"description": "Name of temporal column used for time filtering. "},
         allow_none=True,

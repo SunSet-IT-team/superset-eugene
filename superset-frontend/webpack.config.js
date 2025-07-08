@@ -190,7 +190,7 @@ const babelLoader = {
     cacheDirectory: true,
     // disable gzip compression for cache files
     // faster when there are millions of small files
-    cacheCompression: false,
+    cacheCompression: true,
     plugins: ['emotion'],
     presets: [
       [

@@ -17,19 +17,20 @@
  * under the License.
  */
 import React from 'react';
-import { ensureIsInt, t, validateNonEmpty } from '@superset-ui/core';
+
 import {
   ControlPanelConfig,
   ControlPanelsContainerProps,
   ControlSubSectionHeader,
   D3_FORMAT_DOCS,
-  D3_NUMBER_FORMAT_DESCRIPTION_VALUES_TEXT,
   D3_FORMAT_OPTIONS,
+  D3_NUMBER_FORMAT_DESCRIPTION_VALUES_TEXT,
   D3_TIME_FORMAT_OPTIONS,
   getStandardizedControls,
 } from '@superset-ui/chart-controls';
+import { ensureIsInt, t, validateNonEmpty } from '@superset-ui/core';
+import { legendAdvancedSection } from '../controls';
 import { DEFAULT_FORM_DATA } from './types';
-import { legendSection } from '../controls';
 
 const {
   donut,
@@ -87,7 +88,7 @@ const config: ControlPanelConfig = {
             },
           },
         ],
-        ...legendSection,
+        ...legendAdvancedSection,
         // eslint-disable-next-line react/jsx-key
         [<ControlSubSectionHeader>{t('Labels')}</ControlSubSectionHeader>],
         [

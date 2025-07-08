@@ -17,7 +17,6 @@
  * under the License.
  */
 import React from 'react';
-import { t } from '@superset-ui/core';
 import {
   ControlPanelsContainerProps,
   ControlSetItem,
@@ -27,12 +26,24 @@ import {
   SORT_SERIES_CHOICES,
   sharedControls,
 } from '@superset-ui/chart-controls';
-import { DEFAULT_LEGEND_FORM_DATA, StackControlOptions } from './constants';
-import { DEFAULT_FORM_DATA } from './Timeseries/constants';
+import { t } from '@superset-ui/core';
+import {
+  DEFAULT_LEGEND_FORM_DATA,
+  DEFAULT_PADDING_FORM_DATA,
+  StackControlOptions,
+} from './constants';
 import { defaultXAxis } from './defaults';
+import { DEFAULT_FORM_DATA } from './Timeseries/constants';
 
-const { legendMargin, legendOrientation, legendType, showLegend } =
-  DEFAULT_LEGEND_FORM_DATA;
+const {
+  legendFontSize,
+  legendMargin,
+  legendOrientation,
+  legendType,
+  showLegend,
+} = DEFAULT_LEGEND_FORM_DATA;
+
+const { paddingRight } = DEFAULT_PADDING_FORM_DATA;
 
 const showLegendControl: ControlSetItem = {
   name: 'show_legend',
@@ -42,6 +53,20 @@ const showLegendControl: ControlSetItem = {
     renderTrigger: true,
     default: showLegend,
     description: t('Whether to display a legend for the chart'),
+  },
+};
+
+const legendFontSizeControl: ControlSetItem = {
+  name: 'legendFontSize',
+  config: {
+    type: 'TextControl',
+    label: t('Font size'),
+    renderTrigger: true,
+    isInt: true,
+    default: legendFontSize,
+    description: t('Legend\'s font size'),
+    visibility: ({ controls }: ControlPanelsContainerProps) =>
+      Boolean(controls?.show_legend?.value),
   },
 };
 
@@ -103,6 +128,37 @@ export const legendSection: ControlSetRow[] = [
   [legendTypeControl],
   [legendOrientationControl],
   [legendMarginControl],
+];
+
+export const legendAdvancedSection: ControlSetRow[] = [
+  [<ControlSubSectionHeader>{t('Legend')}</ControlSubSectionHeader>],
+  [showLegendControl],
+  [legendFontSizeControl],
+  [legendTypeControl],
+  [legendOrientationControl],
+  [legendMarginControl],
+];
+
+export const customBubbleLegendSection: ControlSetRow[] = [
+  [<ControlSubSectionHeader>{t('Legend')}</ControlSubSectionHeader>],
+  [showLegendControl],
+];
+
+const paddingRightControl: ControlSetItem = {
+  name: 'paddingRight',
+  config: {
+    type: 'TextControl',
+    label: t('Padding right'),
+    renderTrigger: true,
+    isInt: true,
+    default: paddingRight,
+    description: t('Additional padding for chart.'),
+  },
+};
+
+export const paddingSection: ControlSetRow[] = [
+  [<ControlSubSectionHeader>{t('Padding')}</ControlSubSectionHeader>],
+  [paddingRightControl],
 ];
 
 export const showValueControl: ControlSetItem = {

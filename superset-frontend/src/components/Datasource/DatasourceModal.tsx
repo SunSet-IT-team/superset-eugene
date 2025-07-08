@@ -90,7 +90,16 @@ const DatasourceModal: FunctionComponent<DatasourceModalProps> = ({
   onHide,
   show,
 }) => {
+  const [applyJson, setApplyJson] = useState(false);
   const [currentDatasource, setCurrentDatasource] = useState({
+    json: `
+        {
+        "_comment":"Заполните ключи columns, rows и facts значениями через запятую",
+        "Rows": ["One"],
+        "Columns": ["One", "Two", "Three"], 
+        "Facts": ["One"]
+    }`,
+    json_name: '',
     ...datasource,
     metrics: datasource?.metrics?.map((metric: Metric) => ({
       ...metric,
@@ -186,6 +195,9 @@ const DatasourceModal: FunctionComponent<DatasourceModalProps> = ({
         owners: currentDatasource.owners.map(
           (o: Record<string, number>) => o.value || o.id,
         ),
+        //custom fields
+        json: applyJson ? currentDatasource.json : undefined,
+        json_name: applyJson ? currentDatasource.json_name : undefined,
       },
     })
       .then(() => {
@@ -341,6 +353,7 @@ const DatasourceModal: FunctionComponent<DatasourceModalProps> = ({
         onChange={onDatasourceChange}
         setIsEditing={setIsEditing}
         currencies={currencies}
+        applyJson={setApplyJson}
       />
       {contextHolder}
     </StyledDatasourceModal>

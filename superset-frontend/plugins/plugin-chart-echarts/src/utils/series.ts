@@ -17,6 +17,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+import { MetricsSeriesType, SortSeriesType } from '@superset-ui/chart-controls';
 import {
   AxisType,
   ChartDataResponseResult,
@@ -24,16 +25,19 @@ import {
   DataRecordValue,
   DTTM_ALIAS,
   ensureIsArray,
+  findInCols,
+  formatFulldesc,
   GenericDataType,
   LegendState,
   normalizeTimestamp,
   NumberFormats,
   NumberFormatter,
+  sortBySelector,
   SupersetTheme,
+  t,
   TimeFormatter,
   ValueFormatter,
 } from '@superset-ui/core';
-import { SortSeriesType } from '@superset-ui/chart-controls';
 import { format, LegendComponentOption, SeriesOption } from 'echarts';
 import { maxBy, meanBy, minBy, orderBy, sumBy } from 'lodash';
 import {
@@ -41,13 +45,13 @@ import {
   StackControlsValue,
   TIMESERIES_CONSTANTS,
 } from '../constants';
+import { defaultLegendPadding } from '../defaults';
 import {
   EchartsTimeseriesSeriesType,
   LegendOrientation,
   LegendType,
   StackType,
 } from '../types';
-import { defaultLegendPadding } from '../defaults';
 
 function isDefined<T>(value: T | undefined | null): boolean {
   return value !== undefined && value !== null;
@@ -134,6 +138,8 @@ export function sortAndFilterSeries(
   extraMetricLabels: any[],
   sortSeriesType?: SortSeriesType,
   sortSeriesAscending?: boolean,
+  selectedSelectors?: any,
+  yAxis?: string,
 ): string[] {
   const seriesNames = Object.keys(rows[0])
     .filter(key => key !== xAxis)
@@ -141,22 +147,42 @@ export function sortAndFilterSeries(
 
   let aggregator: (name: string) => { name: string; value: any };
 
-  switch (sortSeriesType) {
-    case SortSeriesType.Sum:
-      aggregator = name => ({ name, value: sumBy(rows, name) });
-      break;
-    case SortSeriesType.Min:
-      aggregator = name => ({ name, value: minBy(rows, name)?.[name] });
-      break;
-    case SortSeriesType.Max:
-      aggregator = name => ({ name, value: maxBy(rows, name)?.[name] });
-      break;
-    case SortSeriesType.Avg:
-      aggregator = name => ({ name, value: meanBy(rows, name) });
-      break;
-    default:
-      aggregator = name => ({ name, value: name.toLowerCase() });
-      break;
+  if (selectedSelectors && sortSeriesType === SortSeriesType.Name) {
+    let formedMap: Record<string, string[]> = {};
+    Object.keys(selectedSelectors).map(k => {
+      formedMap[k] = selectedSelectors[k].map(el =>
+        formatFulldesc(el, { type: 'short' }),
+      );
+    });
+
+    const mappedNames = seriesNames.map(name => ({
+      name: name,
+      formdeName: formatFulldesc(name, { type: 'short' }),
+    }));
+
+    const sorted = findInCols(mappedNames, selectedSelectors).map(
+      el => el.name,
+    );
+
+    return sortSeriesAscending ? sorted : sorted.reverse();
+  } else {
+    switch (sortSeriesType) {
+      case SortSeriesType.Sum:
+        aggregator = name => ({ name, value: sumBy(rows, name) });
+        break;
+      case SortSeriesType.Min:
+        aggregator = name => ({ name, value: minBy(rows, name)?.[name] });
+        break;
+      case SortSeriesType.Max:
+        aggregator = name => ({ name, value: maxBy(rows, name)?.[name] });
+        break;
+      case SortSeriesType.Avg:
+        aggregator = name => ({ name, value: meanBy(rows, name) });
+        break;
+      default:
+        aggregator = name => ({ name, value: name.toLowerCase() });
+        break;
+    }
   }
 
   const sortedValues = seriesNames.map(aggregator);
@@ -172,13 +198,17 @@ export function sortRows(
   rows: DataRecord[],
   totalStackedValues: number[],
   xAxis: string,
-  xAxisSortSeries: SortSeriesType,
   xAxisSortSeriesAscending: boolean,
+  xAxisSortAsc: boolean,
+  xAxisSort?: string,
+  xAxisSortSeries?: SortSeriesType,
+  selectedSelectors?: any,
 ) {
   const sortedRows = rows.map((row, idx) => {
     let sortKey: DataRecordValue = '';
     let aggregate: number | undefined;
     let entries = 0;
+
     Object.entries(row).forEach(([key, value]) => {
       const isValueDefined = isDefined(value);
       if (key === xAxis) {
@@ -220,6 +250,7 @@ export function sortRows(
           break;
       }
     });
+
     if (
       xAxisSortSeries === SortSeriesType.Avg &&
       entries > 0 &&
@@ -243,6 +274,12 @@ export function sortRows(
     };
   });
 
+  if (selectedSelectors) {
+    const returnData = findInCols(sortedRows, selectedSelectors);
+
+    return xAxisSortSeriesAscending ? returnData : returnData.reverse();
+  }
+
   return orderBy(
     sortedRows,
     ['value'],
@@ -255,20 +292,25 @@ export function extractSeries(
   opts: {
     fillNeighborValue?: number;
     xAxis?: string;
+    yAxis?: string;
     extraMetricLabels?: string[];
     removeNulls?: boolean;
     stack?: StackType;
     totalStackedValues?: number[];
     isHorizontal?: boolean;
+    xAxisSortAsc?: boolean;
     sortSeriesType?: SortSeriesType;
     sortSeriesAscending?: boolean;
+    xAxisSort?: string;
     xAxisSortSeries?: SortSeriesType;
     xAxisSortSeriesAscending?: boolean;
   } = {},
+  selectedSelectors: any,
 ): [SeriesOption[], number[], number | undefined] {
   const {
     fillNeighborValue,
     xAxis = DTTM_ALIAS,
+    yAxis,
     extraMetricLabels = [],
     removeNulls = false,
     stack = false,
@@ -277,6 +319,8 @@ export function extractSeries(
     sortSeriesType,
     sortSeriesAscending,
     xAxisSortSeries,
+    xAxisSort,
+    xAxisSortAsc,
     xAxisSortSeriesAscending,
   } = opts;
   if (data.length === 0) return [[], [], undefined];
@@ -290,15 +334,21 @@ export function extractSeries(
     extraMetricLabels,
     sortSeriesType,
     sortSeriesAscending,
+    selectedSelectors,
+    yAxis,
   );
   const sortedRows =
-    isDefined(xAxisSortSeries) && isDefined(xAxisSortSeriesAscending)
+    selectedSelectors ||
+    (isDefined(xAxisSortSeries) && isDefined(xAxisSortSeriesAscending))
       ? sortRows(
           rows,
           totalStackedValues,
           xAxis,
-          xAxisSortSeries!,
-          xAxisSortSeriesAscending!,
+          xAxisSortSeriesAscending || false,
+          xAxisSortAsc || false,
+          xAxisSort,
+          xAxisSortSeries,
+          selectedSelectors,
         )
       : rows.map((row, idx) => ({
           row,
@@ -433,10 +483,77 @@ export function getLegendProps(
     show,
     type,
     selected: legendState,
-    selector: ['all', 'inverse'],
+    selector: [
+      {
+        type: 'all',
+        title: t('All'),
+      },
+      {
+        type: 'inverse',
+        title: t('Inv.'),
+      },
+    ],
     selectorLabel: {
       fontFamily: theme.typography.families.sansSerif,
       fontSize: theme.typography.sizes.s,
+      color: theme.colors.grayscale.base,
+      borderColor: theme.colors.grayscale.base,
+    },
+  };
+  switch (orientation) {
+    case LegendOrientation.Left:
+      legend.left = 0;
+      break;
+    case LegendOrientation.Right:
+      legend.right = 0;
+      legend.top = zoomable ? TIMESERIES_CONSTANTS.legendRightTopOffset : 0;
+      break;
+    case LegendOrientation.Bottom:
+      legend.bottom = 0;
+      break;
+    case LegendOrientation.Top:
+    default:
+      legend.top = 0;
+      legend.right = zoomable ? TIMESERIES_CONSTANTS.legendTopRightOffset : 0;
+      break;
+  }
+  return legend;
+}
+
+export function getAdvancedLegendProps(
+  type: LegendType,
+  fontSize: number,
+  orientation: LegendOrientation,
+  show: boolean,
+  theme: SupersetTheme,
+  zoomable = false,
+  legendState?: LegendState,
+): LegendComponentOption | LegendComponentOption[] {
+  const legend: LegendComponentOption | LegendComponentOption[] = {
+    orient: [LegendOrientation.Top, LegendOrientation.Bottom].includes(
+      orientation,
+    )
+      ? 'horizontal'
+      : 'vertical',
+    show,
+    textStyle: {
+      fontSize,
+    },
+    type,
+    selected: legendState,
+    selector: [
+      {
+        type: 'all',
+        title: t('All'),
+      },
+      {
+        type: 'inverse',
+        title: t('Inv.'),
+      },
+    ],
+    selectorLabel: {
+      fontFamily: theme.typography.families.sansSerif,
+      fontSize,
       color: theme.colors.grayscale.base,
       borderColor: theme.colors.grayscale.base,
     },

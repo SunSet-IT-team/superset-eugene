@@ -18,22 +18,14 @@
  */
 
 /* eslint-disable camelcase */
-import {
-  AdhocFilter,
-  QueryObject,
-  QueryObjectFilterClause,
-  isQueryFormMetric,
-} from './types';
-import {
-  QueryFieldAliases,
-  QueryFormMetric,
-  QueryFormData,
-} from './types/QueryFormData';
+import {selectorLabel, selectorType,} from 'src/dashboard/components/nativeFilters/constants';
+import {AdhocFilter, isQueryFormMetric, QueryObject, QueryObjectFilterClause,} from './types';
+import {QueryFieldAliases, QueryFormData, QueryFormMetric,} from './types/QueryFormData';
 import processFilters from './processFilters';
 import extractExtras from './extractExtras';
 import extractQueryFields from './extractQueryFields';
-import { overrideExtraFormData } from './processExtraFormData';
-import { isDefined } from '../utils';
+import {overrideExtraFormData} from './processExtraFormData';
+import {isDefined} from '../utils';
 
 /**
  * Build the common segments of all query objects (e.g. the granularity field derived from
@@ -63,6 +55,18 @@ export default function buildQueryObject<T extends QueryFormData>(
     series_columns,
     series_limit,
     series_limit_metric,
+    selectedPeriod = 'No selector',
+    selectedMarket = ['No selector'],
+    selectedFact = 'No selector',
+    selectedProducts = ['No selector'],
+    selectedComparisonPeriod = 'No selector',
+    selected100Markets = ['No selector'],
+    selected100Products = ['No selector'],
+
+    rlsRestrictions = {},
+
+    korusExportInfo = {},
+
     ...residualFormData
   } = formData;
   const {
@@ -131,6 +135,49 @@ export default function buildQueryObject<T extends QueryFormData>(
     order_desc: typeof order_desc === 'undefined' ? true : order_desc,
     url_params: url_params || undefined,
     custom_params,
+    selectors: [
+      {
+        label_selector: selectorLabel.period,
+        selected_period: selectedPeriod.value,
+        period_selector_type: selectedPeriod.type,
+        type_selector: selectorType.period,
+      },
+      {
+        label_selector: selectorLabel.market,
+        type_selector: selectorType.market,
+        selected_markets: selectedMarket,
+      },
+      {
+        label_selector: selectorLabel.product,
+        type_selector: selectorType.product,
+        selected_products: selectedProducts,
+      },
+
+      {
+        label_selector: selectorLabel.marketAll,
+        type_selector: selectorType.marketAll,
+        selected_markets_100: selected100Markets,
+      },
+      {
+        label_selector: selectorLabel.productAll,
+        type_selector: selectorType.productAll,
+        selected_products_100: selected100Products,
+      },
+      {
+        label_selector: selectorLabel.comparisonPeriod,
+        type_selector: 'Comparison Period',
+        selected_comparison_period: selectedComparisonPeriod.value,
+        comparison_period_selector_type: selectedComparisonPeriod.type,
+      },
+
+      {
+        label_selector: 'Факт',
+        type_selector: 'Fact',
+        selected_fact: selectedFact,
+      },
+    ],
+    rls_restriction: rlsRestrictions,
+    korus_export_info: korusExportInfo,
   };
 
   // override extra form data used by native and cross filters

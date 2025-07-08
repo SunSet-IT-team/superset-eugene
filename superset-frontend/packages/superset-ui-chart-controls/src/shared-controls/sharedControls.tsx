@@ -81,6 +81,9 @@ import {
   dndSeriesControl,
   dndAdhocMetricControl2,
   dndXAxisControl,
+  dndDottedYControl,
+  dndDottedXControl,
+  dndXAxisSubstituteControl,
 } from './dndControls';
 
 const categoricalSchemeRegistry = getCategoricalSchemeRegistry();
@@ -229,7 +232,7 @@ const row_limit: SharedControlConfig<'SelectControl'> = {
     legacyValidateInteger,
     (v, state) => validateMaxValue(v, state?.maxValue || DEFAULT_MAX_ROW),
   ],
-  default: 10000,
+  default: 1000,
   choices: formatSelectOptions(ROW_LIMIT_OPTIONS),
   description: t(
     'Limits the number of the rows that are computed in the query that is the source of the data used for this chart.',
@@ -362,6 +365,16 @@ const temporal_columns_lookup: SharedControlConfig<'HiddenControl'> = {
     ),
 };
 
+const textarea_control: SharedControlConfig<any> = {
+  type: 'CustomTextarea',
+  default: '',
+  height: '20px',
+  resize: false,
+  initialValue: '',
+  renderTrigger: true,
+  placeholder: t('Textarea placeholder'),
+};
+
 export default {
   metrics: dndAdhocMetricsControl,
   metric: dndAdhocMetricControl,
@@ -397,7 +410,11 @@ export default {
   legacy_order_by: dndSortByControl,
   truncate_metric,
   x_axis: dndXAxisControl,
+  x_axis_substitute: dndXAxisSubstituteControl,
   show_empty_columns,
   temporal_columns_lookup,
   currency_format,
+  dottedY: dndDottedYControl,
+  dottedX: dndDottedXControl,
+  textArea: textarea_control,
 };

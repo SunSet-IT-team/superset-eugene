@@ -5,7 +5,7 @@
       "22": [""],
       "": {
         "domain": "superset",
-        "plural_forms": "nplurals=2; plural=(n != 1);",
+        "plural_forms": "nplurals=2; plural=(n != 1)",
         "lang": "nl"
       },
       "\n                This filter was inherited from the dashboard's context.\n                It won't be saved when saving the chart.\n              ": [
@@ -56,7 +56,6 @@
       "%s Selected (Virtual)": ["%s Geselecteerd (Virtueel)"],
       "%s aggregates(s)": ["%s aggrega(a)t(en)"],
       "%s column(s)": ["%s kolom(men)"],
-      "%s ineligible item(s) are hidden": [""],
       "%s items could not be tagged because you don’t have edit permissions to all selected objects.": [
         ""
       ],
@@ -133,9 +132,8 @@
       "A comma separated list of columns that should be parsed as dates.": [
         "Een door komma’s gescheiden lijst van kolommen die als datums moeten worden geparseerd."
       ],
-      "A database port is required when connecting via SSH Tunnel.": [""],
       "A database with the same name already exists.": [""],
-      "A dictionary with column names and their data types if you need to change the defaults. Example: {\"user_id\":\"int\"}. Check Python's Pandas library for supported data types.": [
+      "A dictionary with column names and their data types if you need to change the defaults. Example: {\"user_id\":\"integer\"}": [
         ""
       ],
       "A full URL pointing to the location of the built plugin (could be hosted on a CDN for example)": [
@@ -244,6 +242,7 @@
       "Add metrics to dataset in \"Edit datasource\" modal": [""],
       "Add new color formatter": [""],
       "Add new formatter": [""],
+      "Add notification method": ["Meldingsmethode toevoegen"],
       "Add required control values to preview chart": [""],
       "Add required control values to save chart": [""],
       "Add sheet": [""],
@@ -285,6 +284,7 @@
         "Waarschuwing geactiveerd, in grace periode"
       ],
       "Alert condition": ["Naam waarschuwingsconditie"],
+      "Alert condition schedule": ["Waarschuwing conditie planning"],
       "Alert ended grace period.": ["Waarschuwing beëindigd grace period."],
       "Alert failed": ["Waarschuwing mislukt"],
       "Alert fired during grace period.": [
@@ -582,6 +582,7 @@
         "Weet u zeker dat u de wijzigingen wilt opslaan en toepassen?"
       ],
       "Area Chart": [""],
+      "Time-series Area Chart (legacy)": [""],
       "Area chart": [""],
       "Area chart opacity": [""],
       "Area charts are similar to line charts in that they represent variables with the same scale, but area charts stack the metrics on top of each other.": [
@@ -1108,7 +1109,6 @@
         ""
       ],
       "Customize columns": [""],
-      "Customize data source, filters, and layout.": [""],
       "Cyclic dependency detected": [""],
       "D3 Format": ["D3 Formaat"],
       "D3 format": ["D3 formaat"],
@@ -1303,10 +1303,6 @@
         ""
       ],
       "Define contour layers. Isolines represent a collection of line segments that serparate the area above and below a given threshold. Isobands represent a collection of polygons that fill the are containing values in a given threshold range.": [
-        ""
-      ],
-      "Define delivery schedule, timezone, and frequency settings.": [""],
-      "Define the database, SQL query, and triggering conditions for alert.": [
         ""
       ],
       "Defines a rolling window function to apply, works along with the [Periods] text box": [
@@ -2090,6 +2086,7 @@
       "Lift percent precision": [""],
       "Light mode": [""],
       "Like": [""],
+      "Limit reached": ["Limiet bereikt"],
       "Limiting rows may result in incomplete data and misleading charts. Consider filtering or grouping source/target names instead.": [
         ""
       ],
@@ -2103,6 +2100,7 @@
       ],
       "Line": [""],
       "Line Chart": [""],
+      "Time-series Line Chart (legacy)": [""],
       "Line Style": [""],
       "Line chart is used to visualize measurements taken over a given category. Line chart is a type of chart which displays information as a series of data points connected by straight line segments. It is a basic type of chart common in many fields.": [
         ""
@@ -2374,9 +2372,6 @@
       "Normalize Across": [""],
       "Normalized": [""],
       "Not Time Series": [""],
-      "Not all required fields are complete. Please provide the following:": [
-        ""
-      ],
       "Not available": [""],
       "Not null": ["Not null"],
       "Not triggered": [""],
@@ -2570,7 +2565,6 @@
       "Percent of total": [""],
       "Percentage": [""],
       "Percentage change": [""],
-      "Percentage difference between the time periods": [""],
       "Percentage metrics": [""],
       "Percentage threshold": [""],
       "Percentages": [""],
@@ -2776,7 +2770,6 @@
       "Recommended tags": [""],
       "Record Count": ["Record Aantal"],
       "Rectangle": [""],
-      "Recurring (every)": [""],
       "Redirects to this endpoint when clicking on the table from the table list": [
         ""
       ],
@@ -2852,6 +2845,7 @@
       "Report a bug": [""],
       "Report failed": ["Rapport mislukt"],
       "Report name": ["Naam rapport"],
+      "Report schedule": ["Rapportageplanning"],
       "Report schedule unexpected error": ["Onverwachte fout in rapportschema"],
       "Report sending": ["Rapport verzenden"],
       "Report sent": ["Rapport verzonden"],
@@ -3000,6 +2994,7 @@
       "Schedule": ["Planning"],
       "Schedule email report": [""],
       "Schedule query": ["Query planning"],
+      "Schedule settings": ["Planning instellingen"],
       "Schedule the query periodically": ["Plan de zoekopdracht periodiek"],
       "Scheduled": ["Gepland"],
       "Scheduled at (UTC)": ["Gepland om (UTC)"],
@@ -3113,11 +3108,7 @@
       "Service Account": [""],
       "Set auto-refresh interval": ["Stel auto-refresh in"],
       "Set filter mapping": ["Filter toewijzing instellen"],
-      "Set the time range that will be used for the comparison metrics. For example, \"Year\" will compare to the same dates one year earlier. Use \"Inherit range from time filters\" to shift the comparison time rangeby the same length as your time range and use \"Custom\" to set a custom comparison range.": [
-        ""
-      ],
       "Set up an email report": [""],
-      "Set up basic details, such as name and description.": [""],
       "Sets the hierarchy levels of the chart. Each level is\n        represented by one ring with the innermost circle as the top of the hierarchy.": [
         ""
       ],
@@ -3149,6 +3140,7 @@
       "Show Dashboard": ["Toon Dashboard"],
       "Show Database": ["Toon Database"],
       "Show Labels": [""],
+      "Show Less...": [""],
       "Show Log": ["Toon Log"],
       "Show Markers": [""],
       "Show Metric": ["Toon meeteenheid"],
@@ -3647,17 +3639,12 @@
         ""
       ],
       "The report has been created": [""],
-      "The result of this query must be a value capable of numeric interpretation e.g. 1, 1.0, or \"1\" (compatible with Python's float() function).": [
-        ""
-      ],
+      "The result of this query should be a numeric-esque value": [""],
       "The results backend no longer has the data from the query.": [""],
       "The results stored in the backend were stored in a different format, and no longer can be deserialized.": [
         ""
       ],
       "The rich tooltip shows a list of all series for that point in time": [
-        ""
-      ],
-      "The row limit set for the chart was reached. The chart may show partial data.": [
         ""
       ],
       "The schema \"%(schema)s\" does not exist. A valid schema must be used to run this query.": [
@@ -3987,7 +3974,6 @@
       "Time string is ambiguous. Please specify [%(human_readable)s ago] or [%(human_readable)s later].": [
         ""
       ],
-      "Time-series Area Chart (legacy)": [""],
       "Time-series Percent Change": [""],
       "Time-series Period Pivot": [""],
       "Time-series Table": ["Time-series Table"],
@@ -4207,7 +4193,6 @@
       "Value and Percentage": [""],
       "Value bounds": [""],
       "Value cannot exceed %s": [""],
-      "Value difference between the time periods": [""],
       "Value format": [""],
       "Value is required": [""],
       "Value must be greater than 0": ["Waarde moet groter zijn dan 0"],
@@ -4620,6 +4605,9 @@
       "`prophet` package not installed": [
         "`prophet` package niet geïnstalleerd"
       ],
+      "`rename_columns` must have the same length as `columns`.": [
+        "`rename_columns` moet dezelfde lengte hebben als `columns`."
+      ],
       "`row_limit` must be greater than or equal to 0": [
         "`rij_limiet` moet groter of gelijk aan 0 zijn"
       ],
@@ -4634,6 +4622,7 @@
       "alerts": ["waarschuwingen"],
       "also copy (duplicate) charts": ["kopieer ook (duplicate) grafieken"],
       "ancestor": [""],
+      "and": ["en"],
       "annotation": ["aantekening"],
       "annotation_layer": ["annotation_layer"],
       "asfreq": [""],

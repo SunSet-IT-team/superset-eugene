@@ -25,6 +25,8 @@ import {
   QueryObject,
   isXAxisSet,
   getXAxisColumn,
+  isXAxisSubsisuteSet,
+  getXAxisSubstituteColumn,
 } from '@superset-ui/core';
 import {
   pivotOperator,
@@ -57,6 +59,9 @@ export default function buildQuery(formData: QueryFormData) {
           ...(isXAxisSet(formData)
             ? ensureIsArray(getXAxisColumn(formData))
             : []),
+          ...(isXAxisSubsisuteSet(formData)
+            ? ensureIsArray(getXAxisSubstituteColumn(formData))
+            : []),
           ...ensureIsArray(fd.groupby),
         ],
         series_columns: fd.groupby,
@@ -88,6 +93,7 @@ export default function buildQuery(formData: QueryFormData) {
 
   return {
     ...queryContexts[0],
+    // substitute: formData.x_axis_substitute,
     queries: [...queryContexts[0].queries, ...queryContexts[1].queries],
   };
 }

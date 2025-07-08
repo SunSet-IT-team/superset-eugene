@@ -97,3 +97,9 @@ export const chartContextMenuStyles = (theme: SupersetTheme) => css`
     min-width: ${theme.gridUnit * 40}px;
   }
 `;
+
+export const alertNotificationStyles = (theme: SupersetTheme) => css`
+  .ant-message-notice-content {
+    background: ${theme.colors.error.light2};
+  }
+`;

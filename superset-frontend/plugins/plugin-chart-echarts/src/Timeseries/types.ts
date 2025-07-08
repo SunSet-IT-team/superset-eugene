@@ -97,6 +97,7 @@ export type EchartsTimeseriesFormData = QueryFormData & {
 export interface EchartsTimeseriesChartProps
   extends BaseChartProps<EchartsTimeseriesFormData> {
   formData: EchartsTimeseriesFormData;
+  selectedSelectors: { selectedMarkets: string[]; selectedProducts: string[] };
 }
 
 export type TimeseriesChartTransformedProps =

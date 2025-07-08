@@ -325,7 +325,7 @@ const config: ControlPanelConfig = {
             config: {
               type: 'CheckboxControl',
               label: t('Sort descending'),
-              default: true,
+              default: false,
               description: t(
                 'If enabled, this control sorts the results/values descending, otherwise it sorts the results ascending.',
               ),
@@ -339,7 +339,7 @@ const config: ControlPanelConfig = {
             name: 'show_totals',
             config: {
               type: 'CheckboxControl',
-              label: t('Show totals'),
+              label: t('Show summary'),
               default: false,
               description: t(
                 'Show total aggregations of selected metrics. Note that row limit does not apply to the result.',

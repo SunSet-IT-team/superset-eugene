@@ -30,6 +30,11 @@ import {
   DSReducerActionType,
 } from 'src/features/datasets/AddDataset/types';
 import DatasetLayout from 'src/features/datasets/DatasetLayout';
+import CustomLeftPanel from 'src/features/datasets/AddDataset/CustomLeftPanel';
+import Button from 'src/components/Button';
+import { t } from '@superset-ui/core';
+import CustomFooter from 'src/features/datasets/AddDataset/CustomFooter';
+import { formColumns, validateJson } from './helpers';
 
 type Schema = {
   schema: string;
@@ -79,6 +84,20 @@ export default function AddDataset() {
   const [dataset, setDataset] = useReducer<
     Reducer<Partial<DatasetObject> | null, DSReducerActionType>
   >(datasetReducer, null);
+  const [datasetCreationMode, setDatasetCreationMode] = useState<
+    'standart' | 'custom'
+  >('standart');
+  const [customPanelData, setCustomPanelData] = useState({
+    datasetName: '',
+    jsonMetadata: `
+        {
+        "_comment":"Заполните ключи columns, rows и facts значениями через запятую",
+        "Rows": ["One"],
+        "Columns": ["One", "Two", "Three"], 
+        "Facts": ["One"]
+    }`,
+  });
+
   const [hasColumns, setHasColumns] = useState(false);
   const [editPageIsVisible, setEditPageIsVisible] = useState(false);
 
@@ -98,35 +117,70 @@ export default function AddDataset() {
     <Header setDataset={setDataset} title={dataset?.table_name} />
   );
 
+  const RenderBtn = (type: typeof datasetCreationMode) => (
+    <Button
+      block
+      buttonStyle={datasetCreationMode === type ? 'primary' : 'link'}
+      onClick={() => setDatasetCreationMode(type)}
+    >
+      {t(type)}
+    </Button>
+  );
+
   const LeftPanelComponent = () => (
-    <LeftPanel
-      setDataset={setDataset}
-      dataset={dataset}
-      datasetNames={datasetNames}
-    />
+    <>
+      <div style={{ display: 'flex' }}>
+        {RenderBtn('standart')}
+        {RenderBtn('custom')}
+      </div>
+      {datasetCreationMode === 'standart' ? (
+        <LeftPanel
+          setDataset={setDataset}
+          dataset={dataset}
+          datasetNames={datasetNames}
+        />
+      ) : (
+        <CustomLeftPanel
+          customPanelData={customPanelData}
+          setCustomPanelData={setCustomPanelData}
+        />
+      )}
+    </>
   );
 
   const EditPageComponent = () => <EditPage id={id} />;
 
+  const isValidJSON = validateJson(customPanelData.jsonMetadata);
+
   const DatasetPanelComponent = () => (
     <DatasetPanel
-      tableName={dataset?.table_name}
+      tableName={
+        datasetCreationMode === 'custom'
+          ? customPanelData.datasetName
+          : dataset?.table_name
+      }
       dbId={dataset?.db?.id}
       schema={dataset?.schema}
       setHasColumns={setHasColumns}
       datasets={datasets}
+      isCustom={datasetCreationMode === 'custom'}
+      customColumns={
+        isValidJSON ? formColumns(customPanelData.jsonMetadata) : []
+      }
     />
   );
 
-  const FooterComponent = () => (
-    <Footer
-      url={prevUrl}
-      datasetObject={dataset}
-      hasColumns={hasColumns}
-      datasets={datasetNames}
-    />
-  );
-
+  const FooterComponent = () =>
+    datasetCreationMode === 'standart' ? (
+      <Footer
+        url={prevUrl}
+        datasetObject={dataset}
+        hasColumns={hasColumns}
+        datasets={datasetNames}
+      />
+    ) : (
+      <CustomFooter canSave={isValidJSON} customPanelData={customPanelData} />
+    );
   return (
     <DatasetLayout
       header={HeaderComponent()}

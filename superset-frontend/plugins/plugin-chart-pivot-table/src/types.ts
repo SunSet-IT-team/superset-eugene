@@ -87,6 +87,7 @@ interface PivotTableCustomizeProps {
   timeGrainSqla?: TimeGranularity;
   time_grain_sqla?: TimeGranularity;
   granularity_sqla?: string;
+  orderDesc?: boolean;
 }
 
 export type PivotTableQueryFormData = QueryFormData &
@@ -95,5 +96,5 @@ export type PivotTableQueryFormData = QueryFormData &
 
 export type PivotTableProps = PivotTableStylesProps &
   PivotTableCustomizeProps & {
-    data: DataRecord[];
-  };
+  data: DataRecord[];
+} & { selectedSelectors: any };

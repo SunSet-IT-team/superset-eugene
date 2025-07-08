@@ -16,20 +16,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 import React from 'react';
-import { isFeatureEnabled, FeatureFlag, t, useTheme } from '@superset-ui/core';
+
+import { FeatureFlag, isFeatureEnabled, t, useTheme } from '@superset-ui/core';
 import { Link, useHistory } from 'react-router-dom';
 import ConfirmStatusChange from 'src/components/ConfirmStatusChange';
 import Icons from 'src/components/Icons';
 import Chart from 'src/types/Chart';
 
-import ListViewCard from 'src/components/ListViewCard';
-import Label from 'src/components/Label';
 import { AntdDropdown } from 'src/components';
-import { Menu } from 'src/components/Menu';
-import FaveStar from 'src/components/FaveStar';
 import FacePile from 'src/components/FacePile';
-import { handleChartDelete, CardStyles } from 'src/views/CRUD/utils';
+import FaveStar from 'src/components/FaveStar';
+import Label from 'src/components/Label';
+import ListViewCard from 'src/components/ListViewCard';
+import { Menu } from 'src/components/Menu';
+import { CardStyles, handleChartDelete } from 'src/views/CRUD/utils';
+import { getDateTranslation } from "../../utils/dateTranslation";
 
 interface ChartCardProps {
   chart: Chart;
@@ -153,7 +156,7 @@ export default function ChartCard({
         url={bulkSelectEnabled ? undefined : chart.url}
         imgURL={chart.thumbnail_url || ''}
         imgFallbackURL="/static/assets/images/chart-card-fallback.svg"
-        description={t('Modified %s', chart.changed_on_delta_humanized)}
+        description={t('Modified %s', getDateTranslation(chart.changed_on_delta_humanized))}
         coverLeft={<FacePile users={chart.owners || []} />}
         coverRight={
           <Label type="secondary">{chart.datasource_name_text}</Label>

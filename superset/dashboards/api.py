@@ -28,7 +28,7 @@ from flask_appbuilder import permission_name
 from flask_appbuilder.api import expose, protect, rison, safe
 from flask_appbuilder.hooks import before_request
 from flask_appbuilder.models.sqla.interface import SQLAInterface
-from flask_babel import gettext, ngettext
+from flask_babel import gettext, ngettext, lazy_gettext
 from marshmallow import ValidationError
 from werkzeug.wrappers import Response as WerkzeugResponse
 from werkzeug.wsgi import FileWrapper
@@ -79,6 +79,7 @@ from superset.dashboards.schemas import (
     thumbnail_query_schema,
 )
 from superset.extensions import event_logger
+from superset.korus_plugin.korus_custom_filters import DashboardKorusAccessFilter
 from superset.models.dashboard import Dashboard
 from superset.models.embedded_dashboard import EmbeddedDashboard
 from superset.tasks.thumbnails import cache_dashboard_thumbnail
@@ -97,6 +98,9 @@ from superset.views.filters import (
     BaseFilterRelatedUsers,
     FilterRelatedOwners,
 )
+
+import superset.korus_plugin.korus_custom_filters as kf
+
 
 logger = logging.getLogger(__name__)
 
@@ -163,7 +167,6 @@ class DashboardRestApi(BaseSupersetModelRestApi):
         "position_json",
         "json_metadata",
         "thumbnail_url",
-        "business_unit",
         "certified_by",
         "certification_details",
         "changed_by.first_name",
@@ -199,7 +202,6 @@ class DashboardRestApi(BaseSupersetModelRestApi):
     ]
 
     add_columns = [
-        "business_unit"
         "certified_by",
         "certification_details",
         "dashboard_title",
@@ -243,6 +245,7 @@ class DashboardRestApi(BaseSupersetModelRestApi):
 
     base_filters = [
         ["id", DashboardAccessFilter, lambda: []],
+        ["korus", DashboardKorusAccessFilter, kf.test_lambda],
     ]
 
     order_rel_fields = {
@@ -748,7 +751,7 @@ class DashboardRestApi(BaseSupersetModelRestApi):
         requested_ids = kwargs["rison"]
 
         timestamp = datetime.now().strftime("%Y%m%dT%H%M%S")
-        root = f"dashboard_export_{timestamp}"
+        root = f"{gettext('dashboard')}_{gettext('export')}_{timestamp}"
         filename = f"{root}.zip"
 
         buf = BytesIO()

@@ -1,0 +1,74 @@
+    <!DOCTYPE html>
+    <html lang="ru">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+        <style>
+            html {
+                height: 100%;
+            }
+            body {
+                color: #2d6df6;
+                font-family: 'Inter', sans-serif;
+                height: 100%;
+                margin: 0;
+                display: flex;
+                align-items: stretch;
+            }
+            h1 {
+                font-weight: 600;
+                font-size: 55px;
+                margin: 0;
+            }
+            p {
+                font-weight: 500;
+                font-size: 24px;
+                line-height: 40px;
+                width: 490px;
+            }
+            .button {
+                background-color: #2d6df6;
+                border: none;
+                color: white;
+                padding: 16px 38px;
+                text-align: center;
+                text-decoration: none;
+                display: inline-block;
+                font-size: 11px;
+                border-radius: 4px;
+                text-transform: uppercase;
+            }
+            .error-page-content {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                max-width: 1350px;
+                margin: auto;
+                width: 100%;
+                padding: 56px;
+            }
+            img {
+                width: 540px;
+            }
+        </style>
+        <title>403: Forbidden | Superset</title>
+    </head>
+    <body>
+        <div class="error-page-content">
+            <section>
+                <h1>Аккаунт в процессе настройки</h1>
+                <p>
+                    Мы настраиваем доступы для вашего аккаунта.
+                    Пожалуйста, повторите попытку позже.
+                    В случае возникновения вопросов, вы можете обратиться к вашему контактному лицу в Нильсен.
+                </p>
+                <a href="/login" class="button">Вернуться</a>
+            </section>
+            <img alt="Ошибка 403" src="{{ url_for('static', filename='images/error403.png') }}" width="540">
+        </div>
+    </body>
+    </html>

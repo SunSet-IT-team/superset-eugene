@@ -20,6 +20,10 @@
 import PropTypes from 'prop-types';
 import { t } from '@superset-ui/core';
 
+// const PROD_NAME = 'prod_full_name';
+const PROD_NAME = 'fulldesc';
+const MKT_NAME = 'mkt_name';
+
 const addSeparators = function (nStr, thousandsSep, decimalSep) {
   const x = String(nStr).split('.');
   let x1 = x[0];
@@ -682,9 +686,48 @@ class PivotData {
     };
   }
 
+  sortBySelectors(data, sortOrder, sortDesc = false) {
+    return data.sort((a, b) => {
+      const indexA = sortOrder.indexOf(String(a[a.length - 1]));
+      const indexB = sortOrder.indexOf(String(b[b.length - 1]));
+      if (indexA === -1 && indexB === -1) return 0;
+      if (indexA === -1) return 1;
+      if (indexB === -1) return -1;
+
+      const comparison = indexA - indexB;
+      return sortDesc ? -comparison : comparison;
+    });
+  }
+
   sortKeys() {
     if (!this.sorted) {
       this.sorted = true;
+
+      if (this.props.selectedSelectors) {
+        const {
+          orderDesc = false,
+          rows = [],
+          cols = [],
+          selectedSelectors = {},
+        } = this.props;
+
+        const conditions = [
+          { key: PROD_NAME, order: selectedSelectors.selectedProducts },
+          { key: MKT_NAME, order: selectedSelectors.selectedMarkets },
+        ];
+
+        conditions.forEach(({ key, order }) => {
+          if (rows.includes(key)) {
+            this.sortBySelectors(this.rowKeys, order, orderDesc);
+          }
+          if (cols.includes(key)) {
+            this.sortBySelectors(this.colKeys, order, orderDesc);
+          }
+        });
+
+        return;
+      }
+
       const v = (r, c) => this.getAggregator(r, c).value();
       switch (this.props.rowOrder) {
         case 'key_z_to_a':

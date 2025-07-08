@@ -45,6 +45,8 @@ from superset.utils.core import (
     is_adhoc_metric,
     json_int_dttm_ser,
     QueryObjectFilterClause,
+    Selector,
+    KorusExportInfo,
 )
 from superset.utils.hashing import md5_sha_from_dict
 
@@ -87,6 +89,9 @@ class QueryObject:  # pylint: disable=too-many-instance-attributes
     datasource: BaseDatasource | None
     extras: dict[str, Any]
     filter: list[QueryObjectFilterClause]
+    selectors: list[Selector]
+    korus_export_info: KorusExportInfo | None
+    rls_restriction: dict[str, Any]
     from_dttm: datetime | None
     granularity: str | None
     inner_from_dttm: datetime | None
@@ -118,6 +123,9 @@ class QueryObject:  # pylint: disable=too-many-instance-attributes
         datasource: BaseDatasource | None = None,
         extras: dict[str, Any] | None = None,
         filters: list[QueryObjectFilterClause] | None = None,
+        selectors: list[Selector] | None = None,
+        korus_export_info: KorusExportInfo | None = None,
+        rls_restriction: dict[str, Any] | None = None,
         granularity: str | None = None,
         is_rowcount: bool = False,
         is_timeseries: bool | None = None,
@@ -141,6 +149,9 @@ class QueryObject:  # pylint: disable=too-many-instance-attributes
         self.datasource = datasource
         self.extras = extras or {}
         self.filter = filters or []
+        self.selectors = selectors or []
+        self.korus_export_info = korus_export_info or []
+        self.rls_restriction = rls_restriction or {}
         self.granularity = granularity
         self.is_rowcount = is_rowcount
         self._set_is_timeseries(is_timeseries)
@@ -319,6 +330,9 @@ class QueryObject:  # pylint: disable=too-many-instance-attributes
             "columns": self.columns,
             "extras": self.extras,
             "filter": self.filter,
+            "selectors": self.selectors,
+            "korus_export_info": self.korus_export_info,
+            "rls_restriction": self.rls_restriction,
             "from_dttm": self.from_dttm,
             "granularity": self.granularity,
             "inner_from_dttm": self.inner_from_dttm,

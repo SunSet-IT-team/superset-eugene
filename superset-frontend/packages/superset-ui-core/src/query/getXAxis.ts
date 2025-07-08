@@ -28,6 +28,9 @@ import {
 export const isXAxisSet = (formData: QueryFormData) =>
   isQueryFormColumn(formData.x_axis);
 
+export const isXAxisSubsisuteSet = (formData: QueryFormData) =>
+  isQueryFormColumn(formData.x_axis_substitute);
+
 export const getXAxisColumn = (
   formData: QueryFormData,
 ): Optional<QueryFormColumn> => {
@@ -38,6 +41,20 @@ export const getXAxisColumn = (
 
   if (isXAxisSet(formData)) {
     return formData.x_axis;
+  }
+  return DTTM_ALIAS;
+};
+
+export const getXAxisSubstituteColumn = (
+  formData: QueryFormData,
+): Optional<QueryFormColumn> => {
+  // The formData should be "raw form_data" -- the snake_case version of formData rather than camelCase.
+  if (!(formData.granularity_sqla || formData.x_axis_substitute)) {
+    return undefined;
+  }
+
+  if (isXAxisSubsisuteSet(formData)) {
+    return formData.x_axis_substitute;
   }
   return DTTM_ALIAS;
 };

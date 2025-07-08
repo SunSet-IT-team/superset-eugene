@@ -30,12 +30,10 @@ import {
   SupersetTheme,
   SupersetClient,
   getExtensionsRegistry,
-  useTheme,
 } from '@superset-ui/core';
 import { MainNav as Menu } from 'src/components/Menu';
 import { Tooltip } from 'src/components/Tooltip';
 import Icons from 'src/components/Icons';
-import Label from 'src/components/Label';
 import { findPermission } from 'src/utils/findPermission';
 import { isUserAdmin } from 'src/dashboard/util/permissionUtils';
 import {
@@ -53,6 +51,8 @@ import {
   GlobalMenuDataOptions,
   RightMenuProps,
 } from './types';
+import { OrdersSelection } from './OrdersSelection';
+import { ORDERS_STORAGE_KEYS } from '../../constants';
 
 const extensionsRegistry = getExtensionsRegistry();
 
@@ -98,10 +98,6 @@ const StyledAnchor = styled.a`
   padding-left: ${({ theme }) => theme.gridUnit}px;
 `;
 
-const tagStyles = (theme: SupersetTheme) => css`
-  color: ${theme.colors.grayscale.light5};
-`;
-
 const styledChildMenu = (theme: SupersetTheme) => css`
   &:hover {
     color: ${theme.colors.primary.base} !important;
@@ -116,7 +112,6 @@ const RightMenu = ({
   settings,
   navbarRight,
   isFrontendRoute,
-  environmentTag,
   setQuery,
 }: RightMenuProps & {
   setQuery: ({
@@ -337,8 +332,14 @@ const RightMenu = ({
   );
 
   const handleDatabaseAdd = () => setQuery({ databaseAdded: true });
+  const handleLogout = () => {
+    // Чистим localStorage от ордеров и компаний
+    localStorage.removeItem(ORDERS_STORAGE_KEYS.orders);
+    localStorage.removeItem(ORDERS_STORAGE_KEYS.companies);
 
-  const theme = useTheme();
+    // Переход на logout URL
+    window.location.href = navbarRight.user_logout_url;
+  };
 
   return (
     <StyledDiv align={align}>
@@ -350,20 +351,7 @@ const RightMenu = ({
           onDatabaseAdd={handleDatabaseAdd}
         />
       )}
-      {environmentTag?.text && (
-        <Label
-          css={{ borderRadius: `${theme.gridUnit * 125}px` }}
-          color={
-            /^#(?:[0-9a-f]{3}){1,2}$/i.test(environmentTag.color)
-              ? environmentTag.color
-              : environmentTag.color
-                  .split('.')
-                  .reduce((o, i) => o[i], theme.colors)
-          }
-        >
-          <span css={tagStyles}>{environmentTag.text}</span>
-        </Label>
-      )}
+      <OrdersSelection />
       <Menu
         selectable={false}
         mode="horizontal"
@@ -479,7 +467,7 @@ const RightMenu = ({
                 </Menu.Item>
               )}
               <Menu.Item key="logout">
-                <a href={navbarRight.user_logout_url}>{t('Logout')}</a>
+                <span onClick={handleLogout}>{t('Logout')}</span>
               </Menu.Item>
             </Menu.ItemGroup>,
           ]}

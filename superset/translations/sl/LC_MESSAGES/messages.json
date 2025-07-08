@@ -5,7 +5,7 @@
       "22": ["22"],
       "": {
         "domain": "superset",
-        "plural_forms": "nplurals=4; plural=(n%100==1 ? 0 : n%100==2 ? 1 : n%100>=3 && n%100<=4 ? 2 : 3);",
+        "plural_forms": "nplurals=4; plural=(n%100==1 ? 0 : n%100==2 ? 1 : n%100>=3 && n%100<=4 ? 2 : 3)",
         "lang": "sl_SI"
       },
       "\n                This filter was inherited from the dashboard's context.\n                It won't be saved when saving the chart.\n              ": [
@@ -86,7 +86,6 @@
       "%s Selected (Virtual)": ["Izbranih: %s (virtualni)"],
       "%s aggregates(s)": ["Agreg. funkcije: %s"],
       "%s column(s)": ["Stolpci: %s"],
-      "%s ineligible item(s) are hidden": [""],
       "%s items could not be tagged because you don’t have edit permissions to all selected objects.": [
         "%s elementov ni mogoče označiti, ker nimate pravic za urejanje vseh izbranih elementov."
       ],
@@ -203,9 +202,11 @@
       "A comma-separated list of schemas that files are allowed to upload to.": [
         "Z vejicami ločen seznam shem, kjer je dovoljeno nalaganje datotek."
       ],
-      "A database port is required when connecting via SSH Tunnel.": [""],
       "A database with the same name already exists.": [
         "Podatkovna baza z enakim imenom že obstaja."
+      ],
+      "A dictionary with column names and their data types if you need to change the defaults. Example: {\"user_id\":\"integer\"}": [
+        "Slovar z imeni in podatkovnimi tipi stolpcev, s pomočjo katerega spremenite privzete nastavitve. Primer: {\"user_id\":\"integer\"}"
       ],
       "A full URL pointing to the location of the built plugin (could be hosted on a CDN for example)": [
         "Celoten URL, ki kaže na lokacijo zgrajenega vtičnika (lahko gostuje npr. na CDN)"
@@ -352,6 +353,7 @@
       ],
       "Add new color formatter": ["Dodaj novo pravilo za barvo"],
       "Add new formatter": ["Dodaj novo pravilo"],
+      "Add notification method": ["Dodajte način obveščanja"],
       "Add required control values to preview chart": [
         "Dodaj potrebne parametre za predogled grafikona"
       ],
@@ -413,6 +415,7 @@
         "Opozorilo sproženo, v obdobju mirovanja"
       ],
       "Alert condition": ["Status opozorila"],
+      "Alert condition schedule": ["Urnik statusov opozoril"],
       "Alert ended grace period.": ["Opozorilo je končalo obdobje mirovanja."],
       "Alert failed": ["Opozorilo ni uspelo"],
       "Alert fired during grace period.": [
@@ -792,6 +795,7 @@
         "Ali resnično želite shraniti in uporabiti spremembe?"
       ],
       "Area Chart": ["Ploščinski grafikon"],
+      "Time-series Area Chart (legacy)": ["Ploščinski grafikon (zastarelo)"],
       "Area chart": ["Ploščinski grafikon"],
       "Area chart opacity": ["Prosojnost ploščinskega grafikona"],
       "Area charts are similar to line charts in that they represent variables with the same scale, but area charts stack the metrics on top of each other.": [
@@ -1494,7 +1498,6 @@
         "Prilagodi mere grafikona ali stolpce s predponami ali priponami valute. Izberite simbol ali napišite lastnega."
       ],
       "Customize columns": ["Prilagodi stolpce"],
-      "Customize data source, filters, and layout.": [""],
       "Cyclic dependency detected": ["Zaznana krožna odvisnost"],
       "D3 Format": ["D3 format"],
       "D3 format": ["D3 format"],
@@ -1553,6 +1556,7 @@
       "Dashboard title": ["Naziv nadzorne plošče"],
       "Dashboard usage": ["Uporaba nadzorne plošče"],
       "Dashboards": ["Nadzorne plošče"],
+      "Dashboards added to": ["Dodano na nadzorne plošče"],
       "Dashboards could not be created.": [
         "Nadzornih plošč ni mogoče ustvariti."
       ],
@@ -1747,10 +1751,6 @@
       ],
       "Define contour layers. Isolines represent a collection of line segments that serparate the area above and below a given threshold. Isobands represent a collection of polygons that fill the are containing values in a given threshold range.": [
         "Definirajte plastnice. Plastnice predstavljajo nabor črt, ki ločujejo območje nad in pod podano mejo. Površinske plastnice predstavlja nabor poligonov, ki zapolnjujejo področje v določenem obsegu vrednosti."
-      ],
-      "Define delivery schedule, timezone, and frequency settings.": [""],
-      "Define the database, SQL query, and triggering conditions for alert.": [
-        ""
       ],
       "Defines a rolling window function to apply, works along with the [Periods] text box": [
         "Določi funkcijo drsečega okna. Dela skupaj s tekstovnim okvirjem [Obdobja]"
@@ -2785,6 +2785,7 @@
       "Light mode": ["Svetli način"],
       "Like": ["Like"],
       "Like (case insensitive)": ["Like (ni razlik. velikih/malih črk)"],
+      "Limit reached": ["Omejitev dosežena"],
       "Limit type": ["Tip omejitve"],
       "Limiting rows may result in incomplete data and misleading charts. Consider filtering or grouping source/target names instead.": [
         "Omejitev vrstic lahko povzroči nepopolne podatke in zavajajoč grafikon. Premislite o uporabi filtriranja ali združevanja imen izvorov/ciljev."
@@ -2803,6 +2804,7 @@
       ],
       "Line": ["Črta"],
       "Line Chart": ["Črtni grafikon"],
+      "Time-series Line Chart (legacy)": ["Črtni grafikon (zastarelo)"],
       "Line Style": ["Slog črte"],
       "Line chart is used to visualize measurements taken over a given category. Line chart is a type of chart which displays information as a series of data points connected by straight line segments. It is a basic type of chart common in many fields.": [
         "Črtni grafikon se uporablja se za vizualizacijo meritev zajetih skozi čas. Posamezne točke so med seboj povezane z ravnimi črtami."
@@ -3183,9 +3185,6 @@
       "Normalized": ["Normiran"],
       "Not Time Series": ["Ni časovna vrsta"],
       "Not added to any dashboard": ["Ni dodano na nobeno nadzorno ploščo"],
-      "Not all required fields are complete. Please provide the following:": [
-        ""
-      ],
       "Not available": ["Ni razpoložljivo"],
       "Not defined": ["Ni definirano"],
       "Not equal to (≠)": ["Ni enako (≠)"],
@@ -3434,7 +3433,6 @@
       "Percent of total": ["Procent celote"],
       "Percentage": ["Procenti"],
       "Percentage change": ["Procentualna sprememba"],
-      "Percentage difference between the time periods": [""],
       "Percentage metrics": ["Procentualne mere"],
       "Percentage threshold": ["Procentualni prag"],
       "Percentages": ["Procenti"],
@@ -3687,7 +3685,6 @@
       "Recommended tags": ["Priporočene oznake"],
       "Record Count": ["Število zapisov"],
       "Rectangle": ["Pravokotnik"],
-      "Recurring (every)": [""],
       "Redirects to this endpoint when clicking on the table from the table list": [
         "Preusmeri v to končno točko, ko kliknete na tabelo v seznamu tabel"
       ],
@@ -3768,6 +3765,7 @@
       "Report a bug": ["Sporočite napako"],
       "Report failed": ["Poročilo ni uspelo"],
       "Report name": ["Naslov poročila"],
+      "Report schedule": ["Urnik poročanja"],
       "Report schedule client error": ["Napaka klienta urnika poročanja"],
       "Report schedule system error": ["Sistemska napaka urnika poročanja"],
       "Report schedule unexpected error": [
@@ -3788,6 +3786,7 @@
         "Zahtevane kontrolne vrednosti so bile odstranjene"
       ],
       "Resample": ["Prevzorči"],
+      "Resample method should in ": ["Metoda za prevzorčenje v Pandas mora "],
       "Resample operation requires DatetimeIndex": [
         "Prevzorčevalna operacija zahteva indeks tipa datumčas"
       ],
@@ -3974,6 +3973,7 @@
       "Schedule a new email report": ["Dodaj novo e-poštno poročilo na urnik"],
       "Schedule email report": ["Dodaj e-poštno poročilo na urnik"],
       "Schedule query": ["Urnik poizvedb"],
+      "Schedule settings": ["Nastavitve urnika"],
       "Schedule the query periodically": ["Periodično zaganjaj poizvedbo"],
       "Scheduled": ["V urniku"],
       "Scheduled at (UTC)": ["Izvede se ob (UTC)"],
@@ -4159,11 +4159,7 @@
       "Service Account": ["Servisni račun"],
       "Set auto-refresh interval": ["Nastavi interval samodejnega osveževanja"],
       "Set filter mapping": ["Nastavi shemo filtrov"],
-      "Set the time range that will be used for the comparison metrics. For example, \"Year\" will compare to the same dates one year earlier. Use \"Inherit range from time filters\" to shift the comparison time rangeby the same length as your time range and use \"Custom\" to set a custom comparison range.": [
-        ""
-      ],
       "Set up an email report": ["Nastavite e-poštno poročilo"],
-      "Set up basic details, such as name and description.": [""],
       "Sets the hierarchy levels of the chart. Each level is\n        represented by one ring with the innermost circle as the top of the hierarchy.": [
         "Nastavi hierarhične nivoje grafikona. Vsak nivo je\n\tpredstavljen z enim obročem, pri čemer je notranji krog na vrhu hierarhije."
       ],
@@ -4199,6 +4195,7 @@
       "Show Dashboard": ["Prikaži nadzorno ploščo"],
       "Show Database": ["Prikaži podatkovno bazo"],
       "Show Labels": ["Prikaži oznake"],
+      "Show Less...": ["Prikaži manj..."],
       "Show Log": ["Prikaži dnevnik"],
       "Show Markers": ["Prikaži markerje"],
       "Show Metric": ["Prikaži mero"],
@@ -4824,8 +4821,8 @@
         "Radij posameznih točk (tistih, ki niso v gruči). Numerični stolpec ali `Auto` (skalira točke na osnovi največje gruče)"
       ],
       "The report has been created": ["Poročilo je bilo ustvarjeno"],
-      "The result of this query must be a value capable of numeric interpretation e.g. 1, 1.0, or \"1\" (compatible with Python's float() function).": [
-        ""
+      "The result of this query should be a numeric-esque value": [
+        "Rezultat te poizvedbe mora biti številska vrednost"
       ],
       "The results backend no longer has the data from the query.": [
         "Zaledni sistem rezultatov nima več podatkov iz poizvedbe."
@@ -4835,9 +4832,6 @@
       ],
       "The rich tooltip shows a list of all series for that point in time": [
         "Podroben opis orodja prikaže seznam vseh podatkovnih serij za posamezno časovno točko"
-      ],
-      "The row limit set for the chart was reached. The chart may show partial data.": [
-        ""
       ],
       "The schema \"%(schema)s\" does not exist. A valid schema must be used to run this query.": [
         "Shema \"%(schema)s\" ne obstaja. Za poizvedbo mora biti uporabljena veljavna shema."
@@ -5268,7 +5262,6 @@
       "Time string is ambiguous. Please specify [%(human_readable)s ago] or [%(human_readable)s later].": [
         "Časovni niz je nejasen. Podajte [%(human_readable)s ago] ali [%(human_readable)s later]."
       ],
-      "Time-series Area Chart (legacy)": ["Ploščinski grafikon (zastarelo)"],
       "Time-series Bar Chart (legacy)": [
         "Stolpčni grafikon za časovno vrsto (zastarelo)"
       ],
@@ -5558,7 +5551,6 @@
       "Value Format": ["Oblika zapisa vrednosti"],
       "Value bounds": ["Meje vrednosti"],
       "Value cannot exceed %s": ["Vrednost ne sme presegati %s"],
-      "Value difference between the time periods": [""],
       "Value format": ["Oblika zapisa vrednosti"],
       "Value is required": ["Zahtevana je vrednost"],
       "Value must be greater than 0": ["Vrednost mora biti večja od 0"],
@@ -6116,6 +6108,9 @@
         "Lastnost  `operation` poprocesirnega objekta ni definirana"
       ],
       "`prophet` package not installed": ["Knjižnica `prophet` ni nameščena"],
+      "`rename_columns` must have the same length as `columns`.": [
+        "`rename_columns` morajo imeti enako dolžino kot `columns`."
+      ],
       "`row_limit` must be greater than or equal to 0": [
         "`row_limit` mora biti večja ali enaka 0"
       ],
@@ -6132,6 +6127,7 @@
       "all": ["vsi"],
       "also copy (duplicate) charts": ["kopiraj (podvoji) tudi grafikone"],
       "ancestor": ["nadrejeni"],
+      "and": ["in"],
       "annotation": ["oznaka"],
       "annotation_layer": ["annotation_layer"],
       "asfreq": ["asfreq"],

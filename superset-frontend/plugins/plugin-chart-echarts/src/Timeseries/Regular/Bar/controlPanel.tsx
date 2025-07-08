@@ -17,7 +17,7 @@
  * under the License.
  */
 import React from 'react';
-import { t } from '@superset-ui/core';
+
 import {
   ControlPanelConfig,
   ControlPanelsContainerProps,
@@ -29,9 +29,12 @@ import {
   getStandardizedControls,
   sections,
   sharedControls,
+  SORT_SERIES_CHOICES,
 } from '@superset-ui/chart-controls';
+import { JsonArray, t } from '@superset-ui/core';
 import {
-  legendSection,
+  legendAdvancedSection,
+  paddingSection,
   minorTicks,
   richTooltipSection,
   seriesOrderSection,
@@ -41,11 +44,11 @@ import {
   xAxisLabelRotation,
 } from '../../../controls';
 
-import { OrientationType } from '../../types';
 import {
   DEFAULT_FORM_DATA,
   TIME_SERIES_DESCRIPTION_TEXT,
 } from '../../constants';
+import { OrientationType } from '../../types';
 
 const {
   logAxis,
@@ -54,6 +57,8 @@ const {
   yAxisBounds,
   zoomable,
   orientation,
+  sort_series_type,
+  sort_series_ascending,
 } = DEFAULT_FORM_DATA;
 
 function createAxisTitleControl(axis: 'x' | 'y'): ControlSetRow[] {
@@ -255,7 +260,13 @@ function createAxisControl(axis: 'x' | 'y'): ControlSetRow[] {
 
 const config: ControlPanelConfig = {
   controlPanelSections: [
-    sections.echartsTimeSeriesQueryWithXAxisSort,
+    {
+      ...sections.echartsTimeSeriesQueryWithXAxisSort,
+      controlSetRows: [
+        ['x_axis_substitute'],
+        ...sections.echartsTimeSeriesQueryWithXAxisSort.controlSetRows,
+      ],
+    },
     sections.advancedAnalyticsControls,
     sections.annotationsAndLayersControls,
     sections.forecastIntervalControls,
@@ -296,7 +307,39 @@ const config: ControlPanelConfig = {
       label: t('Chart Options'),
       expanded: true,
       controlSetRows: [
-        ...seriesOrderSection,
+        [
+          <ControlSubSectionHeader>
+            {t('Series Order')}
+          </ControlSubSectionHeader>,
+        ],
+        [
+          {
+            name: 'sort_series_type',
+            config: {
+              type: 'SelectControl',
+              freeForm: false,
+              label: t('Sort Series By'),
+              choices: SORT_SERIES_CHOICES,
+              default: sort_series_type,
+              renderTrigger: true,
+              description: t(
+                'Based on what should series be ordered on the chart and legend',
+              ),
+            },
+          },
+        ],
+        [
+          {
+            name: 'sort_series_ascending',
+            config: {
+              type: 'CheckboxControl',
+              label: t('Sort Series Ascending'),
+              default: sort_series_ascending,
+              renderTrigger: true,
+              description: t('Sort series in ascending order'),
+            },
+          },
+        ],
         ['color_scheme'],
         ...showValueSection,
         [minorTicks],
@@ -312,7 +355,8 @@ const config: ControlPanelConfig = {
             },
           },
         ],
-        ...legendSection,
+        ...legendAdvancedSection,
+        ...paddingSection,
         [<ControlSubSectionHeader>{t('X Axis')}</ControlSubSectionHeader>],
         ...createAxisControl('x'),
         ...richTooltipSection,

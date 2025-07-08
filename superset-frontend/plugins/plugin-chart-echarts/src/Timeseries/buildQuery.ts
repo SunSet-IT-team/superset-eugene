@@ -20,7 +20,9 @@ import {
   buildQueryContext,
   ensureIsArray,
   getXAxisColumn,
+  getXAxisSubstituteColumn,
   isXAxisSet,
+  isXAxisSubsisuteSet,
   normalizeOrderBy,
   PostProcessingPivot,
   QueryFormData,
@@ -66,16 +68,35 @@ export default function buildQuery(formData: QueryFormData) {
     // only add series limit metric if it's explicitly needed e.g. for sorting
     const extra_metrics = extractExtraMetrics(formData);
 
-    const pivotOperatorInRuntime: PostProcessingPivot = isTimeComparison(
-      formData,
-      baseQueryObject,
-    )
-      ? timeComparePivotOperator(formData, baseQueryObject)
-      : pivotOperator(formData, baseQueryObject);
+    const pivotOperatorInRuntime = (): PostProcessingPivot => {
+      // remove if backend
+      // if (formData.x_axis_substitute?.length) return undefined;
+
+      return isTimeComparison(formData, baseQueryObject)
+        ? timeComparePivotOperator(formData, baseQueryObject)
+        : pivotOperator(formData, baseQueryObject);
+    };
+
+  //TODO korus: переписать по уточнению требований
 
     const columns = [
       ...(isXAxisSet(formData) ? ensureIsArray(getXAxisColumn(formData)) : []),
       ...ensureIsArray(groupby),
+      // remove if backend
+      ...(isXAxisSubsisuteSet(formData)
+        ? ensureIsArray(getXAxisSubstituteColumn(formData))
+        : []),
+      // ...(typeof formData.x_axis_substitute === 'string'
+      //   ? [
+      //       {
+      //         columnType: 'BASE_AXIS',
+      //         expressionType: 'SQL',
+      //         label: formData.x_axis_substitute,
+      //         sqlExpression: formData.x_axis_substitute,
+      //       },
+      //     ]
+      //   : []),
+      // formData.x_axis,
     ];
 
     const time_offsets = isTimeComparison(formData, baseQueryObject)
@@ -87,6 +108,7 @@ export default function buildQuery(formData: QueryFormData) {
         ...baseQueryObject,
         metrics: [...(baseQueryObject.metrics || []), ...extra_metrics],
         columns,
+        substitute: formData.x_axis_substitute,
         series_columns: groupby,
         ...(isXAxisSet(formData) ? {} : { is_timeseries: true }),
         // todo: move `normalizeOrderBy to extractQueryFields`
@@ -97,7 +119,7 @@ export default function buildQuery(formData: QueryFormData) {
           2. the flatOperator makes multiIndex Dataframe into flat Dataframe
         */
         post_processing: [
-          pivotOperatorInRuntime,
+          pivotOperatorInRuntime(),
           rollingWindowOperator(formData, baseQueryObject),
           timeCompareOperator(formData, baseQueryObject),
           resampleOperator(formData, baseQueryObject),

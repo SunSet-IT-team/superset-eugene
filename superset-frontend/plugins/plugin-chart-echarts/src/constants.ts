@@ -24,6 +24,7 @@ import {
   LegendFormData,
   LegendOrientation,
   LegendType,
+  PaddingFormData,
   TitleFormData,
 } from './types';
 
@@ -98,10 +99,15 @@ export const TIMEGRAIN_TO_TIMESTAMP = {
 };
 
 export const DEFAULT_LEGEND_FORM_DATA: LegendFormData = {
+  legendFontSize: 12,
   legendMargin: null,
   legendOrientation: LegendOrientation.Top,
   legendType: LegendType.Scroll,
   showLegend: true,
+};
+
+export const DEFAULT_PADDING_FORM_DATA: PaddingFormData = {
+  paddingRight: 0,
 };
 
 export const DEFAULT_TITLE_FORM_DATA: TitleFormData = {

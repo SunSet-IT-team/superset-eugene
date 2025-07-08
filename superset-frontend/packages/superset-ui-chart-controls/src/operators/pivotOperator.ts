@@ -35,19 +35,27 @@ export const pivotOperator: PostProcessingFactory<PostProcessingPivot> = (
     ...extractExtraMetrics(formData),
   ].map(getMetricLabel);
   const xAxisLabel = getXAxisLabel(formData);
+  const substituteCol =
+    typeof formData.x_axis_substitute === 'string'
+      ? formData.x_axis_substitute
+      : undefined;
+
+        //TODO korus: переписать по уточнению требований
   const columns = queryObject.series_columns || queryObject.columns;
 
   if (xAxisLabel && metricLabels.length) {
     return {
       operation: 'pivot',
       options: {
-        index: [xAxisLabel],
-        columns: ensureIsArray(columns).map(getColumnLabel),
+        index: substituteCol ? [substituteCol, xAxisLabel] : [xAxisLabel],
+        columns: [...ensureIsArray(columns).map(getColumnLabel)],
         // Create 'dummy' mean aggregates to assign cell values in pivot table
         // use the 'mean' aggregates to avoid drop NaN. PR: https://github.com/apache-superset/superset-ui/pull/1231
-        aggregates: Object.fromEntries(
-          metricLabels.map(metric => [metric, { operator: 'mean' }]),
-        ),
+        aggregates: {
+          ...Object.fromEntries(
+            metricLabels.map(metric => [metric, { operator: 'mean' }]),
+          ),
+        },
         drop_missing_columns: !formData?.show_empty_columns,
       },
     };

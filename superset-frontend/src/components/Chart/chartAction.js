@@ -198,6 +198,15 @@ const v1ChartDataRequest = async (
     parseMethod,
   };
 
+  try {
+    const generatedSql = await SupersetClient.post({
+      endpoint: '/api/v1/chart/generate_sql',
+      jsonPayload: payload,
+    });
+  } catch (e) {
+    //some error
+  }
+
   return SupersetClient.post(querySettings);
 };
 
@@ -609,6 +618,7 @@ export const getDatasourceSamples = async (
       endpoint: '/datasource/samples',
       jsonPayload,
       searchParams,
+      parseMethod: 'json-bigint',
     });
 
     return response.json.result;

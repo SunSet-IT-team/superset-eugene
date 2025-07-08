@@ -19,13 +19,7 @@
 import cx from 'classnames';
 import React from 'react';
 import PropTypes from 'prop-types';
-import {
-  styled,
-  t,
-  logging,
-  getChartMetrics,
-  getMetricLabel,
-} from '@superset-ui/core';
+import { styled, t, logging } from '@superset-ui/core';
 import { debounce, isEqual } from 'lodash';
 import { withRouter } from 'react-router-dom';
 
@@ -89,7 +83,9 @@ const propTypes = {
   datasetsStatus: PropTypes.oneOf(['loading', 'error', 'complete']),
   isInView: PropTypes.bool,
   emitCrossFilters: PropTypes.bool,
-  extraChartControls: PropTypes.object,
+
+  // custom
+  selectedSelectors: PropTypes.object,
 };
 
 const defaultProps = {
@@ -409,8 +405,10 @@ class Chart extends React.Component {
       datasetsStatus,
       isInView,
       emitCrossFilters,
-      extraChartControls,
       logEvent,
+
+      selectedSelectors,
+      selectorsDataLoaded,
     } = this.props;
 
     const { width } = this.state;
@@ -428,14 +426,6 @@ class Chart extends React.Component {
       // eslint-disable-next-line camelcase
       queriesResponse?.map(({ cached_dttm }) => cached_dttm) || [];
     const initialValues = {};
-
-    const datasourceMetrics = Object.fromEntries(
-      datasource.metrics.map(metric => [metric.metric_name, metric]),
-    );
-    const datasourceMetricsUsed = getChartMetrics(formData)
-      .map(getMetricLabel)
-      .map(metric => datasourceMetrics[metric])
-      .filter(metric => metric);
 
     return (
       <SliceContainer
@@ -476,7 +466,6 @@ class Chart extends React.Component {
           handleToggleFullSize={handleToggleFullSize}
           isFullSize={isFullSize}
           chartStatus={chart.chartStatus}
-          metricsUsed={datasourceMetricsUsed}
           formData={formData}
           width={width}
           height={this.getHeaderHeight()}
@@ -535,7 +524,8 @@ class Chart extends React.Component {
             datasetsStatus={datasetsStatus}
             isInView={isInView}
             emitCrossFilters={emitCrossFilters}
-            extraChartControls={extraChartControls}
+            selectedSelectors={selectedSelectors}
+            selectorsDataLoaded={selectorsDataLoaded}
           />
         </ChartWrapper>
       </SliceContainer>

@@ -28,13 +28,13 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import rison from 'rison';
 import {
-  createFetchRelated,
+  // createFetchRelated,
   createErrorHandler,
   handleDashboardDelete,
 } from 'src/views/CRUD/utils';
 import { useListViewResource, useFavoriteStatus } from 'src/views/CRUD/hooks';
 import ConfirmStatusChange from 'src/components/ConfirmStatusChange';
-import { TagsList } from 'src/components/Tags';
+// import { TagsList } from 'src/components/Tags';
 import handleResourceExport from 'src/utils/export';
 import Loading from 'src/components/Loading';
 import SubMenu, { SubMenuProps } from 'src/features/home/SubMenu';
@@ -48,7 +48,7 @@ import { dangerouslyGetItemDoNotUse } from 'src/utils/localStorageHelpers';
 import Owner from 'src/types/Owner';
 import Tag from 'src/types/TagType';
 import withToasts from 'src/components/MessageToasts/withToasts';
-import FacePile from 'src/components/FacePile';
+// import FacePile from 'src/components/FacePile';
 import Icons from 'src/components/Icons';
 import DeleteModal from 'src/components/DeleteModal';
 import FaveStar from 'src/components/FaveStar';
@@ -59,15 +59,16 @@ import ImportModelsModal from 'src/components/ImportModal/index';
 import Dashboard from 'src/dashboard/containers/Dashboard';
 import {
   Dashboard as CRUDDashboard,
-  QueryObjectColumns,
+  // QueryObjectColumns,
 } from 'src/views/CRUD/types';
 import CertifiedBadge from 'src/components/CertifiedBadge';
 import { loadTags } from 'src/components/Tags/utils';
 import DashboardCard from 'src/features/dashboards/DashboardCard';
-import { DashboardStatus } from 'src/features/dashboards/types';
+// import { DashboardStatus } from 'src/features/dashboards/types';
 import { UserWithPermissionsAndRoles } from 'src/types/bootstrapTypes';
 import { findPermission } from 'src/utils/findPermission';
-import { ModifiedInfo } from 'src/components/AuditInfo';
+// import { ModifiedInfo } from 'src/components/AuditInfo';
+import { useGetOrdersInfo } from '../../hooks/orders/useGetOrdersInfo';
 
 const PAGE_SIZE = 25;
 const PASSWORDS_NEEDED_MESSAGE = t(
@@ -118,6 +119,8 @@ function DashboardList(props: DashboardListProps) {
     state => state.user,
   );
   const canReadTag = findPermission('can_read', 'Tag', roles);
+
+  const ordersInfo = useGetOrdersInfo();
 
   const {
     state: {
@@ -208,7 +211,6 @@ function DashboardList(props: DashboardListProps) {
                 changed_on_delta_humanized,
                 url = '',
                 certified_by = '',
-                business_unit = '',
                 certification_details = '',
                 thumbnail_url = '',
                 owners,
@@ -223,7 +225,6 @@ function DashboardList(props: DashboardListProps) {
                 json_metadata,
                 changed_on_delta_humanized,
                 url,
-                business_unit,
                 certified_by,
                 certification_details,
                 owners,
@@ -316,76 +317,66 @@ function DashboardList(props: DashboardListProps) {
         Header: t('Name'),
         accessor: 'dashboard_title',
       },
-      {
-        Cell: ({
-          row: {
-            original: { business_unit },
-          },
-        }: any) => business_unit,
-        Header: t('Business unit'),
-        accessor: 'business_unit',
-        size: 'xs',
-      },
-      {
-        Cell: ({
-          row: {
-            original: { status },
-          },
-        }: any) =>
-          status === DashboardStatus.PUBLISHED ? t('Published') : t('Draft'),
-        Header: t('Status'),
-        accessor: 'published',
-        size: 'xl',
-      },
-      {
-        Cell: ({
-          row: {
-            original: { tags = [] },
-          },
-        }: {
-          row: {
-            original: {
-              tags: Tag[];
-            };
-          };
-        }) => (
-          // Only show custom type tags
-          <TagsList
-            tags={tags.filter(
-              (tag: Tag) => tag.type === 'TagTypes.custom' || tag.type === 1,
-            )}
-            maxTags={3}
-          />
-        ),
-        Header: t('Tags'),
-        accessor: 'tags',
-        disableSortBy: true,
-        hidden: !isFeatureEnabled(FeatureFlag.TaggingSystem),
-      },
-      {
-        Cell: ({
-          row: {
-            original: { owners = [] },
-          },
-        }: any) => <FacePile users={owners} />,
-        Header: t('Owners'),
-        accessor: 'owners',
-        disableSortBy: true,
-        size: 'xl',
-      },
-      {
-        Cell: ({
-          row: {
-            original: {
-              changed_on_delta_humanized: changedOn,
-              changed_by: changedBy,
-            },
-          },
-        }: any) => <ModifiedInfo date={changedOn} user={changedBy} />,
-        Header: t('Last modified'),
-        accessor: 'changed_on_delta_humanized',
-        size: 'xl',
-      },
+      // {
+      //   Cell: ({
+      //     row: {
+      //       original: { status },
+      //     },
+      //   }: any) =>
+      //     status === DashboardStatus.PUBLISHED ? t('Published') : t('Draft'),
+      //   Header: t('Status'),
+      //   accessor: 'published',
+      //   size: 'xl',
+      // },
+      // {
+      //   Cell: ({
+      //     row: {
+      //       original: { tags = [] },
+      //     },
+      //   }: {
+      //     row: {
+      //       original: {
+      //         tags: Tag[];
+      //       };
+      //     };
+      //   }) => (
+      //     // Only show custom type tags
+      //     <TagsList
+      //       tags={tags.filter(
+      //         (tag: Tag) => tag.type === 'TagTypes.custom' || tag.type === 1,
+      //       )}
+      //       maxTags={3}
+      //     />
+      //   ),
+      //   Header: t('Tags'),
+      //   accessor: 'tags',
+      //   disableSortBy: true,
+      //   hidden: !isFeatureEnabled(FeatureFlag.TaggingSystem),
+      // },
+      // {
+      //   Cell: ({
+      //     row: {
+      //       original: { owners = [] },
+      //     },
+      //   }: any) => <FacePile users={owners} />,
+      //   Header: t('Owners'),
+      //   accessor: 'owners',
+      //   disableSortBy: true,
+      //   size: 'xl',
+      // },
+      // {
+      //   Cell: ({
+      //     row: {
+      //       original: {
+      //         changed_on_delta_humanized: changedOn,
+      //         changed_by: changedBy,
+      //       },
+      //     },
+      //   }: any) => <ModifiedInfo date={changedOn} user={changedBy} />,
+      //   Header: t('Last modified'),
+      //   accessor: 'changed_on_delta_humanized',
+      //   size: 'xl',
+      // },
       {
         Cell: ({ row: { original } }: any) => {
           const handleDelete = () =>
@@ -469,10 +460,10 @@ function DashboardList(props: DashboardListProps) {
         hidden: !canEdit && !canDelete && !canExport,
         disableSortBy: true,
       },
-      {
-        accessor: QueryObjectColumns.ChangedBy,
-        hidden: true,
-      },
+      // {
+      //   accessor: QueryObjectColumns.ChangedBy,
+      //   hidden: true,
+      // },
     ],
     [
       user?.userId,
@@ -513,18 +504,18 @@ function DashboardList(props: DashboardListProps) {
         input: 'search',
         operator: FilterOperator.TitleOrSlug,
       },
-      {
-        Header: t('Status'),
-        key: 'published',
-        id: 'published',
-        input: 'select',
-        operator: FilterOperator.Equals,
-        unfilteredLabel: t('Any'),
-        selects: [
-          { label: t('Published'), value: true },
-          { label: t('Draft'), value: false },
-        ],
-      },
+      // {
+      //   Header: t('Status'),
+      //   key: 'published',
+      //   id: 'published',
+      //   input: 'select',
+      //   operator: FilterOperator.Equals,
+      //   unfilteredLabel: t('Any'),
+      //   selects: [
+      //     { label: t('Published'), value: true },
+      //     { label: t('Draft'), value: false },
+      //   ],
+      // },
       ...(isFeatureEnabled(FeatureFlag.TaggingSystem) && canReadTag
         ? [
             {
@@ -538,62 +529,62 @@ function DashboardList(props: DashboardListProps) {
             },
           ]
         : []),
-      {
-        Header: t('Owner'),
-        key: 'owner',
-        id: 'owners',
-        input: 'select',
-        operator: FilterOperator.RelationManyMany,
-        unfilteredLabel: t('All'),
-        fetchSelects: createFetchRelated(
-          'dashboard',
-          'owners',
-          createErrorHandler(errMsg =>
-            addDangerToast(
-              t(
-                'An error occurred while fetching dashboard owner values: %s',
-                errMsg,
-              ),
-            ),
-          ),
-          props.user,
-        ),
-        paginate: true,
-      },
+      // {
+      //   Header: t('Owner'),
+      //   key: 'owner',
+      //   id: 'owners',
+      //   input: 'select',
+      //   operator: FilterOperator.RelationManyMany,
+      //   unfilteredLabel: t('All'),
+      //   fetchSelects: createFetchRelated(
+      //     'dashboard',
+      //     'owners',
+      //     createErrorHandler(errMsg =>
+      //       addDangerToast(
+      //         t(
+      //           'An error occurred while fetching dashboard owner values: %s',
+      //           errMsg,
+      //         ),
+      //       ),
+      //     ),
+      //     props.user,
+      //   ),
+      //   paginate: true,
+      // },
       ...(user?.userId ? [favoritesFilter] : []),
-      {
-        Header: t('Certified'),
-        key: 'certified',
-        id: 'id',
-        urlDisplay: 'certified',
-        input: 'select',
-        operator: FilterOperator.DashboardIsCertified,
-        unfilteredLabel: t('Any'),
-        selects: [
-          { label: t('Yes'), value: true },
-          { label: t('No'), value: false },
-        ],
-      },
-      {
-        Header: t('Modified by'),
-        key: 'changed_by',
-        id: 'changed_by',
-        input: 'select',
-        operator: FilterOperator.RelationOneMany,
-        unfilteredLabel: t('All'),
-        fetchSelects: createFetchRelated(
-          'dashboard',
-          'changed_by',
-          createErrorHandler(errMsg =>
-            t(
-              'An error occurred while fetching dataset datasource values: %s',
-              errMsg,
-            ),
-          ),
-          user,
-        ),
-        paginate: true,
-      },
+      // {
+      //   Header: t('Certified'),
+      //   key: 'certified',
+      //   id: 'id',
+      //   urlDisplay: 'certified',
+      //   input: 'select',
+      //   operator: FilterOperator.DashboardIsCertified,
+      //   unfilteredLabel: t('Any'),
+      //   selects: [
+      //     { label: t('Yes'), value: true },
+      //     { label: t('No'), value: false },
+      //   ],
+      // },
+      // {
+      //   Header: t('Modified by'),
+      //   key: 'changed_by',
+      //   id: 'changed_by',
+      //   input: 'select',
+      //   operator: FilterOperator.RelationOneMany,
+      //   unfilteredLabel: t('All'),
+      //   fetchSelects: createFetchRelated(
+      //     'dashboard',
+      //     'changed_by',
+      //     createErrorHandler(errMsg =>
+      //       t(
+      //         'An error occurred while fetching dataset datasource values: %s',
+      //         errMsg,
+      //       ),
+      //     ),
+      //     user,
+      //   ),
+      //   paginate: true,
+      // },
     ] as Filters;
     return filters_list;
   }, [addDangerToast, favoritesFilter, props.user]);
@@ -605,18 +596,18 @@ function DashboardList(props: DashboardListProps) {
       label: t('Alphabetical'),
       value: 'alphabetical',
     },
-    {
-      desc: true,
-      id: 'changed_on_delta_humanized',
-      label: t('Recently modified'),
-      value: 'recently_modified',
-    },
-    {
-      desc: false,
-      id: 'changed_on_delta_humanized',
-      label: t('Least recently modified'),
-      value: 'least_recently_modified',
-    },
+    // {
+    //   desc: true,
+    //   id: 'changed_on_delta_humanized',
+    //   label: t('Recently modified'),
+    //   value: 'recently_modified',
+    // },
+    // {
+    //   desc: false,
+    //   id: 'changed_on_delta_humanized',
+    //   label: t('Least recently modified'),
+    //   value: 'least_recently_modified',
+    // },
   ];
 
   const renderCard = useCallback(
@@ -771,13 +762,10 @@ function DashboardList(props: DashboardListProps) {
                     : isFeatureEnabled(FeatureFlag.Thumbnails)
                 }
                 renderCard={renderCard}
-                defaultViewMode={
-                  isFeatureEnabled(FeatureFlag.ListviewsDefaultCardView)
-                    ? 'card'
-                    : 'table'
-                }
+                defaultViewMode="card"
                 enableBulkTag
                 bulkTagResourceName="dashboard"
+                ordersInfo={ordersInfo}
               />
             </>
           );

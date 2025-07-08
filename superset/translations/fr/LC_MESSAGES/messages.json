@@ -5,7 +5,7 @@
       "22": ["22"],
       "": {
         "domain": "superset",
-        "plural_forms": "nplurals=2; plural=(n > 1);",
+        "plural_forms": "nplurals=2; plural=(n > 1)",
         "lang": "fr"
       },
       "\n                This filter was inherited from the dashboard's context.\n                It won't be saved when saving the chart.\n              ": [
@@ -61,7 +61,6 @@
       "%s Selected (Virtual)": ["%s Sélectionnée (Virtuelle)"],
       "%s aggregates(s)": ["%s agrégat(s)"],
       "%s column(s)": ["%s colonne(s)"],
-      "%s ineligible item(s) are hidden": [""],
       "%s items could not be tagged because you don’t have edit permissions to all selected objects.": [
         ""
       ],
@@ -141,9 +140,11 @@
       "A comma separated list of columns that should be parsed as dates.": [
         "Une liste de colonnes séparées par des virgules qui doivent être analysées comme des dates."
       ],
-      "A database port is required when connecting via SSH Tunnel.": [""],
       "A database with the same name already exists.": [
         "Une base de données avec le même nom existe déjà."
+      ],
+      "A dictionary with column names and their data types if you need to change the defaults. Example: {\"user_id\":\"integer\"}": [
+        "Un dictionnaire avec des noms de colonne et leurs types de données si vous devez modifier les valeurs par défaut. Exemple : {« user_id » :« integer »}"
       ],
       "A full URL pointing to the location of the built plugin (could be hosted on a CDN for example)": [
         "Une URL complète désignant le lieu du plugiciel (pourrait être hébergé sur un CDN par exemple)"
@@ -258,6 +259,7 @@
       ],
       "Add new color formatter": ["Ajouter un nouveau formateur de couleur"],
       "Add new formatter": ["Ajouter un nouveau formateur"],
+      "Add notification method": ["Ajouter une méthode de notification"],
       "Add required control values to preview chart": [
         "Ajouter les valeurs de contrôle requises au graphique de prévisualisation"
       ],
@@ -300,6 +302,7 @@
         "Alerte déclenchée, -période de grâce"
       ],
       "Alert condition": ["Condition d'alerte"],
+      "Alert condition schedule": ["Planification de la condition d'alerte"],
       "Alert ended grace period.": [
         "L'alerte a mis fin à la période de grâce."
       ],
@@ -1149,7 +1152,6 @@
       "Customize chart metrics or columns with currency symbols as prefixes or suffixes. Choose a symbol from dropdown or type your own.": [
         "Les graphiques en aires de séries temporelles sont similaires aux graphiques en lignes dans la mesure où ils représentent des variables avec la même échelle, mais les graphiques en aires empilent les mesures les unes sur les autres. Dans Superset, un graphique en aires peut être en flux, en pile ou en expansion."
       ],
-      "Customize data source, filters, and layout.": [""],
       "Cyclic dependency detected": ["Dépendance cyclique constatée"],
       "D3 Format": ["Format D3"],
       "D3 format": ["Format D3"],
@@ -1365,10 +1367,6 @@
         "Définissez une fonction javascript qui reçoit le tableau de données utilisé dans la visualisation et qui doit renvoyer une version modifiée de ce tableau. Cette fonction peut être utilisée pour modifier les propriétés des données, filtrer ou enrichir le tableau."
       ],
       "Define contour layers. Isolines represent a collection of line segments that serparate the area above and below a given threshold. Isobands represent a collection of polygons that fill the are containing values in a given threshold range.": [
-        ""
-      ],
-      "Define delivery schedule, timezone, and frequency settings.": [""],
-      "Define the database, SQL query, and triggering conditions for alert.": [
         ""
       ],
       "Defines a rolling window function to apply, works along with the [Periods] text box": [
@@ -2178,6 +2176,7 @@
       "Lift percent precision": ["Précision du pourcentage de levée"],
       "Light mode": ["Mode clair"],
       "Like": ["Comme"],
+      "Limit reached": ["Limite atteinte"],
       "Limiting rows may result in incomplete data and misleading charts. Consider filtering or grouping source/target names instead.": [
         "Limiter les rangées peut entraîner des données incomplètes et des graphiques trompeurs. Envisagez plutôt de filtrer ou de regrouper les noms de source/cible."
       ],
@@ -2190,6 +2189,7 @@
       "Limits the number of the rows that are computed in the query that is the source of the data used for this chart.": [
         "Définissez une fonction javascript qui reçoit le tableau de données utilisé dans la visualisation et qui doit renvoyer une version modifiée de ce tableau. Cette fonction peut être utilisée pour modifier les propriétés des données, filtrer ou enrichir le tableau."
       ],
+      "Time-series Line Chart (legacy)": ["Tableau linéaire (héritage)"],
       "Line Style": ["Style de ligne"],
       "Line chart is used to visualize measurements taken over a given category. Line chart is a type of chart which displays information as a series of data points connected by straight line segments. It is a basic type of chart common in many fields.": [
         "Le graphique linéaire est utilisé pour visualiser les mesures prises sur une catégorie donnée. Le graphique linéaire est un type de graphique qui affiche les informations sous forme de série de points de données reliés par des segments linéaires. Il s’agit d’un type de tableau de base commun dans de nombreux champs."
@@ -2479,9 +2479,6 @@
       "Normal": ["Normal"],
       "Normalize Across": ["Normaliser à travers"],
       "Normalized": ["Normalisé"],
-      "Not all required fields are complete. Please provide the following:": [
-        ""
-      ],
       "Not null": ["Non nul"],
       "Not up to date": ["Pas à jour"],
       "Nothing triggered": ["Rien déclenché"],
@@ -2687,7 +2684,6 @@
         "Coller ici l'URL partageable de Google Sheet"
       ],
       "Percent of total": [""],
-      "Percentage difference between the time periods": [""],
       "Percentages": ["Pourcentages"],
       "Performance": ["Performance"],
       "Period average": ["Moyenne de la période"],
@@ -2901,7 +2897,6 @@
       ],
       "Recommended tags": ["Balises recommandés"],
       "Record Count": ["Nombre d'enregistrements"],
-      "Recurring (every)": [""],
       "Redirects to this endpoint when clicking on the table from the table list": [
         "Redirige vers ce point de terminaison lorsque l'on clique sur le tableau dans la liste des tableaux."
       ],
@@ -2975,6 +2970,7 @@
       "Report a bug": ["Rapporter un bogue"],
       "Report failed": ["Rapport échoué"],
       "Report name": ["Nom du rapport"],
+      "Report schedule": ["Planification de rapport"],
       "Report schedule unexpected error": [
         "Erreur inattendue de la planification de rapport"
       ],
@@ -3141,6 +3137,7 @@
       "Schedule": ["Planifier"],
       "Schedule email report": ["Planifier un rapport par courriel"],
       "Schedule query": ["Planifier une requête"],
+      "Schedule settings": ["Paramètres de planification"],
       "Schedule the query periodically": [
         "Planifier la requête de façon périodique"
       ],
@@ -3265,10 +3262,6 @@
         "Définir l'intervalle de rafraîchissement automatique"
       ],
       "Set filter mapping": ["Définir le mappage de filtre"],
-      "Set the time range that will be used for the comparison metrics. For example, \"Year\" will compare to the same dates one year earlier. Use \"Inherit range from time filters\" to shift the comparison time rangeby the same length as your time range and use \"Custom\" to set a custom comparison range.": [
-        ""
-      ],
-      "Set up basic details, such as name and description.": [""],
       "Sets the hierarchy levels of the chart. Each level is\n        represented by one ring with the innermost circle as the top of the hierarchy.": [
         "Définit les niveaux de hiérarchie du graphique. Chaque niveau est représenté par un anneau, le cercle le plus à l'intérieur étant le sommet de la hiérarchie."
       ],
@@ -3301,6 +3294,7 @@
       "Show Column": ["Afficher la colonne"],
       "Show Dashboard": ["Afficher le tableau de bord"],
       "Show Database": ["Afficher la base de données"],
+      "Show Less...": ["Afficher moins..."],
       "Show Log": ["Afficher les journaux"],
       "Show Markers": ["Afficher les marqueurs"],
       "Show Metric": ["Afficher la mesure"],
@@ -3801,9 +3795,7 @@
         "Le rayon des points individuels (ceux qui ne sont pas dans une grappe). Une colonne numérique ou « Auto », qui met à l’échelle le point en fonction de la plus grande grappe"
       ],
       "The report has been created": ["Le rapport a été créé"],
-      "The result of this query must be a value capable of numeric interpretation e.g. 1, 1.0, or \"1\" (compatible with Python's float() function).": [
-        ""
-      ],
+      "The result of this query should be a numeric-esque value": [""],
       "The results backend no longer has the data from the query.": [
         "Le programme dorsal des résultats n'a plus les données de la requête."
       ],
@@ -3812,9 +3804,6 @@
       ],
       "The rich tooltip shows a list of all series for that point in time": [
         "L’infobulle détaillée affiche une liste de toutes les séries pour ce moment"
-      ],
-      "The row limit set for the chart was reached. The chart may show partial data.": [
-        ""
       ],
       "The schema \"%(schema)s\" does not exist. A valid schema must be used to run this query.": [
         "Le schéma « %(schema)s » n'existe pas. Un schéma valide doit être utilisé pour cette requête."
@@ -4413,7 +4402,6 @@
       "Value Domain": ["Domaine de valeur"],
       "Value bounds": ["Limites de valeur"],
       "Value cannot exceed %s": [""],
-      "Value difference between the time periods": [""],
       "Value is required": ["Une valeur est obligatoire"],
       "Value must be greater than 0": ["La valeur doit être plus grande que 0"],
       "Values are dependent on other filters": [
@@ -4883,6 +4871,9 @@
         "La propriété « operation » de l'objet de post-traitement est indéfinie"
       ],
       "`prophet` package not installed": ["Paquet « prophet » non installée"],
+      "`rename_columns` must have the same length as `columns`.": [
+        "« rename_columns » doit être de même longueur que « columns »."
+      ],
       "`row_limit` must be greater than or equal to 0": [
         "« row_limit » doit être plus grand ou égal à 0"
       ],
@@ -4900,6 +4891,7 @@
         "copier également les graphiques (dupliquer)"
       ],
       "ancestor": ["ancêtre"],
+      "and": ["et"],
       "annotation": ["annotation"],
       "annotation_layer": ["annotation_layer"],
       "asfreq": ["asfreq"],

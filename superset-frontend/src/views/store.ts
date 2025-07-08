@@ -30,6 +30,8 @@ import reports from 'src/features/reports/ReportModal/reducer';
 import dashboardInfo from 'src/dashboard/reducers/dashboardInfo';
 import dashboardState from 'src/dashboard/reducers/dashboardState';
 import dashboardFilters from 'src/dashboard/reducers/dashboardFilters';
+import orders from 'src/dashboard/reducers/ordersSlice';
+import customizeOptions from 'src/dashboard/reducers/customizeSlice';
 import nativeFilters from 'src/dashboard/reducers/nativeFilters';
 import dashboardDatasources from 'src/dashboard/reducers/datasources';
 import sliceEntities from 'src/dashboard/reducers/sliceEntities';
@@ -38,6 +40,7 @@ import logger from 'src/middleware/loggerMiddleware';
 import saveModal from 'src/explore/reducers/saveModalReducer';
 import explore from 'src/explore/reducers/exploreReducer';
 import exploreDatasources from 'src/explore/reducers/datasourcesReducer';
+import selectors from 'src/dashboard/features/selectors/selectorsSlice';
 
 import { persistSqlLabStateEnhancer } from 'src/SqlLab/middlewares/persistSqlLabStateEnhancer';
 import sqlLabReducer from 'src/SqlLab/reducers/sqlLab';
@@ -139,6 +142,9 @@ const reducers = {
   reports,
   saveModal,
   explore,
+  selectors,
+  orders,
+  customizeOptions,
 };
 
 /* In some cases the jinja template injects two seperate React apps into basic.html

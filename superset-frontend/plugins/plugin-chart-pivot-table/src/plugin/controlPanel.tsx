@@ -151,7 +151,7 @@ const config: ControlPanelConfig = {
             config: {
               type: 'CheckboxControl',
               label: t('Sort Descending'),
-              default: true,
+              default: false,
               description: t('Whether to sort descending or ascending'),
             },
           },

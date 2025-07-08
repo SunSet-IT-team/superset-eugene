@@ -56,6 +56,8 @@ export interface IDatasetPanelWrapperProps {
   schema?: string | null;
   setHasColumns?: Function;
   datasets?: DatasetObject[] | undefined;
+  isCustom?: boolean;
+  customColumns?: ITableColumn[];
 }
 
 const DatasetPanelWrapper = ({
@@ -64,6 +66,8 @@ const DatasetPanelWrapper = ({
   schema,
   setHasColumns,
   datasets,
+  isCustom,
+  customColumns,
 }: IDatasetPanelWrapperProps) => {
   const [columnList, setColumnList] = useState<ITableColumn[]>([]);
   const [loading, setLoading] = useState(false);
@@ -126,6 +130,14 @@ const DatasetPanelWrapper = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tableName, dbId, schema]);
 
+  useEffect(() => {
+    if (isCustom && customColumns?.length) {
+      setColumnList(customColumns);
+    } else {
+      setColumnList([]);
+    }
+  }, [isCustom, customColumns]);
+
   return (
     <DatasetPanel
       columnList={columnList}
@@ -133,6 +145,7 @@ const DatasetPanelWrapper = ({
       loading={loading}
       tableName={tableName}
       datasets={datasets}
+      isCustom={isCustom}
     />
   );
 };

@@ -25,4 +25,7 @@ export const RangePicker = styled(AntdRangePicker)`
   border-radius: ${({ theme }) => theme.gridUnit}px;
 `;
 
-export const DatePicker = AntdDatePicker;
+export const DatePicker = styled(AntdDatePicker)`
+  border: 1px solid ${({ theme }) => theme.colors.secondary.light3};
+  border-radius: ${({ theme }) => theme.borderRadius}px;
+`;

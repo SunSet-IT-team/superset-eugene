@@ -100,6 +100,7 @@ export interface TableChartProps extends ChartProps {
   };
   rawFormData: TableChartFormData;
   queriesData: ChartDataResponseResult[];
+  selectedSelectors?: any;
 }
 
 export interface TableChartTransformedProps<D extends DataRecord = DataRecord> {

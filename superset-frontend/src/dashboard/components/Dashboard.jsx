@@ -18,29 +18,21 @@
  */
 import React from 'react';
 import PropTypes from 'prop-types';
-import { isFeatureEnabled, t, FeatureFlag } from '@superset-ui/core';
+import {FeatureFlag, isFeatureEnabled, t} from '@superset-ui/core';
 
-import { PluginContext } from 'src/components/DynamicPlugins';
+import {PluginContext} from 'src/components/DynamicPlugins';
 import Loading from 'src/components/Loading';
 import getBootstrapData from 'src/utils/getBootstrapData';
 import getChartIdsFromLayout from '../util/getChartIdsFromLayout';
 import getLayoutComponentFromChartId from '../util/getLayoutComponentFromChartId';
 
-import {
-  slicePropShape,
-  dashboardInfoPropShape,
-  dashboardStatePropShape,
-} from '../util/propShapes';
-import {
-  LOG_ACTIONS_HIDE_BROWSER_TAB,
-  LOG_ACTIONS_MOUNT_DASHBOARD,
-  Logger,
-} from '../../logger/LogUtils';
-import { areObjectsEqual } from '../../reduxUtils';
+import {dashboardInfoPropShape, dashboardStatePropShape, slicePropShape,} from '../util/propShapes';
+import {LOG_ACTIONS_HIDE_BROWSER_TAB, LOG_ACTIONS_MOUNT_DASHBOARD, Logger,} from '../../logger/LogUtils';
+import {areObjectsEqual} from '../../reduxUtils';
 
 import getLocationHash from '../util/getLocationHash';
 import isDashboardEmpty from '../util/isDashboardEmpty';
-import { getAffectedOwnDataCharts } from '../util/charts/getOwnDataCharts';
+import {getAffectedOwnDataCharts} from '../util/charts/getOwnDataCharts';
 
 const propTypes = {
   actions: PropTypes.shape({
@@ -270,6 +262,7 @@ class Dashboard extends React.PureComponent {
   }
 
   refreshCharts(ids) {
+    this.props.selectorsDataLoaded &&
     ids.forEach(id => {
       this.props.actions.triggerQuery(true, id);
     });

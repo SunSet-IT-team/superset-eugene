@@ -5,11 +5,11 @@
       "22": ["22"],
       "": {
         "domain": "superset",
-        "plural_forms": "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);",
+        "plural_forms": "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2)",
         "lang": "ru"
       },
       "\n                This filter was inherited from the dashboard's context.\n                It won't be saved when saving the chart.\n              ": [
-        "\n                Фильтр был наследован из контекста дашборда.\n                Он не будет сохранен при сохранении графика.\n              "
+        "\n                Фильтр был наследован из контекста дашборда.\n                Он не будет сохранен при сохранении диаграммы.\n              "
       ],
       "\n            Error: %(text)s\n            ": [
         "\n            Ошибка: %(text)s\n            "
@@ -72,14 +72,22 @@
       "%s Selected (Virtual)": ["%s Выбрано (Виртуальные)"],
       "%s aggregates(s)": ["Агрегатных функций: %s"],
       "%s column(s)": ["Столбцов: %s"],
-      "%s ineligible item(s) are hidden": [""],
+      "%s day": ["%s день", "%s дня", "%s дней"],
+      "%s hour": ["%s час", "%s часа", "%s часов"],
       "%s items could not be tagged because you don’t have edit permissions to all selected objects.": [
         ""
       ],
+      "%s minute": ["%s минуту", "%s минуты", "%s минут"],
+      "%s month": ["%s месяц", "%s месяца", "%s месяцев"],
       "%s operator(s)": ["%s параметр(ы)"],
       "%s option(s)": ["%s вариант(ов)"],
+      "%s option": ["%s опция", "%s опции", "%s опций"],
+      "%s row": ["%s строка", "%s строки", "%s строк"],
       "%s saved metric(s)": ["Сохраненная мер: %s"],
+      "%s second": ["%s секунду", "%s секунды", "%s секунд"],
       "%s updated": ["Обновлено: %s"],
+      "%s week": ["%s неделю", "%s недели", "%s недель"],
+      "%s year": ["%s год", "%s года", "%s лет"],
       "%s%s": ["%s%s"],
       "%s-%s of %s": ["%s-%s из %s"],
       "(Removed)": ["(Удалено)"],
@@ -102,6 +110,32 @@
         "-- Примечание: Пока вы не сохраните ваш запрос, эти вкладки НЕ будут сохранены, если вы очистите куки или смените браузер.\n\n"
       ],
       ".": ["."],
+      "Rating": ["Рейтинг"],
+      "Product rating": ["Рейтинг продуктов"],
+      "Customizer": ["Кастомизация"],
+      "Product title settings": ["Отображение названий продуктов"],
+      "Choose view type": ["Выберите тип отображения"],
+      "Cusomize product title by selecting custom product level, full or short title on charts, constructor and selector": [
+        "Возможность настройки отображения названия продуктов: полное название, короткое название или настраиваемый уровень отображения в соответствии с иерархией."
+      ],
+      "Last N": ["Последние N"],
+      "N levels": ["N уровней"],
+      "Period already exists!": ["Данный период уже существует!"],
+      "Short name": ["Короткое имя"],
+      "Choose level": ["Выберите уровень отображения"],
+      "show": ["показать"],
+      "sales in money": ["Продажи в деньгах"],
+      "sales in boxes": ["Продажи в упаковках"],
+      "sales in kg/l": ["Продажи в кг/л"],
+      "best": ["лучшие"],
+      "worst": ["худшие"],
+      "selected": ["выбрано"],
+      "of": ["из"],
+      "available products": ["доступных продуктов"],
+      "by measure": ["по показателю"],
+      "of period": ["за период"],
+      "on market": ["на рынке"],
+      "No items selected": ["Элементы не выбраны"],
       "0 Selected": ["0 выбрано"],
       "1 calendar day frequency": ["Дневная частота"],
       "1 day": ["1 день"],
@@ -125,8 +159,10 @@
       "1 year end frequency": ["Годовая частота (конец года)"],
       "1 year start frequency": ["Годовая частота (начало года)"],
       "10 minute": ["10 минут"],
+      "10 seconds": ["10 секунд"],
       "104 weeks": ["104 недели"],
       "104 weeks ago": ["104 недели назад"],
+      "12 hours": ["12 часов"],
       "15 minute": ["15 минут"],
       "156 weeks": ["156 недель"],
       "156 weeks ago": ["156 недель назад"],
@@ -138,6 +174,7 @@
       "2 years": ["2 года"],
       "2 years ago": ["2 года назад"],
       "2/98 percentiles": ["2/98 перцентели"],
+      "24 hours": ["24 часа"],
       "28 days": ["28 дней"],
       "28 days ago": ["28 дней назад"],
       "2D": ["2D карты"],
@@ -162,12 +199,15 @@
         "52 недели с началом в Понедельник (част=52W-MON)"
       ],
       "6 hour": ["6 часов"],
+      "6 hours": ["6 часов"],
       "60 days": ["60 дней"],
       "7 calendar day frequency": ["Недельная частота"],
       "7 days": ["7 дней"],
       "7D": ["7Д"],
       "9/91 percentiles": ["9/91 перцентели"],
       "90 days": ["90 дней"],
+      "100% Market": ["100% Рынок"],
+      "100% Product": ["100% Продукт"],
       ":": [":"],
       "< (Smaller than)": ["< (меньше чем)"],
       "<= (Smaller or equal)": ["<= (меньше или равно)"],
@@ -189,11 +229,10 @@
       "A comma-separated list of schemas that files are allowed to upload to.": [
         "Разделённый запятыми список схем, в которые можно загружать файлы."
       ],
-      "A database port is required when connecting via SSH Tunnel.": [""],
       "A database with the same name already exists.": [
         "База данных с таким же именем уже существует"
       ],
-      "A dictionary with column names and their data types if you need to change the defaults. Example: {\"user_id\":\"int\"}. Check Python's Pandas library for supported data types.": [
+      "A dictionary with column names and their data types if you need to change the defaults. Example: {\"user_id\":\"integer\"}": [
         ""
       ],
       "A full URL pointing to the location of the built plugin (could be hosted on a CDN for example)": [
@@ -207,7 +246,7 @@
         "Список доменных имен, которые могут встраивать этот дашборд. Если оставить поле пустым, любой домен сможет сделать встраивание."
       ],
       "A list of users who can alter the chart. Searchable by name or username.": [
-        "Владельцы - это пользователи, которые могут изменять график"
+        "Владельцы - это пользователи, которые могут изменять диаграмму"
       ],
       "A map of the world, that can indicate values in different countries.": [
         "Карта мира, на которой могут быть указаны значения в разных странах."
@@ -229,7 +268,7 @@
         "Рассылка с именем \"%(name)s\" уже существует"
       ],
       "A reusable dataset will be saved with your chart.": [
-        "Переиспользуемый датасет будет сохранен с вашим графиком."
+        "Переиспользуемый датасет будет сохранен с вашей диаграммой."
       ],
       "A screenshot of the dashboard will be sent to your email at": [
         "Скриншот дашборда будет отправлен на ваш электронный адрес"
@@ -265,8 +304,8 @@
       "APR": ["АПР"],
       "AQE": ["Асинхронные запросы"],
       "AUG": ["АВГ"],
-      "AXIS TITLE MARGIN": ["ОТСТУП ЗАГОЛОВКА ОСИ"],
-      "AXIS TITLE POSITION": ["ПОЛОЖЕНИЕ ЗАГОЛОВКА ОСИ"],
+      "AXIS TITLE MARGIN": ["ОТСТУП ДЛЯ ПОДПИСИ ОСИ"],
+      "AXIS TITLE POSITION": ["ПОЛОЖЕНИЕ ПОДПИСИ ОСИ"],
       "About": ["О программе"],
       "Access": ["Доступ"],
       "Access token": ["Токен доступа"],
@@ -283,7 +322,7 @@
       "Add Alert": ["Добавить оповещение"],
       "Add CSS Template": ["Добавить CSS шаблон"],
       "Add CSS template": ["Добавить CSS шаблоны"],
-      "Add Chart": ["Добавить график"],
+      "Add Chart": ["Добавить диаграмму"],
       "Add Column": ["Добавить столбец"],
       "Add Dashboard": ["Добавить дашборд"],
       "Add Database": ["Добавить базу данных"],
@@ -303,6 +342,7 @@
       "Add an annotation layer": ["Добавить слой аннотации"],
       "Add an item": ["Добавить запись"],
       "Add and edit filters": ["Добавить и изменить фильтры"],
+      "Add and edit selectors": ["Добавление/изменение селекторов"],
       "Add annotation": ["Добавить аннотацию"],
       "Add annotation layer": ["Добавить слой аннотации"],
       "Add calculated columns to dataset in \"Edit datasource\" modal": [
@@ -312,7 +352,7 @@
         "Добавьте новые столбцы формата дата/время в датасет в настройках датасета"
       ],
       "Add color for positive/negative change": [""],
-      "Add custom scoping": [""],
+      "Add custom scoping": ["Добавить новое правило для диаграммы"],
       "Add delivery method": ["Добавить способ оповещения"],
       "Add extra connection information.": [
         "Дополнительная информация по подключению"
@@ -329,23 +369,31 @@
       ],
       "Add new color formatter": ["Добавить цветовое форматирование"],
       "Add new formatter": ["Добавить форматирование"],
+      "Add notification method": ["Добавить способ уведомления"],
       "Add required control values to preview chart": [
-        "Добавьте обязательные значения для предпросмотра графика"
+        "Добавьте обязательные значения для предпросмотра диаграммы"
       ],
       "Add required control values to save chart": [
-        "Добавьте обязательные значения для сохранения графика"
+        "Добавьте обязательные значения для сохранения диаграммы"
       ],
       "Add sheet": ["Добавить лист"],
       "Add tag to entities": [""],
-      "Add the name of the chart": ["Задайте имя графика"],
+      "Add the name of the chart": ["Задайте имя диаграммы"],
       "Add the name of the dashboard": ["Задайте имя дашборда"],
       "Add to dashboard": ["Добавить в дашборд"],
       "Add/Edit Filters": ["Добавить/изменить фильтры"],
+      "Add/Edit Selectors": ["Добавить/изменить селекторы"],
       "Added": ["Добавлено"],
+      "Added to 1 dashboard": [
+        "Добавлен в 1 дашборд",
+        "Добавлен в %s дашборда",
+        "Добавлен в %s дашбордов"
+      ],
       "Additional Parameters": ["Дополнительные параметры"],
       "Additional fields may be required": [""],
       "Additional information": ["Дополнительная информация"],
       "Additional metadata": ["Дополнительные метаданные"],
+      "Additional padding for chart.": ["Дополнительный отступ для диаграммы"],
       "Additional padding for legend.": ["Дополнительный отступ для легенды"],
       "Additional parameters": ["Дополнительные параметры"],
       "Additional settings.": ["Дополнительная настройка"],
@@ -364,6 +412,7 @@
       "Advanced analytics Query A": ["Расширенный анализ: запрос А"],
       "Advanced analytics Query B": ["Расширенный анализ: запрос Б"],
       "Advanced data type": ["Расширенный тип данных"],
+      "Advanced Mode": ["Продвинутый"],
       "Advanced-Analytics": ["Продвинутая аналитика"],
       "Aesthetic": ["Эстетично"],
       "After": ["После"],
@@ -384,6 +433,7 @@
         "Оповещение сработало во время перерыва"
       ],
       "Alert condition": ["Условие оповещения"],
+      "Alert condition schedule": ["Расписание условия оповещения"],
       "Alert ended grace period.": ["У оповещения закончился перерыв."],
       "Alert failed": ["Оповещение не сработало"],
       "Alert fired during grace period.": [
@@ -416,8 +466,8 @@
       "Align +/-": ["Выровнять +/-"],
       "All": ["Все"],
       "All Text": ["Весь текст"],
-      "All charts": ["Все графики"],
-      "All charts/global scoping": [""],
+      "All charts": ["Все диаграммы"],
+      "All charts/global scoping": ["Общие правила"],
       "All filters": ["Все фильтры"],
       "All panels": ["Все панели"],
       "All panels with this column will be affected by this filter": [
@@ -447,7 +497,7 @@
         "Разрешить операции вставки, обновления и удаления данных"
       ],
       "Allow end user to drag-and-drop column headers to rearrange them. Note their changes won't persist for the next time they open the chart.": [
-        "Разрешить конечному пользователю перемещать столбцы, удерживая их заголовки. Заметьте, такие изменения будут нейтрализованы при следующем обращении к дашборду."
+        "Разрешить конечному пользователю перемещать столбцы, удерживая их заголовки. Заметьте, такие изменения будут нейтрализованы при следующем обращении к диаграмме."
       ],
       "Allow file uploads to database": [
         "Разрешить загрузку файлов в базу данных"
@@ -473,7 +523,7 @@
       "Also known as a box and whisker plot, this visualization compares the distributions of a related metric across multiple groups. The box in the middle emphasizes the mean, median, and inner 2 quartiles. The whiskers around each box visualize the min, max, range, and outer 2 quartiles.": [
         ""
       ],
-      "Altered": ["Измененено"],
+      "Altered": ["Изменено"],
       "An Error Occurred": ["Произошла ошибка"],
       "An alert named \"%(name)s\" already exists": [
         "Оповещение с именем \"%(name)s\" уже существует"
@@ -520,7 +570,7 @@
         "Произошла ошибка при получении доступных CSS-шаблонов"
       ],
       "An error occurred while fetching chart owners values: %s": [
-        "Произошла ошибка при получении владельцев графика: %s"
+        "Произошла ошибка при получении владельцев диаграммы: %s"
       ],
       "An error occurred while fetching dashboard owner values: %s": [
         "Произошла ошибка при получении владельца дашборда: %s"
@@ -604,7 +654,7 @@
         "Произошла ошибка при установке активной вкладки. Пожалуйста, свяжитесь с администратором."
       ],
       "An error occurred while starring this chart": [
-        "Произошла ошибка при добавлении графика в избранное"
+        "Произошла ошибка при добавлении диаграммы в избранное"
       ],
       "An error occurred while storing your query in the backend. To avoid losing your changes, please save your query using the \"Save Query\" button.": [
         "Произошла ошибка при сохранении запроса на сервере. Чтобы сохранить изменения, пожалуйста, сохраните ваш запрос через кнопку \"Сохранить как\"."
@@ -671,7 +721,7 @@
         "Любые дополнительные сведения для всплывающей подсказки"
       ],
       "Any color palette selected here will override the colors applied to this dashboard's individual charts": [
-        "Любая палитра, выбранная здесь, будет перезаписывать цвета, применённые к отдельным графикам этого дашборда"
+        "Любая палитра, выбранная здесь, будет перезаписывать цвета, применённые к отдельным диаграммам этого дашборда"
       ],
       "Any databases that allow connections via SQL Alchemy URIs can be added. ": [
         "Любые базы данных, подключаемые через SQL Alchemy URI, могут быть добавлены. "
@@ -712,7 +762,7 @@
         "Вы уверены, что хотите удалить выбранные аннотации?"
       ],
       "Are you sure you want to delete the selected charts?": [
-        "Вы уверены, что хотите удалить выбранные графики?"
+        "Вы уверены, что хотите удалить выбранные диаграммы?"
       ],
       "Are you sure you want to delete the selected dashboards?": [
         "Вы уверены, что хотите удалить выбранные дашборды?"
@@ -739,6 +789,7 @@
         "Вы уверены, что хотите сохранить и применить изменения?"
       ],
       "Area Chart": ["Диаграмма с областями"],
+      "Time-series Area Chart (legacy)": ["Диаграмма с областями (устарело)"],
       "Area chart": ["Диаграмма с областями"],
       "Area chart opacity": ["Непрозрачность диаграммы с областями"],
       "Area charts are similar to line charts in that they represent variables with the same scale, but area charts stack the metrics on top of each other.": [
@@ -746,7 +797,7 @@
       ],
       "Arrow": ["Стрела"],
       "Assign a set of parameters as": ["Задайте набор параметров в формате"],
-      "Associated Charts": ["Связанные графики"],
+      "Associated Charts": ["Связанные диаграммы"],
       "Async Execution": ["Асинхронное выполнение"],
       "Asynchronous query execution": ["Асинхронное выполнение запросов"],
       "August": ["Август"],
@@ -759,11 +810,12 @@
       "Available sorting modes:": ["Доступные режимы сортировки:"],
       "Average": ["Среднее"],
       "Axis": ["Ось"],
-      "Axis Bounds": ["Границы оси"],
+      "Axis Bounds": ["Ограничения шкалы"],
       "Axis Format": ["Формат Оси"],
       "Axis Title": ["Название оси"],
       "Axis ascending": ["Ось по возрастанию"],
       "Axis descending": ["Ось по убыванию"],
+      "ago": ["назад"],
       "BOOLEAN": ["Булевый (BOOLEAN)"],
       "Back": ["Назад"],
       "Back to all": ["Вернуться ко всем"],
@@ -787,6 +839,7 @@
       "Based on what should series be ordered on the chart and legend": [""],
       "Basic": ["Базовая настройка"],
       "Basic information": ["Основная информация"],
+      "Basic Mode": ["Базовый"],
       "Batch editing %d filters:": [
         "Множественное редактирование фильтров: %d"
       ],
@@ -805,20 +858,26 @@
       ],
       "Bottom right": ["Снизу справа"],
       "Bottom to Top": ["Снизу вверх"],
+      "Bounds for numerical X axis. Not applicable for temporal or categorical axes. When left empty, the bounds are dynamically defined based on the min/max of the data. Note that this feature will only expand the axis range. It won't narrow the data's extent.": [
+        "Границы для числовой оси абсцисс (X). Неприменимо для нечисловых значений. Если оставить поля пустыми, границы динамически определяются на основнии минимальных и максимальных значений в данных. Эта функция не влияет на выборку данных, только на визуализацию."
+      ],
       "Bounds for the Y-axis. When left empty, the bounds are dynamically defined based on the min/max of the data. Note that this feature will only expand the axis range. It won't narrow the data's extent.": [
-        "Границы для оси Y. Если оставить поле пустым, границы динамически определяются на основе минимального/максимального значения данных. Обратите внимание, что эта функция только расширит диапазон осей. Она не изменит размер графика."
+        "Границы для оси ординат (Y). Если оставить поля пустыми, границы динамически определяются на основнии минимальных и максимальных значений в данных. Эта функция не влияет на выборку данных, только на визуализацию."
       ],
       "Bounds for the axis. When left empty, the bounds are dynamically defined based on the min/max of the data. Note that this feature will only expand the axis range. It won't narrow the data's extent.": [
-        "Границы для оси. Если оставить поле пустым, границы динамически определяются на основе минимального/максимального значения данных. Обратите внимание, что эта функция только расширит диапазон осей. Она не изменит размер графика."
+        "Границы для оси. Если оставить поля пустыми, границы динамически определяются на основнии минимальных и максимальных значений в данных. Эта функция не влияет на выборку данных, только на визуализацию."
       ],
       "Box Plot": ["Ящик с усами"],
       "Breaks down the series by the category specified in this control.\n      This can help viewers understand how each category affects the overall value.": [
         ""
       ],
       "Bubble Chart": ["Пузырьковая диаграмма"],
-      "Bubble Color": ["Цвет пузыря"],
-      "Bubble Size": ["Размер пузыря"],
-      "Bubble size": ["Размер маркера"],
+      "Bubble Chart (legacy)": ["Пузырьковая диаграмма (устарело)"],
+      "Bubble Color": ["Цвет бабла"],
+      "Bubble Opacity": ["Прозрачность баблов"],
+      "Bubble Size": ["Размер бабла"],
+      "Bubble size": ["Размер бабла"],
+      "Bubble size number format": ["Форматирование значений баблов"],
       "Bucket break points": [""],
       "Build": ["Сборка"],
       "Bulk select": ["Множественный выбор"],
@@ -848,7 +907,7 @@
       "CSS": ["CSS"],
       "CSS Styles": ["CSS стили"],
       "CSS Templates": ["CSS шаблоны"],
-      "CSS applied to the chart": ["CSS, примененный к графику"],
+      "CSS applied to the chart": ["CSS, примененный к диаграмме"],
       "CSS template": ["CSS шаблон"],
       "CSS template not found.": ["CSS шаблон не найден."],
       "CSS templates": ["CSS шаблоны"],
@@ -935,20 +994,24 @@
       "Certified By": ["Кем утверждено"],
       "Certified by": ["Кем утверждено"],
       "Certified by %s": ["Утверждено: %s"],
+      "Change": ["Изменить"],
       "Change order of columns.": ["Сменить порядок столбцов."],
       "Change order of rows.": ["Сменить порядок строк."],
       "Changed By": ["Кем изменено"],
       "Changes saved.": ["Изменения сохранены."],
+      "Changing mode will clear the selection": [
+        "Изменение режима приведет к сбросу выбора"
+      ],
       "Changing the dataset may break the chart if the chart relies on columns or metadata that does not exist in the target dataset": [
-        "Изменение датасета может привести к тому, что график станет нерабочим, если график использует несуществующие в целевом датасете столбцы или метаданные"
+        "Изменение датасета может привести к тому, что диаграмма станет нерабочей, если диаграмма использует несуществующие в целевом датасете столбцы или метаданные"
       ],
       "Changing these settings will affect all charts using this dataset, including charts owned by other people.": [
-        "Изменение этих настроек будет влиять на все графики, использующие этот датасет, включая графики других пользователей."
+        "Изменение этих настроек будет влиять на все диаграммы, использующие этот датасет, включая диаграммы других пользователей."
       ],
       "Changing this Dashboard is forbidden": [
         "Запрещено изменять этот дашборд"
       ],
-      "Changing this chart is forbidden": ["Запрещено изменять этот график"],
+      "Changing this chart is forbidden": ["Запрещено изменять эту диаграмму"],
       "Changing this control takes effect instantly": [
         "Изменение этого элемента применяется сразу"
       ],
@@ -966,53 +1029,54 @@
       "Character to interpret as decimal point.": [
         "Символ десятичного разделителя"
       ],
-      "Chart": ["График"],
-      "Chart %(id)s not found": ["График %(id)s не найден"],
-      "Chart Cache Timeout": ["Время жизни кэша графика"],
-      "Chart Data: %s": ["Данные графика: %s"],
-      "Chart ID": ["ID графика"],
-      "Chart Options": ["Свойства графика"],
-      "Chart Orientation": ["Ориентация графика"],
-      "Chart Title": ["Название графика"],
-      "Chart [%s] has been overwritten": ["График [%s] перезаписан"],
-      "Chart [%s] has been saved": ["График [%s] сохранен"],
+      "Chart": ["Диаграмма"],
+      "Chart %(id)s not found": ["Диаграмма %(id)s не найдена"],
+      "Chart Cache Timeout": ["Время жизни кэша диаграммы"],
+      "Chart Data: %s": ["Данные диаграммы: %s"],
+      "Chart ID": ["ID диаграммы"],
+      "Chart Options": ["Свойства диаграммы"],
+      "Chart Orientation": ["Ориентация диаграммы"],
+      "Chart Title": ["Название диаграммы"],
+      "Chart [%s] has been overwritten": ["Диаграмма [%s] перезаписана"],
+      "Chart [%s] has been saved": ["Диаграмма [%s] сохранена"],
       "Chart [%s] was added to dashboard [%s]": [
-        "График [%s] добавлен в дашборд [%s]"
+        "Диаграмма [%s] добавлена в дашборд [%s]"
       ],
-      "Chart [{}] has been overwritten": ["График [{}] перезаписан"],
-      "Chart [{}] has been saved": ["График [{}] сохранен"],
+      "Chart [{}] has been overwritten": ["Диаграмма [{}] перезаписана"],
+      "Chart [{}] has been saved": ["Диаграмма [{}] сохранена"],
       "Chart [{}] was added to dashboard [{}]": [
-        "График [{}] добавлен в дашборд [{}]"
+        "Диаграмма [{}] добавлена в дашборд [{}]"
       ],
-      "Chart cache timeout": ["Время жизни кэша графика"],
-      "Chart changes": ["Изменения графика"],
-      "Chart could not be created.": ["Не удалось создать график"],
-      "Chart could not be updated.": ["Не удалось обновить график"],
-      "Chart does not exist": ["График не существует"],
+      "Chart cache timeout": ["Время жизни кэша диаграммы"],
+      "Chart changes": ["Изменения диаграммы"],
+      "Chart could not be created.": ["Не удалось создать диаграмму"],
+      "Chart could not be updated.": ["Не удалось обновить диаграмму"],
+      "Chart does not exist": ["Диаграмма не существует"],
       "Chart has no query context saved. Please save the chart again.": [
-        "На графике не сохранен контекст запроса. Пожалуйста, сохраните диаграмму еще раз."
+        "На диаграмме не сохранен контекст запроса. Пожалуйста, сохраните диаграмму еще раз."
       ],
-      "Chart height": ["Высота графика"],
-      "Chart imported": ["График импортирован"],
-      "Chart name": ["Имя графика"],
-      "Chart options": ["Свойства графика"],
-      "Chart parameters are invalid.": ["Параметры графика недопустимы."],
-      "Chart properties updated": ["Свойства графика обновлены"],
-      "Chart title": ["Название графика"],
+      "Chart height": ["Высота диаграммы"],
+      "Chart imported": ["Диаграмма импортирована"],
+      "Chart name": ["Имя диаграммы"],
+      "Chart options": ["Свойства диаграммы"],
+      "Chart parameters are invalid.": ["Параметры диаграммы недопустимы."],
+      "Chart properties updated": ["Свойства диаграммы обновлены"],
+      "Chart Source": ["Источник данных диаграммы"],
+      "Chart title": ["Название диаграммы"],
       "Chart type requires a dataset": [
-        "Для данного типа графика необходим датасет"
+        "Для данного типа диаграммы необходим датасет"
       ],
-      "Chart width": ["Ширина графика"],
-      "Charts": ["Графики"],
-      "Charts could not be deleted.": ["Не удалось удалить графики."],
+      "Chart width": ["Ширина диаграммы"],
+      "Charts": ["Диаграммы"],
+      "Charts could not be deleted.": ["Не удалось удалить диаграммы."],
       "Check for sorting ascending": ["Выберит для сортировки по возрастанию"],
       "Check if the Rose Chart should use segment area instead of segment radius for proportioning": [
         ""
       ],
       "Check out this chart in dashboard:": [
-        "Посмотреть этот график в дашборде:"
+        "Посмотреть эту диаграмму в дашборде:"
       ],
-      "Check out this chart: ": ["Посмотреть график: "],
+      "Check out this chart: ": ["Посмотреть диаграмму: "],
       "Check out this dashboard: ": ["Посмотреть дашборд: "],
       "Check to force date partitions to have the same height": [""],
       "Child label position": ["Положение метки дочернего элемента"],
@@ -1022,9 +1086,10 @@
       "Choice of [Point Radius] must be present in [Group By]": [
         "[Радиус точки] должен присутствовать в [Группировать по]"
       ],
+      "Choose": ["Выберите"],
       "Choose File": ["Выберите файл"],
       "Choose a chart or dashboard not both": [
-        "Выберите график или дашборд, не обоих"
+        "Выберите диаграмму или дашборд, не обоих"
       ],
       "Choose a database...": ["Выберите базу данных..."],
       "Choose a dataset": ["Выберите датасет"],
@@ -1033,16 +1098,24 @@
       "Choose a source": ["Выберите источник"],
       "Choose a source and a target": ["Выберите источник и цель"],
       "Choose a target": ["Выберите цель"],
-      "Choose chart type": ["Выберите тип графика"],
+      "Choose at least one market from hierarchy": [
+        "Выберите хотя бы один рынок из иерархии"
+      ],
+      "Choose at least one product from hierarchy": [
+        "Выберите хотя бы один продукт из иерархии"
+      ],
+      "Choose chart type": ["Выберите тип диаграммы"],
       "Choose one of the available databases from the panel on the left.": [
         "Выберите одну из доступных баз данных из панели слева."
       ],
+      "Choose selectors for dashboard": ["Выберите селекторы для дашборда"],
       "Choose the annotation layer type": ["Выбрать тип слоя аннотации"],
       "Choose the format for legend values": [
         "Выберите формат значений легенды"
       ],
       "Choose the position of the legend": ["Выберите позицию легенды"],
       "Choose the source of your annotations": ["Выберите источник аннотаций"],
+      "Choose up to": ["Выберите до"],
       "Choose whether a country should be shaded by the metric, or assigned a color based on a categorical color palette": [
         ""
       ],
@@ -1061,38 +1134,41 @@
       ],
       "Clause": ["Оператор"],
       "Clear": ["Очистить"],
-      "Clear all": ["Сбросить фильтры"],
+      "Clear all": ["Сбросить"],
       "Clear all data": ["Очистить все данные"],
       "Clear form": ["Очистить форму"],
       "Click on \"+Add/Edit Filters\" button to create new dashboard filters": [
-        ""
+        "Кликните на кнопку \"+Add/Edit Filters\" выше, чтобы создать новый фильтр"
+      ],
+      "Click on \"+Add/Edit Selectors\" button to create new dashboard selectors": [
+        "Кликните на кнопку \"+Добавить/изменить селекторы\" выше, чтобы создать новый селектор"
       ],
       "Click on \"Create chart\" button in the control panel on the left to preview a visualization or": [
-        "Нажмите на кнопку \"Создать график\" на панели управления слева для просмотра графика или"
+        "Кликните на кнопку \"Создать диаграмму\" на панели управления слева для просмотра графика или"
       ],
       "Click the lock to make changes.": [
-        "Нажмите на замок для внесения изменений"
+        "Кликните на замок для внесения изменений"
       ],
       "Click the lock to prevent further changes.": [
-        "Нажмите на замок для запрета на внос изменений."
+        "Кликните на замок для запрета на внос изменений."
       ],
       "Click this link to switch to an alternate form that allows you to input the SQLAlchemy URL for this database manually.": [
-        "Нажмите для переключения на альтернативную форму подключения, которая позволит вам вручную ввести SQLAlchemy URL для данной базы данных."
+        "Кликните для переключения на альтернативную форму подключения, которая позволит вам вручную ввести SQLAlchemy URL для данной базы данных."
       ],
       "Click this link to switch to an alternate form that exposes only the required fields needed to connect this database.": [
-        "Нажмите для переключения на альтернативную форму подключения, которая позволит вам ввести все данные в соответствующую форму для данной базы данных."
+        "Кликните для переключения на альтернативную форму подключения, которая позволит вам ввести все данные в соответствующую форму для данной базы данных."
       ],
       "Click to add a contour": [""],
-      "Click to cancel sorting": ["Нажмите для отмены сортировки"],
-      "Click to edit": ["Нажмите для редактирования"],
-      "Click to edit %s.": ["Нажмите для редактирования %s."],
-      "Click to edit chart.": ["Нажмите для редактирования графика."],
-      "Click to edit label": ["Нажмите для редактирования метки"],
+      "Click to cancel sorting": ["Кликните для отмены сортировки"],
+      "Click to edit": ["Кликните для редактирования"],
+      "Click to edit %s.": ["Кликните для редактирования %s."],
+      "Click to edit chart.": ["Кликните для редактирования диаграммы."],
+      "Click to edit label": ["Кликните для редактирования метки"],
       "Click to favorite/unfavorite": ["Добавить в избранное"],
-      "Click to force-refresh": ["Нажмите для принудительного обновления"],
-      "Click to see difference": ["Нажмите для просмотра изменений"],
-      "Click to sort ascending": ["Нажмите для сортировки по возрастанию"],
-      "Click to sort descending": ["Нажмите для сортировки по убыванию"],
+      "Click to force-refresh": ["Кликните для принудительного обновления"],
+      "Click to see difference": ["Кликните для просмотра изменений"],
+      "Click to sort ascending": ["Кликните для сортировки по возрастанию"],
+      "Click to sort descending": ["Кликните для сортировки по убыванию"],
       "Close": ["Закрыть"],
       "Close all other tabs": ["Закрыть остальные вкладки"],
       "Close tab": ["Закрыть вкладку"],
@@ -1191,7 +1267,7 @@
       ],
       "Comparator option": [""],
       "Compare multiple time series charts (as sparklines) and related metrics quickly.": [
-        "Быстрое сравнение нескольких графиков временных рядов (в виде спарклайнов) и связанных с ними показателей."
+        "Быстрое сравнение нескольких диаграмм временных рядов (в виде спарклайнов) и связанных с ними показателей."
       ],
       "Compare the same summarized metric across multiple groups.": [
         "Сравнивает один и тот же обобщенный показатель в нескольких группах"
@@ -1206,6 +1282,7 @@
         ""
       ],
       "Comparison": ["Сравнение"],
+      "Comparison Period": ["Период сравнения"],
       "Comparison Period Lag": ["Временной лаг для сравнения"],
       "Comparison suffix": ["Текст рядом с процентным изменением"],
       "Compose multiple layers together to form complex visuals.": [
@@ -1263,6 +1340,7 @@
         "Сбой подключения, пожалуйста, проверьте настройки вашего подключения"
       ],
       "Connection looks good!": ["Соединение в порядке!"],
+      "Constructor": ["Конструктор"],
       "Continue": ["Продолжить"],
       "Continuous": ["Непрерывный"],
       "Contribution": ["Режим относительных значений"],
@@ -1302,7 +1380,7 @@
         "Не удалось определить тип источника данных"
       ],
       "Could not fetch all saved charts": [
-        "Не удалось получить все сохраненные графики"
+        "Не удалось получить все сохраненные диаграммы"
       ],
       "Could not find viz object": ["Не удалось найти объект визуализации"],
       "Could not load database driver": [
@@ -1323,15 +1401,15 @@
       "Country Field Type": ["Тип поля страны"],
       "Country Map": ["Карта Стран"],
       "Create": ["Создать"],
-      "Create Chart": ["Создать график"],
+      "Create Chart": ["Создать диаграмму"],
       "Create a dataset": ["Создать датасет"],
       "Create a dataset to begin visualizing your data as a chart or go to\n          SQL Lab to query your data.": [
-        "Создайте датасет для визуализации ваших данных на графике или перейдите в Лабораторию SQL для просмотра данных."
+        "Создайте датасет для визуализации ваших данных на диаграмме или перейдите в Лабораторию SQL для просмотра данных."
       ],
-      "Create a new chart": ["Создать новый график"],
-      "Create chart": ["Создать график"],
+      "Create a new chart": ["Создать новую диаграмму"],
+      "Create chart": ["Создать диаграмму"],
       "Create dataset": ["Создать датасет"],
-      "Create new chart": ["Создать новый график"],
+      "Create new chart": ["Создать новую диаграмму"],
       "Create or select schema...": ["Создать или выбрать схему..."],
       "Created": ["Создано"],
       "Created by": ["Кем создано"],
@@ -1348,6 +1426,7 @@
       "Cross-filter will be applied to all of the charts that use this dataset.": [
         ""
       ],
+      "Cross-filtering scoping": ["Настройка кросс-фильтрации"],
       "Cumulative": ["С накоплением"],
       "Currency": [""],
       "Currency prefix or suffix": [""],
@@ -1371,7 +1450,6 @@
         ""
       ],
       "Customize columns": ["Настроить столбцы"],
-      "Customize data source, filters, and layout.": [""],
       "Cyclic dependency detected": ["Обнаружена циклическая зависимость"],
       "D3 Format": ["Формат даты/времени"],
       "D3 format": ["Формат даты/времени"],
@@ -1396,10 +1474,10 @@
       "Dark mode": ["Темная тема"],
       "Dashboard": ["Дашборд"],
       "Dashboard [%s] just got created and chart [%s] was added to it": [
-        "Дашборд [%s] был только что создан и график [%s] был добавлен в него"
+        "Дашборд [%s] был только что создан, и диаграмма [%s] была добавлена в него"
       ],
       "Dashboard [{}] just got created and chart [{}] was added to it": [
-        "Дашборд [{}] был только что создан и график [{}] был добавлен в него"
+        "Дашборд [{}] был только что создан, и диаграмма [{}] была добавлена в него"
       ],
       "Dashboard could not be deleted.": ["Не удалось удалить дашборд"],
       "Dashboard could not be updated.": ["Не удалось обновить дашборд"],
@@ -1414,6 +1492,7 @@
       ],
       "Dashboard title": ["Название дашборда"],
       "Dashboards": ["Дашборды"],
+      "Dashboards added to": ["Добавлено в дашборды"],
       "Dashboards do not exist": ["Дашборды не существуют"],
       "Dashed": ["Штрих"],
       "Data": ["Данные"],
@@ -1506,7 +1585,7 @@
         "Датасет не содержит столбца формата дата/время"
       ],
       "Datasource": ["Источник данных"],
-      "Datasource & Chart Type": ["Источник данных и Тип графика"],
+      "Datasource & Chart Type": ["Источник данных и Тип диаграммы"],
       "Datasource does not exist": ["Источник данных не существует"],
       "Datasource type is invalid": ["Тип источниках данных неверный"],
       "Datasource type is required when datasource_id is given": [
@@ -1518,7 +1597,7 @@
       "Date/Time": ["Дата/Время"],
       "Datetime Format": ["Формат даты и времени"],
       "Datetime column not provided as part table configuration and is required by this type of chart": [
-        "Столбец даты/времени не предусмотрен в настройках таблицы и является обязательным для этого типа графика"
+        "Столбец даты/времени не предусмотрен в настройках таблицы и является обязательным для этого типа диаграммы"
       ],
       "Datetime format": ["Формат даты/времени"],
       "Day": ["День"],
@@ -1573,10 +1652,6 @@
       "Define contour layers. Isolines represent a collection of line segments that serparate the area above and below a given threshold. Isobands represent a collection of polygons that fill the are containing values in a given threshold range.": [
         ""
       ],
-      "Define delivery schedule, timezone, and frequency settings.": [""],
-      "Define the database, SQL query, and triggering conditions for alert.": [
-        ""
-      ],
       "Defines a rolling window function to apply, works along with the [Periods] text box": [
         "Определяет функцию скользящего окна для применения, работает вместе с текстовым полем [Периоды]"
       ],
@@ -1587,7 +1662,10 @@
         "Определяет размер сетки (в пикселях)"
       ],
       "Defines the grouping of entities. Each series is shown as a specific color on the chart and has a legend toggle": [
-        "Группировка в ряды данных. Каждая категория отображается в виде определенного цвета на графике и имеет легенду"
+        "Группировка в ряды данных. Каждая категория отображается в виде определенного цвета на диаграмме и имеет легенду"
+      ],
+      "Defines the grouping of entities. Each series is represented by a specific color in the chart.": [
+        "Определяет группировку данных по цветам. Каждое значение этой метрики будет представлено отдельным цветом на диаграмме."
       ],
       "Defines the size of the rolling window function, relative to the time granularity selected": [
         "Определяет размер функции скользящего окна относительно выбранной детализации по времени"
@@ -1628,9 +1706,9 @@
         "Удалалено %(num)d слоев аннотаций"
       ],
       "Deleted %(num)d chart": [
-        "Удален %(num)d график",
-        "Удалены %(num)d графика",
-        "Удалено %(num)d графиков"
+        "Удалена %(num)d диаграмма",
+        "Удалены %(num)d диаграммы",
+        "Удалено %(num)d диаграмм"
       ],
       "Deleted %(num)d css template": [
         "Удален %(num)d CSS шаблон",
@@ -1730,13 +1808,15 @@
       "Documentation": ["Документация"],
       "Domain": ["Блок"],
       "Donut": ["Кольцевая диаграмма"],
+      "Don't refresh": ["Не обновлять"],
       "Dotted": ["Пунктир"],
       "Download": ["Сохранить"],
       "Download as image": ["Сохранить как изображение"],
+      "Download as Image": ["Сохранить как изображение"],
       "Download to CSV": ["Сохранить в CSV"],
       "Draft": ["Черновик"],
       "Drag and drop components and charts to the dashboard": [
-        "Переместите элементы оформления и графики на дашборд"
+        "Переместите элементы оформления и диаграммы на дашборд"
       ],
       "Drag and drop components to this tab": [
         "Переместите элементы оформления и графики в эту вкладку"
@@ -1759,15 +1839,15 @@
       "Drill by": [""],
       "Drill by is not available for this data point": [""],
       "Drill by is not yet supported for this chart type": [""],
-      "Drill to detail": [""],
-      "Drill to detail by": [""],
+      "Drill to detail": ["Посмотреть источник"],
+      "Drill to detail by": ["Посмотреть источник"],
       "Drill to detail by value is not yet supported for this chart type.": [
         ""
       ],
       "Drill to detail is disabled because this chart does not group data by dimension value.": [
         ""
       ],
-      "Drill to detail: %s": [""],
+      "Drill to detail: %s": ["Посмотреть источник: %s"],
       "Drop a temporal column here or click": [
         "Перетащите столбец формата дата/время сюда"
       ],
@@ -1783,10 +1863,10 @@
       "Duplicate tab": ["Дублировать вкладку"],
       "Duration": ["Продолжительность"],
       "Duration (in seconds) of the caching timeout for charts of this database. A timeout of 0 indicates that the cache never expires. Note this defaults to the global timeout if undefined.": [
-        "Продолжительность (в секундах) таймаута кэша для графиков этой базы данных. Таймаут 0 означает, что кэш никогда не очистится. Обратите внимание, что если значение не задано, применяется значение по умолчанию из основной конфигурации."
+        "Продолжительность (в секундах) таймаута кэша для диаграмм этой базы данных. Таймаут 0 означает, что кэш никогда не очистится. Обратите внимание, что если значение не задано, применяется значение по умолчанию из основной конфигурации."
       ],
       "Duration (in seconds) of the caching timeout for this chart. Note this defaults to the datasource/table timeout if undefined.": [
-        "Продолжительность (в секундах) таймаута кэша для этого графикаОбратите внимание, что если значение не задано, применяется значение источника данных/таблицы."
+        "Продолжительность (в секундах) таймаута кэша для этой диаграммы. Обратите внимание, что если значение не задано, применяется значение источника данных/таблицы."
       ],
       "Duration (in seconds) of the caching timeout for this table. A timeout of 0 indicates that the cache never expires. Note this defaults to the database timeout if undefined.": [
         "Продолжительность (в секундах) таймаута кэша для этой таблицы. Обратите внимание, что если значение не задано, применяется значение базы данных."
@@ -1810,7 +1890,8 @@
       "Dynamically search all filter values": [
         "Динамически искать все значения фильтра"
       ],
-      "ECharts": ["Графики Apache"],
+      "dashboard": ["дашборд"],
+      "ECharts": ["Диаграммы Apache"],
       "END (EXCLUSIVE)": ["КОНЕЦ (НЕ ВКЛЮЧИТЕЛЬНО)"],
       "ERROR": ["ОШИБКА"],
       "ERROR: %s": ["ОШИБКА: %s"],
@@ -1823,8 +1904,8 @@
       "Edit CSS": ["Редактировать CSS"],
       "Edit CSS Template": ["Редактировать CSS шаблон"],
       "Edit CSS template properties": ["Редактировать свойств CSS шаблона"],
-      "Edit Chart": ["Редактировать график"],
-      "Edit Chart Properties": ["Редактировать свойства графика"],
+      "Edit Chart": ["Редактировать диаграмму"],
+      "Edit Chart Properties": ["Редактировать свойства диаграммы"],
       "Edit Column": ["Редактировать столбец"],
       "Edit Dashboard": ["Редактировать дашборд"],
       "Edit Database": ["Редактировать Базу Данных"],
@@ -1839,12 +1920,13 @@
       "Edit annotation layer properties": [
         "Редактировать свойства слоя аннотаций"
       ],
-      "Edit chart": ["Редактировать график"],
-      "Edit chart properties": ["Редактировать свойства графика"],
+      "Edit chart": ["Редактировать диаграмму"],
+      "Edit chart properties": ["Редактировать свойства диаграммы"],
       "Edit dashboard": ["Редактировать дашборд"],
       "Edit database": ["Редактировать Базу Данных"],
       "Edit dataset": ["Редактировать датасет"],
       "Edit email report": ["Редактировать рассылку"],
+      "Edit Facts": ["Изменить факты"],
       "Edit properties": ["Редактировать свойства"],
       "Edit query": ["Редактировать запрос"],
       "Edit template": ["Редактировать шаблон"],
@@ -1882,6 +1964,7 @@
       "Enable 'Allow file uploads to database' in any database's settings": [
         "Включите \"Разрешить загрузку файлов в базу данных\" в настройках любой базы данных"
       ],
+      "Enable cross-filtering": ["Включить кросс-фильтрацию"],
       "Enable data zooming controls": [
         "Включить элементы управления масштабированием данных"
       ],
@@ -1943,10 +2026,10 @@
         "Ошибка в jinja выражении в предикате выборки значений: %(msg)s"
       ],
       "Error loading chart datasources. Filters may not work correctly.": [
-        "Ошибка загрузки источников данных для графиков. Фильтры могут работать некорректно."
+        "Ошибка загрузки источников данных для диаграмм. Фильтры могут работать некорректно."
       ],
       "Error message": ["Сообщение об ошибке"],
-      "Error while fetching charts": ["Возникла ошибка при получении графиков"],
+      "Error while fetching charts": ["Возникла ошибка при получении диаграмм"],
       "Error while fetching data: %s": [
         "Возникла ошибка при получении данных: %s"
       ],
@@ -1962,6 +2045,7 @@
         "Спрогнозировать стоимость до выполнения запроса"
       ],
       "Event": ["Событие"],
+      "Event Flow": ["Event Flow"],
       "Event Names": ["Имена событий"],
       "Event definition": ["Определение события"],
       "Event time column": ["Столбец формата дата/время"],
@@ -2004,6 +2088,8 @@
       "Export query": ["Экспорт запроса"],
       "Export to .CSV": ["Экспорт в .CSV"],
       "Export to .JSON": ["Экспорт в .JSON"],
+      "Export to Excel": ["Экспорт в Excel"],
+      "Export to PDF": ["Экспорт в PDF"],
       "Export to YAML": ["Экспорт в YAML"],
       "Export to YAML?": ["Экспортировать в YAML?"],
       "Export to full .CSV": ["Экспорт в целый .CSV"],
@@ -2037,18 +2123,22 @@
         "Дополнительные url параметры для запросов, использующих шаблонизацию Jinja"
       ],
       "Extruded": [""],
+      "export": ["экспорт"],
       "FEB": ["ФЕВ"],
+      "FILTER": ["ФИЛЬТР"],
       "FRI": ["ПТ"],
+      "Fact": ["Факт"],
       "Factor": [""],
       "Factor to multiply the metric by": ["Число, на которое умножается мера"],
+      "Facts": ["Факты"],
       "Fail": ["Ошибка"],
       "Failed": ["Ошибка"],
       "Failed at retrieving results": ["Невозможно выполнить запрос"],
       "Failed at stopping query. %s": ["Не удалось остановить запрос. %s"],
       "Failed to create report": ["Не удалось создать рассылку"],
       "Failed to execute %(query)s": [""],
-      "Failed to load chart data": ["Не удалось загрузить данные графика"],
-      "Failed to load chart data.": ["Не удалось загрузить данные графика."],
+      "Failed to load chart data": ["Не удалось загрузить данные диаграммы"],
+      "Failed to load chart data.": ["Не удалось загрузить данные диаграммы."],
       "Failed to load dimensions for drill by": [""],
       "Failed to retrieve advanced type": [
         "Не удалось получить расширенный тип"
@@ -2158,7 +2248,7 @@
       "Foreign key": ["Внешний ключ"],
       "Forest Green": ["Лесной зеленый"],
       "Form data not found in cache, reverting to chart metadata.": [
-        "Данные формы не найдены в кэше, возвращение к метаданным графика."
+        "Данные формы не найдены в кэше, возвращение к метаданным диаграммы."
       ],
       "Form data not found in cache, reverting to dataset metadata.": [
         "Данные формы не найдены в кэше, возвращение к метаданным датасета."
@@ -2177,6 +2267,7 @@
       "Friction": ["Трение"],
       "Friction between nodes": ["Сила трения между вершинами"],
       "Friday": ["Пятница"],
+      "From": ["Начало"],
       "From date cannot be larger than to date": [
         "Дата начала не может быть позже даты конца"
       ],
@@ -2202,12 +2293,12 @@
       "Get the last date by the date unit.": [""],
       "Get the specify date for the holiday": [""],
       "Go to the edit mode to configure the dashboard and add charts": [
-        "Перейдите в режим редактирования для изменения дашборда и добавьте графики"
+        "Перейдите в режим редактирования для изменения дашборда и добавьте диаграммы"
       ],
       "Gold": ["Золотой"],
       "Google Sheet Name and URL": ["Имя или URL Google Таблицы"],
       "Grace period": ["Перерыв между оповещением"],
-      "Graph Chart": ["Сетевой график"],
+      "Graph Chart": ["Сетевая диаграмма"],
       "Graph layout": ["Формат сетевого графика"],
       "Gravity": ["Гравитация"],
       "Grid": ["Сетка"],
@@ -2232,7 +2323,7 @@
       "Height": ["Высота"],
       "Height of the sparkline": ["Высота спарклайна"],
       "Hide Line": ["Скрыть линию"],
-      "Hide chart description": ["Скрыть описание графика"],
+      "Hide chart description": ["Скрыть описание диаграммы"],
       "Hide layer": ["Скрыть слой"],
       "Hide password.": ["Скрыть пароль."],
       "Hide tool bar": ["Скрыть панель инструментов"],
@@ -2240,6 +2331,7 @@
       "Hierarchy": ["Иерархия"],
       "Histogram": ["Гистограмма"],
       "Home": ["Главная"],
+      "Horizon Chart": ["Horizon Chart"],
       "Horizontal": ["Горизонтально"],
       "Horizontal (Top)": ["Горизонтально (сверху)"],
       "Horizontal alignment": ["Выравнивание по горизонтали"],
@@ -2257,6 +2349,7 @@
         "Как отображать смещения во времени: как отдельные линии; как абсолютную разницу между основным временным рядом и каждым смещением; как процентное изменение; или как соотношение между рядами и смещениями."
       ],
       "Huge": ["Огромный"],
+      "incl.": ["включительно"],
       "ISO 3166-2 Codes": ["Коды ISO 3166-2"],
       "ISO 8601": ["ISO 8601"],
       "Id": ["ID"],
@@ -2300,9 +2393,9 @@
       "Import Dashboard(s)": ["Импортировать дашборд(ы)"],
       "Import a table definition": [""],
       "Import chart failed for an unknown reason": [
-        "Не удалось импортировать график по неизвестной причине"
+        "Не удалось импортировать диаграмму по неизвестной причине"
       ],
-      "Import charts": ["Импортировать графики"],
+      "Import charts": ["Импортировать диаграммы"],
       "Import dashboard failed for an unknown reason": [
         "Не удалось импортировать дашборд по неизвестной причине"
       ],
@@ -2350,6 +2443,7 @@
       "Interval colors": ["Цвета интервала"],
       "Interval start column": ["Столбец с началом интервала"],
       "Intervals": ["Интервалы"],
+      "Inv.": ["Инв."],
       "Invalid JSON": ["Недопустимый формат JSON"],
       "Invalid advanced data type: %(advanced_data_type)s": [
         "Невалидный расширенный тип данных: %(advanced_data_type)s"
@@ -2407,6 +2501,7 @@
       ],
       "JAN": ["ЯНВ"],
       "JSON": ["JSON"],
+      "JSON dataset": ["JSON датасет"],
       "JSON Metadata": ["JSON Метаданные"],
       "JSON metadata": ["JSON метаданные"],
       "JSON metadata is invalid!": ["JSON метаданные не валидны!"],
@@ -2479,6 +2574,7 @@
       "Left value": ["Левое значение"],
       "Legacy": ["Устарел"],
       "Legend": ["Легенда"],
+      "Legend's font size": ["Размер шрифта для легенды"],
       "Legend Format": ["Формат легенды"],
       "Legend Orientation": ["Ориентация легенды"],
       "Legend Position": ["Расположение легенды"],
@@ -2488,6 +2584,7 @@
       "Light": ["Светлый"],
       "Light mode": ["Светлый режим"],
       "Like": [""],
+      "Limit reached": ["Достигнут предел"],
       "Limit type": ["Тип ограничения"],
       "Limiting rows may result in incomplete data and misleading charts. Consider filtering or grouping source/target names instead.": [
         ""
@@ -2505,7 +2602,8 @@
         ""
       ],
       "Line": ["Линейный"],
-      "Line Chart": ["Линейный график"],
+      "Line Chart": ["Линейная диаграмма"],
+      "Time-series Line Chart (legacy)": ["Линейная диаграмма (устарело)"],
       "Line Style": ["Тип линии"],
       "Line chart is used to visualize measurements taken over a given category. Line chart is a type of chart which displays information as a series of data points connected by straight line segments. It is a basic type of chart common in many fields.": [
         "Линейная диаграмма используется для визуализации показателей, полученных в рамках одной категории. Линейная диаграмма - это тип диаграммы, который отображает информацию в виде ряда точек данных, соединенных прямыми отрезками. Это базовый тип диаграммы, распространенный во многих областях."
@@ -2543,7 +2641,8 @@
       "Logarithmic scale on secondary y-axis": [
         "Логарифмическая шкала для вторичной оси Y"
       ],
-      "Logarithmic y-axis": ["Логарифмическая ось Y"],
+      "Logarithmic x-axis": ["Логарифмическая шкала абсцисс (X)"],
+      "Logarithmic y-axis": ["Логарифмическая шкала ординат (Y)"],
       "Login": ["Вход в систему"],
       "Login with": ["Войти при помощи"],
       "Logout": ["Выход из системы"],
@@ -2575,14 +2674,14 @@
       ],
       "Map": ["Карта"],
       "Map Style": ["Стиль карты"],
-      "MapBox": ["Mapbox"],
-      "Mapbox": ["Mapbox"],
+      "MapBox": ["MapBox"],
       "March": ["Март"],
       "Margin": ["Отступ"],
       "Mark a column as temporal in \"Edit datasource\" modal": [
         "Присвойте столбцу формат даты/времени в настройках датасета"
       ],
       "Marker": ["Маркер"],
+      "Market": ["Рынок"],
       "Marker Size": ["Размер маркера"],
       "Marker labels": ["Метки маркера"],
       "Marker line labels": ["Метки линий маркера"],
@@ -2591,10 +2690,11 @@
       "Markers": ["Маркеры"],
       "Markup type": ["Тип разметки"],
       "Max": ["Максимум"],
-      "Max Bubble Size": ["Максимальный размер пузыря"],
+      "Max bubble size": ["Максимальный размер бабла"],
       "Max Events": ["Лимит событий"],
       "Maximum": ["Максимум"],
       "Maximum Font Size": ["Максимальный размер шрифта"],
+      "Maximum quantity to select": ["Максимальное количество для выбора"],
       "Maximum Radius": ["Максимальный радиус"],
       "Maximum value on the gauge axis": ["Максимальное значение индикатора"],
       "May": ["Май"],
@@ -2644,7 +2744,7 @@
         "Мера, используемая как вес для раскрашивания сетки"
       ],
       "Metric used to calculate bubble size": [
-        "Мера, используемая для расчета размера пузыря"
+        "Мера, используемая для расчета размера бабла"
       ],
       "Metric used to control height": [
         "Мера, используемая для регулирования высоты"
@@ -2687,7 +2787,7 @@
       "Minutes %s": ["Минут %s"],
       "Missing URL parameters": ["Пропущенные параметры URL"],
       "Missing dataset": ["Отсутствующий датасет"],
-      "Mixed Chart": ["Смешанный график"],
+      "Mixed Chart": ["Смешанная диаграмма"],
       "Modified": ["Изменено"],
       "Modified %s": ["Изменено %s"],
       "Modified by": ["Кем изменено"],
@@ -2695,6 +2795,7 @@
       "Monday": ["Понедельник"],
       "Month": ["Месяц"],
       "Months %s": ["Месяцев %s"],
+      "Months selected": ["Выбрано месяцев"],
       "More": ["Подробнее"],
       "Move only": ["Только перемещение"],
       "Moves the given set of dates by a specified interval.": [""],
@@ -2713,7 +2814,7 @@
       "Multiplier": ["Мультипликатор"],
       "Must be unique": ["Должно быть уникальным"],
       "Must choose either a chart or a dashboard": [
-        "Выберите график или дашборд"
+        "Выберите диаграмму или дашборд"
       ],
       "Must have a [Group By] column to have 'count' as the [Label]": [""],
       "Must have at least one numeric column specified": [
@@ -2729,6 +2830,7 @@
       "N/A": ["Пусто"],
       "NOT GROUPED BY": [""],
       "NOV": ["НОЯ"],
+      "now": ["Сейчас"],
       "NOW": ["СЕЙЧАС"],
       "NUMERIC": ["Числовой (NUMERIC/DECIMAL)"],
       "Name": ["Имя"],
@@ -2759,7 +2861,7 @@
       "Need help? Learn more about": ["Нужна помощь? Узнайте больше о"],
       "Network error": ["Ошибка сети"],
       "Network error.": ["Ошибка сети."],
-      "New chart": ["Новый график"],
+      "New chart": ["Новая диаграмма"],
       "New columns added: %s": ["Добавленные столбцы: %s"],
       "New dataset": ["Новый датасет"],
       "New dataset name": ["Новое имя датасета"],
@@ -2777,7 +2879,7 @@
       "No annotation yet": ["Пока нет аннотаций"],
       "No applied filters": ["Фильтры не применены"],
       "No available filters.": ["Нет доступных фильтров."],
-      "No charts": ["Нет графиков"],
+      "No charts": ["Нет диаграмм"],
       "No compatible columns found": ["Не найдено подходящих столбцов"],
       "No data": ["Нет данных"],
       "No data after filtering or data is NULL for the latest time record": [
@@ -2797,6 +2899,9 @@
       ],
       "No form settings were maintained": [
         "Конфигурация графика не сохранилась"
+      ],
+      "No global filters are currently added": [
+        "К дашборду не применены фильтры"
       ],
       "No of Bins": ["Количество столбцов"],
       "No records found": ["Записи не найдены"],
@@ -2819,6 +2924,7 @@
       ],
       "No saved expressions found": ["Не найдено сохраненных выражений"],
       "No saved metrics found": ["Не найдено сохраненных мер"],
+      "No selectors are currently added": ["К дашборду не добавлены селекторы"],
       "No stored results found, you need to re-run your query": [
         "Не найдены сохраненные результаты, необходимо повторно выполнить запрос"
       ],
@@ -2841,10 +2947,10 @@
       "Normalized": ["Нормализовать"],
       "Not Time Series": ["Не временные ряды"],
       "Not added to any dashboard": ["Не добавлен ни в один дашборд"],
-      "Not all required fields are complete. Please provide the following:": [
-        ""
+      "Not available": ["Недоступно"],
+      "Not available without Period": [
+        "Недоступно без добавления селектора Период"
       ],
-      "Not available": ["Не доступно"],
       "Not equal to (≠)": ["Не равно (≠)"],
       "Not null": ["Не пусто"],
       "Not triggered": ["Условие не выполнялось"],
@@ -2869,6 +2975,9 @@
       ],
       "Number of decimal places with which to display lift values": [""],
       "Number of decimal places with which to display p-values": [""],
+      "Number of fields to select at the same time": [
+        "Количество полей для одновременного выбора"
+      ],
       "Number of periods to compare against. You can use negative numbers to compare from the beginning of the time range.": [
         ""
       ],
@@ -2895,6 +3004,7 @@
       "October": ["Октябрь"],
       "Offline": ["Оффлайн"],
       "Offset": ["Смещение"],
+      "On dashboards": ["Присутствует на дашбордах"],
       "On Grace": ["На перерыве"],
       "One or many columns to group by. High cardinality groupings should include a series limit to limit the number of fetched and rendered series.": [
         "Один или несколько столбцов для группировки. Столбцы с множеством уникальных значений должны включать порог количества категорий для снижения нагрузку на базу данных и на ускорения отображения графика."
@@ -2939,6 +3049,7 @@
       "Only `SELECT` statements are allowed": [
         "Доступны только SELECT запросы"
       ],
+      "Only advanced constructor is available": ["Доступен только продвинутый конструктор"],
       "Only applies when \"Label Type\" is not set to a percentage.": [""],
       "Only applies when \"Label Type\" is set to show values.": [""],
       "Only selected panels will be affected by this filter": [
@@ -2961,7 +3072,7 @@
       ],
       "Opacity of area chart.": ["Непрозрачность диаграммы областей"],
       "Opacity of bubbles, 0 means completely transparent, 1 means opaque": [
-        ""
+        "Прозрачность баблов, 0 - полностью прозрачные, 1 - непрозрачные"
       ],
       "Opacity, expects values between 0 and 100": [
         "Непрозрачность, принимаются значения от 0 до 100"
@@ -3035,6 +3146,10 @@
       "Owners is a list of users who can alter the dashboard. Searchable by name or username.": [
         "Владельцы – это список пользователей, которые могут изменять дашборд. Можно искать по имени или никнейму."
       ],
+      "Padding": ["Отступ"],
+      "Padding right": ["Отступ справа"],
+      "Page": ["Cтраница"],
+      "page": ["страница"],
       "Page length": ["Размер страницы"],
       "Paired t-test Table": ["Таблица парного t-теста"],
       "Pandas resample method": [
@@ -3043,7 +3158,7 @@
       "Pandas resample rule": [
         "Правило ресемплирования данных библиотеки Pandas"
       ],
-      "Parallel Coordinates": [""],
+      "Parallel Coordinates": ["Parallel Coordinates"],
       "Parameter error": ["Ошибка параметра"],
       "Parameters": ["Параметры"],
       "Parameters ": ["Параметры "],
@@ -3051,6 +3166,7 @@
       "Parent": ["Родитель"],
       "Parse Dates": ["Парсинг дат"],
       "Part of a Whole": ["Покомпонентное сравнение"],
+      "Partition Chart": ["Partition Chart"],
       "Partition Limit": ["Количество разбиений"],
       "Partition Threshold": [""],
       "Partitions whose height to parent height proportions are below this value are pruned": [
@@ -3063,16 +3179,17 @@
       "Percent Change": ["Процентное изменение"],
       "Percentage": ["Процентная доля"],
       "Percentage change": ["Процентное изменение"],
-      "Percentage difference between the time periods": [""],
       "Percentage metrics": ["Процентные меры"],
       "Percentage threshold": ["Процентный порог"],
       "Percentages": ["Проценты"],
       "Performance": ["Производительность"],
+      "Period": ["Период"],
       "Period average": ["Среднее за период"],
+      "Period name": ["Название периода"],
       "Periods": ["Периоды"],
       "Periods must be a whole number": ["Периоды должны быть целым числом"],
       "Person or group that has certified this chart.": [
-        "Лицо или группа, которые утвердили этот график"
+        "Лицо или группа, которые утвердили эту диаграмму"
       ],
       "Person or group that has certified this dashboard.": [
         "Лицо или группа, которые утвердили этот дашборд"
@@ -3141,13 +3258,13 @@
         "Пожалуйста, сохраните запрос, чтобы включить функцию \"поделиться\""
       ],
       "Please save your chart first, then try creating a new email report.": [
-        "Пожалуйста, сначала сохраните график перед тем, как создавать новую рассылку."
+        "Пожалуйста, сначала сохраните диаграмму перед тем, как создавать новую рассылку."
       ],
       "Please save your dashboard first, then try creating a new email report.": [
         "Пожалуйста, сначала сохраните дашборд перед тем, как создавать новую рассылку."
       ],
       "Please select both a Dataset and a Chart type to proceed": [
-        "Пожалуйста, для продолжения выберите и датасет, и тип графика"
+        "Пожалуйста, для продолжения выберите и датасет, и тип диаграммы"
       ],
       "Please use 3 different metric labels": [""],
       "Plot the distance (like flight paths) between origin and destination.": [
@@ -3212,6 +3329,7 @@
       "Private Key & Password": ["Приватный ключ и пароль"],
       "Private Key Password": ["Пароль приватного ключа"],
       "Proceed": ["Продолжить"],
+      "Product": ["Продукт"],
       "Progress": ["Прогресс"],
       "Progressive": ["Постепенный"],
       "Propagate": [""],
@@ -3230,6 +3348,7 @@
       ],
       "Python datetime string pattern": ["Шаблон строки даты и времени Python"],
       "QUERY DATA IN SQL LAB": [""],
+      "Quadrant title": ["Заголовок квадранта"],
       "Quarter": ["Квартал"],
       "Quarters %s": ["Кварталов %s"],
       "Query": ["Запрос"],
@@ -3270,14 +3389,14 @@
       "Ratio": ["Отношение"],
       "Raw records": ["Сырые записи"],
       "Recently created charts, dashboards, and saved queries will appear here": [
-        "Недавно созданные графики, дашборды и сохраненные запросы"
+        "Недавно созданные диаграммы, дашборды и сохраненные запросы"
       ],
       "Recently edited charts, dashboards, and saved queries will appear here": [
-        "Недавно измененные графики, дашборды и сохраненные запросы"
+        "Недавно измененные диаграммы, дашборды и сохраненные запросы"
       ],
       "Recently modified": ["Измененные недавно"],
       "Recently viewed charts, dashboards, and saved queries will appear here": [
-        "Недавно просмотренные графики, дашборды и сохраненные запросы"
+        "Недавно просмотренные диаграммы, дашборды и сохраненные запросы"
       ],
       "Recents": ["Недавние"],
       "Recipients are separated by \",\" or \";\"": [
@@ -3286,7 +3405,6 @@
       "Recommended tags": ["Рекомендованные теги"],
       "Record Count": ["Кол-во записей"],
       "Rectangle": ["Прямоугольник"],
-      "Recurring (every)": [""],
       "Redirects to this endpoint when clicking on the table from the table list": [
         ""
       ],
@@ -3304,7 +3422,7 @@
       "Refresh interval": ["Интервал обновления"],
       "Refresh interval saved": ["Интервал обновления сохранен"],
       "Refresh the default values": ["Обновить значения по умолчанию"],
-      "Refreshing charts": ["Обновление графиков"],
+      "Refreshing charts": ["Обновление диаграмм"],
       "Refreshing columns": ["Обновление столбцов"],
       "Relational": ["Относительный"],
       "Relationships between community channels": [""],
@@ -3360,6 +3478,7 @@
       "Report a bug": ["Сообщить об ошибке"],
       "Report failed": ["Рассылка не удалась"],
       "Report name": ["Имя отчета"],
+      "Report schedule": ["Расписание отчета"],
       "Report schedule client error": [
         "Возникла ошибка расписания отчета на стороне клиента"
       ],
@@ -3384,6 +3503,7 @@
         "Обязательные значения были удалены"
       ],
       "Resample": ["Ресемплирование (изменение частоты данных)"],
+      "Resample method should in ": [""],
       "Resample operation requires DatetimeIndex": [
         "Для ресемплирования требуется индекс формата дата/время"
       ],
@@ -3422,7 +3542,8 @@
       "Rolling window": ["Скользящее окно"],
       "Root certificate": ["Корневой сертификат"],
       "Root node id": [""],
-      "Rotate x axis label": ["Повернуть метку оси X"],
+      "Rotate x axis label": ["Поворот подписи оси абсцисс (X)"],
+      "Rotate y axis label": ["Поворот подписи оси ординат (Y)"],
       "Rotation to apply to words in the cloud": [
         "Вращение для применения к словам в облаке"
       ],
@@ -3458,6 +3579,7 @@
       "Run selection": ["Выполнить выбранное"],
       "Running": ["Выполняется"],
       "Running statement %(statement_num)s out of %(statement_count)s": [""],
+      "ru": ["Русский"],
       "SAT": ["СБ"],
       "SEP": ["СЕН"],
       "SHA": [""],
@@ -3520,7 +3642,7 @@
       "Save as...": ["Сохранить как..."],
       "Save as:": ["Сохранить как:"],
       "Save changes": ["Сохранить изменения"],
-      "Save chart": ["Сохранить график"],
+      "Save chart": ["Сохранить диаграмму"],
       "Save dashboard": ["Сохранить дашборд"],
       "Save dataset": ["Сохранить датасет"],
       "Save for this session": ["Сохранить на время текущей сессии"],
@@ -3555,6 +3677,7 @@
       "Schedule a new email report": ["Запланировать новую рассылку по почте"],
       "Schedule email report": ["Запланировать рассылку по почте"],
       "Schedule query": ["Сохранить запрос"],
+      "Schedule settings": ["Настройки расписания"],
       "Schedule the query periodically": [
         "Запланировать периодическое выполнение запроса"
       ],
@@ -3580,7 +3703,7 @@
       "Search": ["Поиск"],
       "Search / Filter": ["Поиск / Фильтр"],
       "Search Metrics & Columns": ["Поиск по мерам и столбцам"],
-      "Search all charts": ["Поиск по всем графикам"],
+      "Search all charts": ["Поиск по всем диаграммам"],
       "Search box": ["Строка поиска"],
       "Search by query text": ["Поиск по тексту запроса"],
       "Search...": ["Поиск..."],
@@ -3599,6 +3722,11 @@
       "See query details": ["Показать детали запроса"],
       "See table schema": ["Таблица"],
       "Select": ["Выбрать"],
+      "Selection": ["Выборка"],
+      "Selectors": ["Селекторы"],
+      "Selectors are temporarily unavailable. Please try again later or contact support": [
+        "Селекторы временно не доступны. Попробуйте воспользоваться ими позднее либо обратитесь в поддержку"
+      ],
       "Select ...": ["Выбрать ..."],
       "Select Delivery Method": ["Выберите способ оповещения"],
       "Select Viz Type": ["Выберите тип визуализации"],
@@ -3622,9 +3750,11 @@
         "Выберите базу данных для написания запроса"
       ],
       "Select a dimension": ["Выберете измерение"],
+      "Select a field": ["Выберите поле"],
       "Select a file to be uploaded to the database": [
         "Выберите файл для загрузки в базу данных."
       ],
+      "Select a filter": ["Выберите фильтр"],
       "Select a metric to display. You can use an aggregation function on a column or write custom SQL to create a metric.": [
         ""
       ],
@@ -3636,20 +3766,26 @@
       ],
       "Select a visualization type": ["Выберите тип визуализации"],
       "Select aggregate options": ["Выберите настройки агрегации"],
+      "Select All": ["Выбрать все"],
+      "Select all": ["Выбрать все"],
       "Select all data": ["Выбрать все данные"],
       "Select all items": ["Выбрать все записи"],
       "Select any columns for metadata inspection": [""],
-      "Select charts": ["Выберите графики"],
+      "Select charts": ["Выберите диаграммы"],
       "Select color scheme": ["Выберите цветовую схему"],
       "Select column": ["Выберите столбец"],
       "Select current page": ["Выбрать текущую страницу"],
       "Select databases require additional fields to be completed in the Advanced tab to successfully connect the database. Learn what requirements your databases has ": [
         "Некоторые базы данных требуют ручной настройки во вкладке Продвинутая настройка для успешного подключения. Вы можете ознакомиться с требованиями к вашей базе данных "
       ],
+      "Select dataset": ["Выберите датасет"],
       "Select dataset source": ["Выберите источник датасета"],
+      "Select facts": ["Выберите факты"],
+      "Select facts for selector": ["Выберите факты для селектора"],
       "Select file": ["Выбрать файл"],
       "Select filter": ["Селектор"],
       "Select filter plugin using AntD": [""],
+      "Select First": ["Выбрать первые"],
       "Select first filter value by default": [
         "Сделать первое значение фильтра значением по умолчанию"
       ],
@@ -3670,10 +3806,10 @@
         "Выбрать слой аннотации, который вы хотите использовать."
       ],
       "Select the charts to which you want to apply cross-filters in this dashboard. Deselecting a chart will exclude it from being filtered when applying cross-filters from any chart on the dashboard. You can select \"All charts\" to apply cross-filters to all charts that use the same dataset or contain the same column name in the dashboard.": [
-        ""
+        "Выберите диаграммы, к которым вы хотите применить кросс-фильтры в текущем дашборде. Исключение диаграммы уберет ее из списка фильтрации при применении кросс-фильтра на любой диаграмме дашборда. Вы можете выбрать \"All charts\", чтобы применить кросс-фильтры ко всем диаграммам, которые используют тот же набор данных."
       ],
       "Select the charts to which you want to apply cross-filters when interacting with this chart. You can select \"All charts\" to apply filters to all charts that use the same dataset or contain the same column name in the dashboard.": [
-        ""
+        "Выберите диаграммы, к которым вы хотите применить кросс-фильтры при взаимодействии с текущей диаграммой. Исключение диаграммы уберет ее из списка фильтрации при применении кросс-фильтра на любой диаграмме дашборда. Вы можете выбрать \"All charts\", чтобы применить кросс-фильтры ко всем диаграммам, которые используют тот же набор данных."
       ],
       "Select the geojson column": ["Выберите geojson столбец"],
       "Select the number of bins for the histogram": [
@@ -3685,6 +3821,7 @@
       "Select values in highlighted field(s) in the control panel. Then run the query by clicking on the %s button.": [
         "Выберите значения в обязательных полях на панели управления. Затем запустите запрос, нажав на кнопку %s."
       ],
+      "Select week": ["Выберите неделю"],
       "Send as CSV": ["Отправить в формате CSV"],
       "Send as PNG": ["Отправить в формате PNG"],
       "Send as text": ["Отправить текстом"],
@@ -3702,18 +3839,14 @@
       "Service Account": ["Сервисный аккаунт"],
       "Set auto-refresh interval": ["Задать интервал обновления"],
       "Set filter mapping": ["Установить действие фильтра"],
-      "Set the time range that will be used for the comparison metrics. For example, \"Year\" will compare to the same dates one year earlier. Use \"Inherit range from time filters\" to shift the comparison time rangeby the same length as your time range and use \"Custom\" to set a custom comparison range.": [
-        ""
-      ],
       "Set up an email report": ["Запланировать рассылку по почте"],
-      "Set up basic details, such as name and description.": [""],
       "Sets the hierarchy levels of the chart. Each level is\n        represented by one ring with the innermost circle as the top of the hierarchy.": [
         ""
       ],
       "Settings": ["Настройки"],
       "Settings for time series": ["Настройки временных рядов"],
       "Share": ["Поделиться"],
-      "Share chart by email": ["Поделиться графиком по email"],
+      "Share chart by email": ["Поделиться диаграммой по email"],
       "Share permalink by email": ["Поделиться ссылкой по email"],
       "Shared query": ["Общедоступный запрос"],
       "Shared query fields": ["Поля общедоступного запроса"],
@@ -3733,18 +3866,20 @@
       "Should yearly seasonality be applied. An integer value will specify Fourier order of seasonality.": [
         "Применяется годовая сезонность. Целочисленное значение будет указывать порядок сезонности Фурье."
       ],
-      "Show Bubbles": ["Показать пузыри"],
+      "Show Bubbles": ["Показать баблы"],
       "Show CREATE VIEW statement": ["Показать выражение CREATE VIEW"],
       "Show CSS Template": ["Показать CSS шаблон"],
-      "Show Chart": ["Показать график"],
+      "Show Chart": ["Показать диаграмму"],
       "Show Column": ["Показать столбец"],
       "Show Dashboard": ["Показать дашборд"],
       "Show Database": ["Показать базу данных"],
       "Show Labels": ["Показывать метки"],
+      "Show Less...": ["Показать меньше..."],
       "Show Log": ["Показать запись"],
       "Show Markers": ["Показать маркеры"],
       "Show Metric": ["Показатель меру"],
       "Show Metric Names": ["Показать имена мер"],
+      "Show more": ["Показать еще"],
       "Show Range Filter": ["Показать фильтр Диапазон"],
       "Show Table": ["Показать таблицу"],
       "Show Timestamp": ["Показать метку времени"],
@@ -3761,7 +3896,7 @@
       "Show all...": ["Показать все..."],
       "Show axis line ticks": ["Показывать деления на оси"],
       "Show cell bars": ["Наложить гистограммы на ячейки"],
-      "Show chart description": ["Показать описание графика"],
+      "Show chart description": ["Показать описание диаграммы"],
       "Show columns total": ["Показать общий итог по столбцам"],
       "Show data points as circle markers on the lines": [""],
       "Show empty columns": ["Показывать пустые столбцы"],
@@ -3780,7 +3915,7 @@
       "Show progress": ["Показывать прогресс"],
       "Show rows total": ["Показать общий итог по строкам"],
       "Show series values on the chart": [
-        "Показать значения категорий на графике"
+        "Показать значения категорий на диаграмме"
       ],
       "Show split lines": ["Показывать разделительные линии"],
       "Show the value on top of the bar": [
@@ -3846,7 +3981,7 @@
         "К сожалению, произошла ошибка при получении информации о базе данных: %s"
       ],
       "Sorry there was an error fetching saved charts: ": [
-        "Извините, произошла ошибка при загрузке графиков: "
+        "Извините, произошла ошибка при загрузке диаграмм: "
       ],
       "Sorry, An error occurred": ["Извините, произошла ошибка"],
       "Sorry, an error occurred": ["Извините, произошла ошибка"],
@@ -3905,6 +4040,7 @@
       "Specify a schema (if database flavor supports this).": [
         "Укажите схему (если она поддерживается базой данных)."
       ],
+      "Specify quantity": ["Укажите количество"],
       "Specify name to CREATE TABLE AS schema in: public": [
         "Укажите имя новой таблицы для CREATE TABLE AS"
       ],
@@ -3945,6 +4081,7 @@
       "Step - end": [""],
       "Step - middle": [""],
       "Step - start": [""],
+      "Stepped Line": ["Stepped Line"],
       "Stepped-line graph (also called step chart) is a variation of line chart but with the line forming a series of steps between data points. A step chart can be useful when you want to show the changes that occur at irregular intervals.": [
         ""
       ],
@@ -3990,9 +4127,9 @@
       "Sum values": ["Суммарные значения"],
       "Sunburst Chart": ["Диаграмма Солнечные лучи"],
       "Sunday": ["Воскресенье"],
-      "Superset Chart": ["График Superset"],
+      "Superset Chart": ["Диаграмма Superset"],
       "Superset Embedded SDK documentation.": [""],
-      "Superset chart": ["График Superset"],
+      "Superset chart": ["Диаграмма Superset"],
       "Superset dashboard": ["Дашборд Superset"],
       "Superset encountered an error while running a command.": [
         "Суперсет столкнулся с ошибкой во время выполнения команды."
@@ -4085,7 +4222,7 @@
         "Категория исходных вершин предназначена для задания цветов. Если вершина связана более, чем с одной категорией, только первая будет использована."
       ],
       "The chart datasource does not exist": [
-        "Источник данных графика не существует"
+        "Источник данных диаграммы не существует"
       ],
       "The chart does not exist": ["График не существует"],
       "The classic. Great for showing how much of a company each investor gets, what demographics follow your blog, or what portion of the budget goes to the military industrial complex.\n\n        Pie charts can be difficult to interpret precisely. If clarity of relative proportion is important, consider using a bar or other chart type instead.": [
@@ -4095,7 +4232,7 @@
         "Цвет для маркеров и кластеров в RGB"
       ],
       "The color scheme for rendering chart": [
-        "Цветовая схема, применяемая для раскрашивания графика"
+        "Цветовая схема, применяемая для раскрашивания диаграммы"
       ],
       "The color scheme is determined by the related dashboard.\n        Edit the color scheme in the dashboard properties.": [
         "Цветовая схема определена соответствующим дашбордом.\n              Измените цветовую схему в свойствах дашборда."
@@ -4115,7 +4252,7 @@
         ""
       ],
       "The database %s is linked to %s charts that appear on %s dashboards and users have %s SQL Lab tabs using this database open. Are you sure you want to continue? Deleting the database will break those objects.": [
-        "База данных %s привязана к %s графику(-ам), который(-ые) используется(-ются) в %s дашборде(-ах), и пользователи имеют %s открытую(-ых) вкладку(-ок) в Лаборатории SQL. Вы уверены, что хотите продолжить? Удаление базы данных приведёт к неработоспособности этих компонентов."
+        "База данных %s привязана к %s диаграмме(-ам), которая(-ые) используется(-ются) в %s дашборде(-ах), и пользователи имеют %s открытую(-ых) вкладку(-ок) в Лаборатории SQL. Вы уверены, что хотите продолжить? Удаление базы данных приведёт к неработоспособности этих компонентов."
       ],
       "The database columns that contains lines information": [""],
       "The database is currently running too many queries.": [
@@ -4133,23 +4270,23 @@
       "The database was deleted.": ["База данных была удалена"],
       "The database was not found.": ["Не удалось найти базу данных"],
       "The dataset %s is linked to %s charts that appear on %s dashboards. Are you sure you want to continue? Deleting the dataset will break those objects.": [
-        "Датасет %s привязан к %s графику(-ам), который(-ые) используется(-ются) в %s дашборде(-ах). Вы уверены, что хотите продолжить? Удаление датасета приведёт к неработоспособности этих объектов."
+        "Датасет %s привязан к %s диаграмме(-ам), которая(-ые) используется(-ются) в %s дашборде(-ах). Вы уверены, что хотите продолжить? Удаление датасета приведёт к неработоспособности этих объектов."
       ],
       "The dataset associated with this chart no longer exists": [
-        "Датасет, связанный с этим графиком, больше не существует"
+        "Датасет, связанный с этой диаграммой, больше не существует"
       ],
       "The dataset column/metric that returns the values on your chart's x-axis.": [
-        ""
+        "Метрика, выводимая на ось абсцисс (X)."
       ],
       "The dataset column/metric that returns the values on your chart's y-axis.": [
-        ""
+        "Метрика, выводимая на ось ординат (Y)."
       ],
       "The dataset configuration exposed here\n                affects all the charts using this dataset.\n                Be mindful that changing settings\n                here may affect other charts\n                in undesirable ways.": [
-        "Представленная здесь конфигурация датасета\n                влияет на все графики, использующие этот датасет.\n                Помните, что изменение настроек\n                может иметь неожиданный эффект\n                на другие графики."
+        "Представленная здесь конфигурация датасета\n                влияет на все диаграммы, использующие этот датасет.\n                Помните, что изменение настроек\n                может иметь неожиданный эффект\n                на другие графики."
       ],
       "The dataset has been saved": ["Датасет сохранен"],
       "The dataset linked to this chart may have been deleted.": [
-        "Датасет, связанный с этим графиком, похоже, был удален."
+        "Датасет, связанный с этой диаграммой, похоже, был удален."
       ],
       "The datasource couldn't be loaded": [
         "Невозможно загрузить источник данных"
@@ -4185,7 +4322,7 @@
       "The hostname provided can't be resolved.": [
         "Не удалось обнаружить хост."
       ],
-      "The id of the active chart": ["Идентификатор активного графика"],
+      "The id of the active chart": ["Идентификатор активной диаграммы"],
       "The list of charts associated with this table. By altering this datasource, you may change how these associated charts behave. Also note that charts need to point to a datasource, so this form will fail at saving if removing charts from a datasource. If you want to change the datasource for a chart, overwrite the chart from the 'explore view'": [
         ""
       ],
@@ -4248,7 +4385,7 @@
         "Неверный пароль для базы данных."
       ],
       "The passwords for the databases below are needed in order to import them together with the charts. Please note that the \"Secure Extra\" and \"Certificate\" sections of the database configuration are not present in export files, and should be added manually after the import if they are needed.": [
-        "Для баз данных нужны пароли, чтобы импортировать их вместе с графиками. Пожалуйста, обратите внимание, что разделы \"Безопасность\" и \"Утверждение\" в настройках конфигурации базы данных отсутствуют в экспортируемых файлов и должны быть добавлены вручную после импорта, если необходимо."
+        "Для баз данных нужны пароли, чтобы импортировать их вместе с диаграммами. Пожалуйста, обратите внимание, что разделы \"Безопасность\" и \"Утверждение\" в настройках конфигурации базы данных отсутствуют в экспортируемых файлов и должны быть добавлены вручную после импорта, если необходимо."
       ],
       "The passwords for the databases below are needed in order to import them together with the dashboards. Please note that the \"Secure Extra\" and \"Certificate\" sections of the database configuration are not present in export files, and should be added manually after the import if they are needed.": [
         "Для баз данных нужны пароли, чтобы импортировать их вместе с дашбордами. Пожалуйста, обратите внимание, что разделы \"Безопасность\" и \"Утверждение\" в настройках конфигурации базы данных отсутствуют в экспортируемых файлах и должны быть добавлены вручную после импорта, если необходимо."
@@ -4270,7 +4407,7 @@
       ],
       "The pixel radius": ["Радиус ячейки (в пикселях)"],
       "The pointer to a physical table (or view). Keep in mind that the chart is associated to this Superset logical table, and this logical table points the physical table referenced here.": [
-        "Указатель на физическую таблицу (или представление). Следует помнить, что график связан с логической таблицей Superset, а эта логическая таблица указывает на физическую таблицу, указанную здесь."
+        "Указатель на физическую таблицу (или представление). Следует помнить, что диаграмма связана с логической таблицей Superset, а эта логическая таблица указывает на физическую таблицу, указанную здесь."
       ],
       "The port is closed.": ["Порт закрыт."],
       "The port number is invalid.": ["Недействительный порт."],
@@ -4297,9 +4434,7 @@
         "Радиус маркеров (не находящихся в кластере). Выберите числовой столбец или `Автоматически`, который отмасштабирует маркеры по наибольшему маркеру."
       ],
       "The report has been created": ["Рассылка создана"],
-      "The result of this query must be a value capable of numeric interpretation e.g. 1, 1.0, or \"1\" (compatible with Python's float() function).": [
-        ""
-      ],
+      "The result of this query should be a numeric-esque value": [""],
       "The results backend no longer has the data from the query.": [
         "Сервер не сохранил данные из этого запроса."
       ],
@@ -4310,7 +4445,7 @@
         "Расширенная всплывающая подсказка показывает список всех категорий для этой точки."
       ],
       "The row limit set for the chart was reached. The chart may show partial data.": [
-        ""
+        "Достигнуто ограничение по количеству строк. Часть данных может отсутствовать на визуализации."
       ],
       "The schema \"%(schema)s\" does not exist. A valid schema must be used to run this query.": [
         ""
@@ -4391,7 +4526,7 @@
         "Есть связанные оповещения или отчеты"
       ],
       "There are no charts added to this dashboard": [
-        "В этот дашборд еще не добавлен ни один график."
+        "В этот дашборд еще не добавлена ни одна диаграмма."
       ],
       "There are no components added to this tab": [
         "В этой вкладке нет компонентов"
@@ -4405,7 +4540,7 @@
         "В SQL-запросе имеется синтаксическая ошибка. Возможно, это орфографическая ошибка или опечатка."
       ],
       "There is no chart definition associated with this component, could it have been deleted?": [
-        "С этим компонентом не связан ни один график, возможно, он был удален."
+        "С этим компонентом не связана ни одна диаграмма, возможно, он был удален."
       ],
       "There is not enough space for this component. Try decreasing its width, or increasing the destination width.": [
         "Недостаточно пространства для этого компонента. Попробуйте уменьшить ширину или увеличить целевую ширину."
@@ -4441,7 +4576,7 @@
         "Произошла ошибка при удалении выбранных аннотаций: %s"
       ],
       "There was an issue deleting the selected charts: %s": [
-        "Произошла ошибка при удалении выбранных графиков: %s"
+        "Произошла ошибка при удалении выбранных диаграмм: %s"
       ],
       "There was an issue deleting the selected dashboards: ": [
         "Произошла ошибка при удалении выбранных дашбордов: "
@@ -4475,7 +4610,7 @@
         "Произошла ошибка с получением статуса избранного для этого дашборда."
       ],
       "There was an issue fetching your chart: %s": [
-        "Произошла ошибка при получении вашего графика: %s"
+        "Произошла ошибка при получении вашей диаграммы: %s"
       ],
       "There was an issue fetching your dashboards: %s": [
         "Произошла ошибка при получении вашего дашборда: %s"
@@ -4520,11 +4655,11 @@
         ""
       ],
       "This chart has been moved to a different filter scope.": [
-        "Этот график был перемещён в другой набор фильтров."
+        "Эта диаграмма была перемещена в другой набор фильтров."
       ],
       "This chart is managed externally, and can't be edited in Superset": [""],
       "This chart might be incompatible with the filter (datasets don't match)": [
-        "Этот график может быть несовместим с этим фильтром (датасеты не совпадают)"
+        "Эта диаграмма может быть несовместима с этим фильтром (датасеты не совпадают)"
       ],
       "This chart type is not supported when using an unsaved query as a chart source. ": [
         ""
@@ -4542,10 +4677,10 @@
         ""
       ],
       "This controls whether the \"time_range\" field from the current\n                  view should be passed down to the chart containing the annotation data.": [
-        "Должен ли временной интервал из этого представления переписать временной интервал графика, содержащего данные аннотации."
+        "Должен ли временной интервал из этого представления переписать временной интервал диаграммы, содержащего данные аннотации."
       ],
       "This controls whether the time grain field from the current\n                  view should be passed down to the chart containing the annotation data.": [
-        "Должен ли единица времени из этой таблицы переписать единицу времени графика."
+        "Должен ли единица времени из этой таблицы переписать единицу времени диаграммы."
       ],
       "This dashboard is currently auto refreshing; the next auto refresh will be in %s.": [
         "В настоящий момент дашборд обновляется; следующее обновление будет через %s"
@@ -4579,8 +4714,9 @@
       ],
       "This dataset is not used to power any charts.": [""],
       "This defines the element to be plotted on the chart": [
-        "Элемент, который будет отражен на графике"
+        "Элемент, который будет отражен на диаграмме"
       ],
+      "This field is required": ["Поле обязательно для заполнения"],
       "This field is used as a unique identifier to attach the calculated dimension to charts. It is also used as the alias in the SQL query.": [
         ""
       ],
@@ -4690,9 +4826,9 @@
       "Time string is ambiguous. Please specify [%(human_readable)s ago] or [%(human_readable)s later].": [
         "Временная строка неоднозначна. Пожалуйста, укажите [%(human_readable)s до] или [%(human_readable)s после]."
       ],
-      "Time-series Area Chart (legacy)": ["Диаграмма с областями (устарело)"],
       "Time-series Bar Chart (legacy)": ["Столбчатая диаграмма (устарело)"],
       "Time-series Percent Change": ["Процентное изменение (временные ряды)"],
+      "Time-series Period Pivot": ["Time-series Period Pivot"],
       "Time-series Table": ["Таблица временных рядов"],
       "Timeout error": ["Ошибка таймаута"],
       "Timestamp format": ["Формат даты и времени"],
@@ -4706,6 +4842,7 @@
       "Title Column": ["Столбец с названием"],
       "Title is required": ["Название обязательно"],
       "Title or Slug": ["Название или читаемый URL"],
+      "To": ["Окончание"],
       "To filter on a metric, use Custom SQL tab.": [
         "Для фильтрации по мере используйте вкладку Свой SQL."
       ],
@@ -4719,6 +4856,7 @@
       "Top left": ["Сверху слева"],
       "Top right": ["Сверху справа"],
       "Top to Bottom": ["Сверху вниз"],
+      "Total bubble limit": ["Ограничение количества элементов"],
       "Total (%(aggfunc)s)": [""],
       "Total (%(aggregatorName)s)": [""],
       "Total: %s": ["Итого: %s"],
@@ -4735,11 +4873,15 @@
       "Trend": ["Тенденция"],
       "Triangle": ["Треугольник"],
       "Trigger Alert If...": ["Оповестить, если..."],
-      "Truncate Axis": ["Настройка интервала оси"],
+      "Truncate Axis": ["Обрезать ось"],
       "Truncate Metric": ["Убрать имя меры"],
-      "Truncate Y Axis": ["Урезать интервал оси Y"],
+      "Truncate X Axis": ["Обрезать ось абсцисс (X)"],
+      "Truncate X Axis. Can be overridden by specifying a min or max bound. Only applicable for numercal X axis.": [
+        "Обрезать ось абсцисс (X). Можно назначить минимальную и максимальную границу. Применимо только для числовых значений оси."
+      ],
+      "Truncate Y Axis": ["Обрезать ось ординат (Y)"],
       "Truncate Y Axis. Can be overridden by specifying a min or max bound.": [
-        "Уменьшить интервал по умолчанию для оси Y. Необходимо задать минимальную и максимальную границы. Обратите внимание, что некоторые линии могут пропасть из области видимости."
+        "Обрезать ось ординат (Y). Можно назначить минимальную и максимальную границу. Обратите внимание, что некоторые линии могут пропасть из области видимости."
       ],
       "Truncate long cells to the \"min width\" set above": [""],
       "Truncates the specified date to the accuracy specified by the date unit.": [
@@ -4853,8 +4995,8 @@
       "Untitled Dataset": ["Безымянный датасет"],
       "Untitled query": ["Безымянный запрос"],
       "Update": ["Обновить"],
-      "Update chart": ["Обновить график"],
-      "Updating chart was stopped": ["Обновление графика остановлено"],
+      "Update chart": ["Обновить диаграмму"],
+      "Updating chart was stopped": ["Обновление диаграммы остановлено"],
       "Upload": ["Загрузить"],
       "Upload CSV": ["Загрузить CSV"],
       "Upload CSV to database": ["Загрузить файл CSV в базу данных"],
@@ -4913,7 +5055,6 @@
       "Used internally to identify the plugin. Should be set to the package name from the pluginʼs package.json": [
         ""
       ],
-      "Used metrics list": ["Список использованных показателей"],
       "Used to summarize a set of data by grouping together multiple statistics along two axes. Examples: Sales numbers by region and month, tasks by status and assignee, active users by age and location. Not the most visually stunning visualization, but highly informative and versatile.": [
         "Используется для обобщения набора данных путем группировки нескольких показателей по двум осям. Примеры: показатели продаж по регионам и месяцам, задачи по статусу и назначенному лицу, активные пользователи по возрасту и местоположению."
       ],
@@ -4940,7 +5081,6 @@
       "Value Format": ["Формат значения"],
       "Value bounds": ["Ограничения для значения"],
       "Value cannot exceed %s": [""],
-      "Value difference between the time periods": [""],
       "Value format": ["Формат значения"],
       "Value is required": ["Значение обязательно"],
       "Value must be greater than 0": ["Значение должно быть больше 0"],
@@ -4961,7 +5101,7 @@
       "View": ["Показать"],
       "View All »": ["Смотреть все »"],
       "View Dataset": ["Посмотреть датасет"],
-      "View all charts": ["Показать все графики"],
+      "View all charts": ["Показать все диаграммы"],
       "View as table": ["Показать в виде таблицы"],
       "View in SQL Lab": ["Открыть в Лаборатории SQL"],
       "View keys & indexes (%s)": ["Показать ключи и индексы (%s)"],
@@ -5029,15 +5169,18 @@
         "У визуализации отсутствует источник данных"
       ],
       "Viz type": ["Тип визуализации"],
+      "variant": ["вариант"],
+      "variants": ["вариантов"],
       "WED": ["СР"],
       "Want to add a new database?": ["Хотите добавить новую базу данных?"],
       "Warning": ["Предупреждение"],
       "Warning Message": ["Предупреждение"],
       "Warning!": ["Предупреждение!"],
       "Warning! Changing the dataset may break the chart if the metadata does not exist.": [
-        "Внимание! Изменение датасета может привести к тому, что график станет нерабочим, если будут отсутствовать метаданные."
+        "Внимание! Изменение датасета может привести к тому, что диаграмма станет нерабочей, если будут отсутствовать метаданные."
       ],
       "Was unable to check your query": ["Не удалось проверить запрос"],
+      "Waterfall Chart": ["Каскадная диаграмма"],
       "We are unable to connect to your database. Click \"See more\" for database-provided information that may help troubleshoot the issue.": [
         "Не удалось подключиться к базе данных. Нажмите \"Подробнее\" для информации, предоставленной базой данных в ответ, для решения проблемы."
       ],
@@ -5070,6 +5213,7 @@
       "Weekly Report for %s": ["Еженедельный отчет для %s"],
       "Weekly seasonality": ["Недельная сезонность"],
       "Weeks %s": ["Недель %s"],
+      "Weeks selected": ["Выбрано недель"],
       "Weight": ["Вес"],
       "What should be shown on the label?": ["Текст, отображаемый на метке"],
       "What should happen if the table already exists": [
@@ -5143,10 +5287,10 @@
         "Отображать гистограмм в колонках таблицы"
       ],
       "Whether to display a legend for the chart": [
-        "Отображать легенду для графика"
+        "Отображать легенду для диаграммы"
       ],
       "Whether to display bubbles on top of countries": [
-        "Отображать пузыри поверх стран"
+        "Отображать баблы поверх стран"
       ],
       "Whether to display the aggregate count": [
         "Отображать совокупное количество"
@@ -5208,7 +5352,7 @@
         ""
       ],
       "Whether to show extra controls or not. Extra controls include things like making mulitBar charts stacked or side by side.": [
-        "Отображает дополнительные элементы управления на самом графике и позволяет менять отображение столбцов: без накопления и с ним."
+        "Отображает дополнительные элементы управления на самой диаграмме и позволяет менять отображение столбцов: без накопления и с ним."
       ],
       "Whether to show minor ticks on the axis": [
         "Отображение мелких отметок на оси"
@@ -5259,33 +5403,35 @@
       "Write dataframe index as a column.": [
         "Сделать индекс датафрейма столбцом."
       ],
+      "week of": ["неделя"],
       "X AXIS TITLE BOTTOM MARGIN": ["Отступ снизу названия оси X"],
-      "X AXIS TITLE MARGIN": [""],
+      "X AXIS TITLE MARGIN": ["Отступ для подписи оси абсцисс (X)"],
       "X Axis": ["Ось X"],
-      "X Axis Format": ["Формат оси X"],
-      "X Axis Label": ["Метка оси X"],
-      "X Axis Title": ["Название оси X"],
-      "X Log Scale": ["Логарифмическая ось X"],
-      "X Tick Layout": ["Расположение делений оси X"],
-      "X bounds": ["Показывать границы оси X"],
-      "X-Axis Sort Ascending": ["Сортировать по возрастанию оси X"],
+      "X Axis Bounds": ["Ограничения шкалы абсцисс (Х)"],
+      "X Axis Format": ["Формат оси абсцисс (Х)"],
+      "X Axis Label": ["Метка оси абсцисс (Х)"],
+      "X Axis Title": ["Название оси абсцисс (Х)"],
+      "X Log Scale": ["Логарифмическая ось абсцисс (X)"],
+      "X Tick Layout": ["Расположение делений оси абсцисс (Х)"],
+      "X bounds": ["Показывать границы оси абсцисс (Х)"],
+      "X-Axis Sort Ascending": ["Сортировать по возрастанию оси абсцисс (Х)"],
       "X-Axis Sort By": [""],
-      "X-axis": ["Ось X"],
+      "X-axis": ["Ось абсцисс (Х)"],
       "XScale Interval": [""],
       "Y 2 bounds": ["Границы оси Y 2"],
-      "Y AXIS TITLE MARGIN": ["Отступ названия оси Y"],
-      "Y Axis": ["Ось Y"],
-      "Y Axis 2 Bounds": ["Границы оси Y 2"],
-      "Y Axis Bounds": ["Границы оси Y"],
-      "Y Axis Format": ["Формат Оси Y"],
-      "Y Axis Label": ["Метка оси Y"],
-      "Y Axis Title": ["Название оси Y"],
-      "Y Axis Title Margin": [""],
-      "Y Log Scale": ["Логарифмическая ось Y"],
-      "Y bounds": ["Показывать границы оси Y"],
+      "Y AXIS TITLE MARGIN": ["Отступ для подписи оси ординат (Y)"],
+      "Y Axis": ["Ось ординат (Y)"],
+      "Y Axis 2 Bounds": ["Границы оси ординат (Y) 2"],
+      "Y Axis Bounds": ["Ограничения шкалы ординат (Y)"],
+      "Y Axis Format": ["Формат оси ординат (Y)"],
+      "Y Axis Label": ["Метка оси ординат (Y)"],
+      "Y Axis Title": ["Название оси ординат (Y)"],
+      "Y Axis Title Margin": ["Отступ для подписи оси ординат (Y)"],
+      "Y Log Scale": ["Логарифмическая ось ординат (Y)"],
+      "Y bounds": ["Показывать границы оси ординат (Y)"],
       "Y-Axis Sort By": [""],
       "Y-axis": ["Ось Y"],
-      "Y-axis bounds": ["Границы оси Y"],
+      "Y-axis bounds": ["Ограничения шкалы ординат (Y)"],
       "Year": ["Год"],
       "Year (freq=AS)": ["Год (част=AS)"],
       "Yearly seasonality": ["Годовая сезонность"],
@@ -5295,7 +5441,7 @@
       "Yes, overwrite changes": ["Да, перезаписать изменения"],
       "You are adding tags to %s %ss": [""],
       "You are importing one or more charts that already exist. Overwriting might cause you to lose some of your work. Are you sure you want to overwrite?": [
-        "Вы импортируете один или несколько графиков, которые уже существуют. Перезапись может привести к потере части вашей работы. Вы уверены, что хотите перезаписать?"
+        "Вы импортируете одну или несколько диаграмм, которые уже существуют. Перезапись может привести к потере части вашей работы. Вы уверены, что хотите перезаписать?"
       ],
       "You are importing one or more dashboards that already exist. Overwriting might cause you to lose some of your work. Are you sure you want to overwrite?": [
         "Вы импортируете один или несколько дашбордов, которые уже существуют. Перезапись может привести к потере части вашей работы. Вы уверены, что хотите перезаписать?"
@@ -5319,7 +5465,7 @@
         ""
       ],
       "You can create a new chart or use existing ones from the panel on the right": [
-        "Вы можете создать новый график или использовать существующие из панели справа"
+        "Вы можете создать новую диаграмму или использовать существующие из панели справа"
       ],
       "You can preview the list of dashboards in the chart settings dropdown.": [
         ""
@@ -5331,7 +5477,7 @@
         "Вы не можете использовать расположение делений под углом 45° при использовании временного фильтра"
       ],
       "You do not have permission to edit this chart": [
-        "У вас нет прав на редактирование этого графика"
+        "У вас нет прав на редактирование этой диаграммы"
       ],
       "You do not have permission to edit this dashboard": [
         "У вас нет прав на редактирование этого дашборда"
@@ -5340,7 +5486,7 @@
         "У вас нет прав на редактирование этого дашборда."
       ],
       "You don't have access to this chart.": [
-        "Недостаточно прав для доступа к этому графику."
+        "Недостаточно прав для доступа к этой диаграмме."
       ],
       "You don't have access to this dashboard.": [
         "Недостаточно прав для доступа к этому дашборду."
@@ -5359,7 +5505,7 @@
         "Недостаточно прав для изменения %(resource)s"
       ],
       "You don't have the rights to alter this chart": [
-        "Недостаточно прав для изменения графика"
+        "Недостаточно прав для изменения диаграммы"
       ],
       "You don't have the rights to alter this dashboard": [
         "Недостаточно прав для изменения дашборда"
@@ -5368,7 +5514,7 @@
         "Недостаточно прав для изменения названия."
       ],
       "You don't have the rights to create a chart": [
-        "Недостаточно прав для создания графика"
+        "Недостаточно прав для создания диаграммы"
       ],
       "You don't have the rights to create a dashboard": [
         "Недостаточно прав для создания дашборда"
@@ -5392,13 +5538,13 @@
       ],
       "You need to configure HTML sanitization to use CSS": [""],
       "You updated the values in the control panel, but the chart was not updated automatically. Run the query by clicking on the \"Update chart\" button or": [
-        "Вы обновили значения в панели управления, но график не был обновлен автоматически. Сделайте запрос, нажав на кнопку \"Обновить график\" или"
+        "Вы обновили значения в панели управления, но диаграмма не была обновлена автоматически. Сделайте запрос, нажав на кнопку \"Обновить диаграмму\" или"
       ],
       "You've changed datasets. Any controls with data (columns, metrics) that match this new dataset have been retained.": [
         "Вы изменили датасеты. Все элементы управления с данными (столбцами, мерами), которые соответствуют новому датасету, были сохранены."
       ],
-      "Your chart is not up to date": ["Ваш график не актуален"],
-      "Your chart is ready to go!": ["Ваш график готов!"],
+      "Your chart is not up to date": ["Ваша диаграмма не актуальна"],
+      "Your chart is ready to go!": ["Ваша диаграмма готова!"],
       "Your dashboard is too large. Please reduce its size before saving it.": [
         "Дашборд слишком большой. Пожалуйста, уменьшите его размер перед сохранением."
       ],
@@ -5444,9 +5590,7 @@
       ],
       "`operation` property of post processing object undefined": [""],
       "`prophet` package not installed": [""],
-      "`rename_columns` must have the same length as `columns` + `time_shift_columns`.": [
-        ""
-      ],
+      "`rename_columns` must have the same length as `columns`.": [""],
       "`row_limit` must be greater than or equal to 0": [""],
       "`row_offset` must be greater than or equal to 0": [""],
       "`width` must be greater or equal to 0": [""],
@@ -5455,9 +5599,10 @@
       "alerts": ["оповещений"],
       "all": ["Все"],
       "also copy (duplicate) charts": [
-        "также копировать (дублировать) графики"
+        "также копировать (дублировать) диаграммы"
       ],
       "ancestor": ["предок"],
+      "and": ["и"],
       "annotation": ["аннотация"],
       "annotation_layer": ["слой_аннотации"],
       "asfreq": ["asfreq (без изменения)"],
@@ -5476,8 +5621,8 @@
       ],
       "by using": [", используя"],
       "cannot be empty": ["Необходимо заполнить"],
-      "chart": ["график"],
-      "charts": ["графики(ов)"],
+      "chart": ["диаграмма"],
+      "charts": ["диаграммы(-м)"],
       "choose WHERE or HAVING...": ["выберите WHERE или HAVING..."],
       "clear all filters": ["Сбросить все фильтры"],
       "click here": ["нажмите сюда"],
@@ -5490,7 +5635,7 @@
       "connecting to %(dbModelName)s.": ["подключении к %(dbModelName)s"],
       "count": ["количество"],
       "create": ["создать"],
-      "create a new chart": ["создать новый график"],
+      "create a new chart": ["создать новую диаграмму"],
       "create dataset from SQL query": ["создайте датасет из SQL запроса"],
       "css": ["css"],
       "css_template": ["шаблон_css"],
@@ -5505,13 +5650,17 @@
       "day": ["день"],
       "day of the month": ["день месяца"],
       "day of the week": ["день недели"],
-      "deck.gl 3D Hexagon": ["deck.gl 3D Шестигранники"],
-      "deck.gl Arc": ["deck.gl Дуга"],
-      "deck.gl Geojson": ["deck.gl GeoJSON"],
-      "deck.gl Grid": ["deck.gl Сетка"],
-      "deck.gl Multiple Layers": ["deck.gl Многослойный"],
-      "deck.gl Polygon": ["deck.gl Полигон"],
-      "deck.gl Scatterplot": ["deck.gl Точечная карта"],
+      "deck.gl 3D Hexagon": ["3D Шестигранники (deck.gl)"],
+      "deck.gl Arc": ["Дуга (deck.gl)"],
+      "deck.gl Contour": ["Contour (deck.gl)"],
+      "deck.gl GeoJSON": ["Визуализация на Карте (deck.gl)"],
+      "deck.gl Grid": ["Сетка (deck.gl)"],
+      "deck.gl Heatmap": ["Тепловая Карта (deck.gl)"],
+      "deck.gl Multiple Layers": ["Многослойный (deck.gl)"],
+      "deck.gl Path": ["Path (deck.gl)"],
+      "deck.gl Polygon": ["Полигон (deck.gl)"],
+      "deck.gl Scatterplot": ["Точечная карта (deck.gl)"],
+      "deck.gl Screen Grid": ["Screen Grid (deck.gl)"],
       "deckGL": ["Карта deckGL"],
       "default": ["по умолчанию"],
       "delete": ["удалить"],
@@ -5667,11 +5816,7 @@
         "y: значения нормализованы внутри каждой строки"
       ],
       "year": ["год"],
-      "zoom area": [""],
-      "Threshold for billions (1B => 1000 (млн), 1M => 1000 (тыс))": [
-        "Формат для миллиардов (1B => 1000 (млн), 1M => 1000 (тыс))"
-      ],
-      "Business unit": ["Бизнес"]
+      "zoom area": [""]
     }
   }
 }

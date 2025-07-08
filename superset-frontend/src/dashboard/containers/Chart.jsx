@@ -16,29 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import { bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
-import {
-  toggleExpandSlice,
-  setFocusedFilterField,
-  unsetFocusedFilterField,
-} from 'src/dashboard/actions/dashboardState';
-import { updateComponents } from 'src/dashboard/actions/dashboardLayout';
-import { changeFilter } from 'src/dashboard/actions/dashboardFilters';
-import {
-  addSuccessToast,
-  addDangerToast,
-} from 'src/components/MessageToasts/actions';
-import { refreshChart } from 'src/components/Chart/chartAction';
-import { logEvent } from 'src/logger/actions';
-import {
-  getActiveFilters,
-  getAppliedFilterValues,
-} from 'src/dashboard/util/activeDashboardFilters';
+import {bindActionCreators} from 'redux';
+import {connect} from 'react-redux';
+import {setFocusedFilterField, toggleExpandSlice, unsetFocusedFilterField,} from 'src/dashboard/actions/dashboardState';
+import {updateComponents} from 'src/dashboard/actions/dashboardLayout';
+import {changeFilter} from 'src/dashboard/actions/dashboardFilters';
+import {addDangerToast, addSuccessToast,} from 'src/components/MessageToasts/actions';
+import {refreshChart} from 'src/components/Chart/chartAction';
+import {logEvent} from 'src/logger/actions';
+import {getActiveFilters, getAppliedFilterValues,} from 'src/dashboard/util/activeDashboardFilters';
 import getFormDataWithExtraFilters from 'src/dashboard/util/charts/getFormDataWithExtraFilters';
-import getExtraChartControlsWithExtraFilters from 'src/dashboard/util/charts/getExtraChartControlsWithExtraFilters';
 import Chart from 'src/dashboard/components/gridComponents/Chart';
-import { PLACEHOLDER_DATASOURCE } from 'src/dashboard/constants';
+import {PLACEHOLDER_DATASOURCE} from 'src/dashboard/constants';
 
 const EMPTY_OBJECT = {};
 
@@ -55,7 +44,25 @@ function mapStateToProps(
   },
   ownProps,
 ) {
-  const { id, extraControls, setControlValue } = ownProps;
+  const {
+    id,
+    extraControls,
+    setControlValue,
+
+    selectedPeriod,
+    selectedMarket,
+    selectedProducts,
+    selectedFact,
+    selected100Markets,
+    selected100Products,
+    selectedComparisonPeriod,
+
+    selectedSelectorsForSorting = {},
+    selectorsDataLoaded,
+    customizeOptions,
+    rlsRestrictions,
+    korusExportInfo,
+  } = ownProps;
   const chart = chartQueries[id] || EMPTY_OBJECT;
   const datasource =
     (chart && chart.form_data && datasources[chart.form_data.datasource]) ||
@@ -79,19 +86,20 @@ function mapStateToProps(
     labelColors,
     sharedLabelColors,
   });
-  const extraChartControls = getExtraChartControlsWithExtraFilters({
-    chart,
-    chartConfiguration: dashboardInfo.metadata?.chart_configuration,
-    nativeFilters: nativeFilters?.filters,
-    filters: getAppliedFilterValues(id),
-    sliceId: id,
-    dataMask,
-    allSliceIds: dashboardState.sliceIds,
-  });
-
-  // {y_axis_format: ',1%'}
 
   formData.dashboardId = dashboardInfo.id;
+  formData.selectedPeriod = selectedPeriod;
+  formData.selectedMarket = selectedMarket;
+  formData.selectedProducts = selectedProducts;
+
+  formData.selectedComparisonPeriod = selectedComparisonPeriod;
+  formData.selected100Markets = selected100Markets;
+  formData.selected100Products = selected100Products;
+  formData.selectedFact = selectedFact;
+
+  formData.customizeOptions = customizeOptions;
+  formData.rlsRestrictions = rlsRestrictions;
+  formData.korusExportInfo = korusExportInfo;
 
   return {
     chart,
@@ -113,7 +121,8 @@ function mapStateToProps(
     setControlValue,
     datasetsStatus,
     emitCrossFilters: !!dashboardInfo.crossFiltersEnabled,
-    extraChartControls,
+    selectedSelectors: selectedSelectorsForSorting,
+    selectorsDataLoaded,
   };
 }
 

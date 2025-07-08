@@ -140,6 +140,7 @@ const IconFileNames = [
   'save',
   'sql',
   'search',
+  'selector',
   'server',
   'share',
   'slack',
@@ -164,6 +165,8 @@ const IconFileNames = [
   'category',
   'undo',
   'redo',
+  'expand-all',
+  'collapse-all',
 ];
 
 const iconOverrides: Record<string, React.FC<IconType>> = {};

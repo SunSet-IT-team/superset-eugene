@@ -1,0 +1,78 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+import { styled } from '@superset-ui/core';
+import React, { useCallback, useState } from 'react';
+import Button from 'src/components/Button';
+import FactsConfigModal from '../FactsConfigModal/FactsConfigModal';
+
+export interface FCBProps {
+  setFacts?: ([any]) => void;
+  setSelectedFact?: (string) => void;
+  isEmpty?: boolean;
+  children?: React.ReactNode;
+  initialState: any;
+  updateInitial: any;
+}
+
+const HeaderButton = styled(Button)`
+  padding: 0;
+`;
+
+export const FactsConfigurationLink: React.FC<FCBProps> = ({
+  children,
+  setFacts,
+  setSelectedFact,
+  updateInitial,
+  isEmpty,
+  initialState,
+}) => {
+  const [isOpen, setOpen] = useState(false);
+
+  const close = useCallback(() => {
+    setOpen(false);
+  }, [setOpen]);
+
+  const handleClick = useCallback(() => {
+    setOpen(true);
+  }, [setOpen]);
+
+  return (
+    <>
+      {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
+      <HeaderButton
+        buttonStyle="link"
+        buttonSize="xsmall"
+        onClick={handleClick}
+      >
+        {children}
+      </HeaderButton>
+      <FactsConfigModal
+        isOpen={isOpen}
+        onClose={close}
+        setFacts={setFacts}
+        setSelectedFact={setSelectedFact}
+        updateInitial={updateInitial}
+        isEmpty={isEmpty}
+        initialState={initialState}
+      />
+    </>
+  );
+};
+
+export default React.memo(FactsConfigurationLink);

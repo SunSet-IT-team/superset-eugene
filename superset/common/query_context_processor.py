@@ -44,6 +44,7 @@ from superset.exceptions import (
     InvalidPostProcessingError,
     QueryObjectValidationError,
     SupersetException,
+    SupersetSecurityException,
 )
 from superset.extensions import cache_manager, security_manager
 from superset.models.helpers import QueryResult
@@ -59,14 +60,30 @@ from superset.utils.core import (
     get_column_names_from_columns,
     get_column_names_from_metrics,
     get_metric_names,
-    get_xaxis_label,
+    get_x_axis_label,
     normalize_dttm_col,
     TIME_COMPARISON,
+)
+from superset.constants import (
+    NO_SELECTOR, 
+    PERIOD_MAPPING_SELECTOR,
+    PERIOD_DEFINITIONS,
+    COMPARISON_PERIOD_TYPES,
+    PERIOD_COLUMN_NAME,
+    EXCEL_EXPORT_PERIOD_COL_NAME,
+    PERIOD_DATASET_ID, 
+    PERIOD_DATASET_TYPE,
+    FACT_ID_PREFIX,
 )
 from superset.utils.date_parser import get_past_or_future, normalize_time_delta
 from superset.utils.pandas_postprocessing.utils import unescape_separator
 from superset.views.utils import get_viz
 from superset.viz import viz_types
+
+from superset.korus_plugin.korus_export_enum import ExcelExportDictKey, ExcelExportHeaderKey
+from superset.korus_plugin.korus_export_excel import df_to_excel as korus_df_to_excel
+from superset.daos.datasource import DatasourceDAO
+from superset.daos.exceptions import DatasourceNotFound, DatasourceTypeNotSupportedError
 
 if TYPE_CHECKING:
     from superset.common.query_context import QueryContext
@@ -171,12 +188,40 @@ class QueryContextProcessor:
         # the N-dimensional DataFrame has converted into flat DataFrame
         # by `flatten operator`, "comma" in the column is escaped by `escape_separator`
         # the result DataFrame columns should be unescaped
+
         label_map = {
             unescape_separator(col): [
                 unescape_separator(col) for col in re.split(r"(?<!\\),\s", col)
             ]
             for col in cache.df.columns.values
         }
+        # логика использования кастомных labels для JSON_DATASET
+        fact_names = {
+                12 : "Абс. изм. продаж в деньгах",
+                16 : "Цена за упаковку", 
+                17 : "Цена за единицу объёма",
+                20 : "Доля, упаковки, %",
+                21 : "Доля, натур. продажи, %",
+                22 : "Доля, деньги, %",
+                33 : "Взвешенная дистрибуция",
+                34 : "Кумулятивная взвешенная дистрибуция",
+                35 : "Числовая дистрибуция"
+        }
+
+        datasource = query_obj.datasource
+        if hasattr(datasource, 'is_json_dataset') and datasource.is_json_dataset:
+            json_structure = datasource.json_structure
+            facts = json_structure.get('Facts', [])
+
+            for key, value in label_map.items():
+                if key.startswith(FACT_ID_PREFIX):
+                    try:
+                        fact_id = int(key.lstrip(FACT_ID_PREFIX))
+                        if fact_id in facts:
+                            label_map[key] = fact_names[fact_id]
+                    except (ValueError, IndexError):
+                        pass
+
         cache.df.columns = [unescape_separator(col) for col in cache.df.columns.values]
 
         return {
@@ -253,6 +298,33 @@ class QueryContextProcessor:
                 query += ";\n\n"
 
             # Re-raising QueryObjectValidationError
+            if query_object.selectors:
+                for selector in query_object.selectors:
+                    if selector['type_selector'] == "Fact":
+                        selected_fact = selector.get("selected_fact", None)
+                        if not selected_fact or selected_fact == NO_SELECTOR:
+                            continue
+                        sql_expression, label = query_context.datasource.get_fact_from_datasource(
+                            datasource_id=selected_fact['datasource_id'],
+                            datasource_type=selected_fact['datasource_type'],
+                            row_id=selected_fact['row_id'],
+                            column=selected_fact['column']
+                        )
+                        
+                        if query_object.post_processing:
+                            for post_process in query_object.post_processing:
+                                operation = post_process.get("operation")
+                                if not operation:
+                                    raise InvalidPostProcessingError(
+                                        _("`operation` property of post processing object undefined")
+                                    )
+                                elif operation == "pivot":
+                                    post_process["options"]["aggregates"] = {
+                                        label: {
+                                            "operator": "mean"
+                                        }
+                                    }
+                        
             try:
                 df = query_object.exec_post_processing(df)
             except InvalidPostProcessingError as ex:
@@ -403,7 +475,7 @@ class QueryContextProcessor:
         for offset in query_object.time_offsets:
             try:
                 # pylint: disable=line-too-long
-                # Since the xaxis is also a column name for the time filter, xaxis_label will be set as granularity
+                # Since the x-axis is also a column name for the time filter, x_axis_label will be set as granularity
                 # these query object are equivalent:
                 # 1) { granularity: 'dttm_col', time_range: '2020 : 2021', time_offsets: ['1 year ago']}
                 # 2) { columns: [
@@ -418,9 +490,9 @@ class QueryContextProcessor:
                 )
                 query_object_clone.to_dttm = get_past_or_future(offset, outer_to_dttm)
 
-                xaxis_label = get_xaxis_label(query_object.columns)
+                x_axis_label = get_x_axis_label(query_object.columns)
                 query_object_clone.granularity = (
-                    query_object_clone.granularity or xaxis_label
+                    query_object_clone.granularity or x_axis_label
                 )
             except ValueError as ex:
                 raise QueryObjectValidationError(str(ex)) from ex
@@ -432,7 +504,7 @@ class QueryContextProcessor:
             query_object_clone.filter = [
                 flt
                 for flt in query_object_clone.filter
-                if flt.get("col") != xaxis_label
+                if flt.get("col") != x_axis_label
             ]
 
             # `offset` is added to the hash function
@@ -630,11 +702,221 @@ class QueryContextProcessor:
                 result = csv.df_to_escaped_csv(
                     df, index=include_index, **config["CSV_EXPORT"]
                 )
+            
             elif self._query_context.result_format == ChartDataResultFormat.XLSX:
-                result = excel.df_to_excel(df, **config["EXCEL_EXPORT"])
+                header_df = self.korus_get_excel_header_data()
+                engine_options = config["EXCEL_EXPORT"][ExcelExportDictKey.ENGINE]
+                result = korus_df_to_excel(df, header_df, **engine_options)
+
             return result or ""
 
         return df.to_dict(orient="records")
+
+
+    def korus_get_excel_header_data(self) -> pd.DataFrame:
+        def _get_period_datasource() -> BaseDatasource:
+            period_datasource_id = PERIOD_DATASET_ID
+            period_datasource_type = PERIOD_DATASET_TYPE
+            period_datasource = None
+            try:
+                period_datasource = DatasourceDAO.get_datasource(
+                    datasource_type = DatasourceType(period_datasource_type),
+                    datasource_id = int(period_datasource_id),
+                )
+                period_datasource.raise_for_access()
+            except ValueError:
+                raise ValueError(f"Invalid datasource type: {period_datasource_type}")
+            except DatasourceTypeNotSupportedError as ex:
+                raise DatasourceTypeNotSupportedError(ex.message)
+            except DatasourceNotFound as ex:
+                raise DatasourceNotFound(ex.message)
+            except SupersetSecurityException as ex:
+                raise SupersetSecurityException(ex.message)
+            
+            return period_datasource
+        
+        header_options = config["EXCEL_EXPORT"][ExcelExportDictKey.HEADER]
+        selectors_header_keys_upper = [
+            key.upper() for key in header_options.keys() if header_options[key]["Type"] == ExcelExportHeaderKey.SELECTOR_DATE 
+        ]
+        export_data_header_keys_upper = [
+            key.upper() for key in header_options.keys() if header_options[key]["Type"] == ExcelExportHeaderKey.EXPORTDATA
+        ]
+        separator_header_keys_upper = [
+            key.upper() for key in header_options.keys() if header_options[key]["Type"] == ExcelExportHeaderKey.SEPARATOR
+        ]
+        headers = []
+        period_list = []
+        has_comparison_period = False
+
+        try:
+            # итерируем по списку queries, внутри итерируем по списку селекторов
+            if self._query_context.queries:
+                for query in self._query_context.queries:
+                    selector_filters = []
+                    if query.rls_restriction:
+                        selector_filters = [{
+                            'col' : query.rls_restriction["column"],
+                            'val' : query.rls_restriction["value"]
+                        }]
+
+                    for selector in query.selectors:
+                        type_selector_upper = selector["type_selector"].upper()
+                        # Обрабатываем только селекторы по периодам
+                        
+                        if type_selector_upper in selectors_header_keys_upper:
+                            header_option = header_options[type_selector_upper]
+
+                            if header_option["Location"] in selector:
+                                selector_value = selector[header_option["Location"]]
+                                cleaned_selector_value = ''
+
+                                # проверяем селекторы на наличие значений
+                                if isinstance(selector_value, list) and selector_value[0] != NO_SELECTOR:
+                                    cleaned_selector_value = selector_value
+                                elif isinstance(selector_value, str) and selector_value != NO_SELECTOR:
+                                    cleaned_selector_value = selector_value
+
+                                if cleaned_selector_value:
+                                    datasource = _get_period_datasource()
+
+                                    if type_selector_upper == 'PERIOD':
+                                        period_selector_type = selector["period_selector_type"]
+                                        period_list = []
+                                        period_list_export = []
+                                        if period_selector_type == 'Predefined':
+                                            if selector_value in PERIOD_MAPPING_SELECTOR:
+                                                period_df = datasource.get_periods_by_selected_value(
+                                                    selected_period = selector_value,
+                                                    period_column_name = PERIOD_COLUMN_NAME.upper(),
+                                                    selector_filters = selector_filters,
+                                                    column_to_return = EXCEL_EXPORT_PERIOD_COL_NAME.upper()
+                                                )
+                                                period_list = period_df[PERIOD_COLUMN_NAME.upper()].tolist()
+                                                period_list_export = period_df[EXCEL_EXPORT_PERIOD_COL_NAME.upper()].tolist()
+
+                                        elif period_selector_type == 'Custom':
+                                            period_df = datasource.get_custom_periods_by_selected_value(
+                                                selected_period = selector_value,
+                                                period_column_name = PERIOD_COLUMN_NAME.upper(),
+                                                selector_filters = selector_filters,
+                                                column_to_return = EXCEL_EXPORT_PERIOD_COL_NAME.upper()
+                                            )
+                                            period_list = period_df[PERIOD_COLUMN_NAME.upper()].tolist()
+                                            period_list_export = period_df[EXCEL_EXPORT_PERIOD_COL_NAME.upper()].tolist()
+                                        
+                                        if period_list_export:
+                                            period_set = set(period_list_export)
+                                            if len(period_set) > 1:
+                                                start_period, *_, end_period = period_list_export
+                                                header_value = f"{start_period} - {end_period}"
+                                            else:
+                                                header_value = ", ".join(period_set)
+
+                                            headers.append({
+                                                'Name' : selector["label_selector"],
+                                                'Value' : header_value,
+                                                'Sort' : header_option["Sort"],
+                                            })
+                                    
+                                    elif type_selector_upper == 'COMPARISON PERIOD':
+                                        has_comparison_period = True
+                                        comparison_period_value = selector_value
+                                        comparison_period_selector_type = selector["comparison_period_selector_type"]
+                                        comparison_period_name = selector["label_selector"]
+                                        comparison_period_sort = header_option["Sort"]
+                        
+                    # обрабатываем сравнительный период при наличии
+                    if has_comparison_period and period_list:
+                        comparison_period_list_export = []
+
+                        if comparison_period_selector_type == 'Predefined':
+                            if comparison_period_value == COMPARISON_PERIOD_TYPES["ANALOGOUS"]["value"]:
+                                comparison_period_df = datasource.get_comparison_periods_year_analogous(
+                                    selected_periods = period_list,
+                                    period_column_name = PERIOD_COLUMN_NAME.upper(),
+                                    selector_filters = selector_filters,
+                                    column_to_return = EXCEL_EXPORT_PERIOD_COL_NAME.upper()
+                                )
+                                comparison_period_list_export = comparison_period_df[EXCEL_EXPORT_PERIOD_COL_NAME.upper()].tolist()
+
+                            elif comparison_period_value == COMPARISON_PERIOD_TYPES["PREVIOUS"]["value"]:
+                                comparison_period_df = datasource.get_comparison_periods_previous(
+                                    selected_periods = period_list,
+                                    period_column_name = PERIOD_COLUMN_NAME.upper(),
+                                    selector_filters = selector_filters,
+                                    column_to_return = EXCEL_EXPORT_PERIOD_COL_NAME.upper()
+                                )
+                                comparison_period_list_export = comparison_period_df[EXCEL_EXPORT_PERIOD_COL_NAME.upper()].tolist() 
+
+                        elif comparison_period_selector_type == 'Custom':
+                            comparison_period_df = datasource.get_custom_periods_by_selected_value(
+                                selected_period = comparison_period_value,
+                                period_column_name = PERIOD_COLUMN_NAME.upper(),
+                                selector_filters = selector_filters,
+                                column_to_return = EXCEL_EXPORT_PERIOD_COL_NAME.upper()
+                            )
+                            comparison_period_list_export = comparison_period_df[EXCEL_EXPORT_PERIOD_COL_NAME.upper()].tolist()
+
+                        if comparison_period_list_export:
+                            comparison_period_set = set(comparison_period_list_export)
+                            if len(comparison_period_set) > 1:
+                                start_period, *_, end_period = comparison_period_list_export
+                                header_value = f"{start_period} - {end_period}"
+                            else:
+                                header_value = ", ".join(comparison_period_set)
+                            
+                            headers.append({
+                                'Name' : comparison_period_name,
+                                'Value' : header_value,
+                                'Sort' : comparison_period_sort,
+                            })
+
+                    # добавляем в заголовки название дашборда, графика, компанию и ордер
+                    if query.korus_export_info:
+                        for key, value in query.korus_export_info.items():
+                            if key.upper() in export_data_header_keys_upper:
+                                header_option = header_options[key.upper()]
+                                headers.append({
+                                    'Name' : header_option["Label"],
+                                    'Value' : value[header_option["Location"]],
+                                    'Sort' : header_option["Sort"],
+                                })
+                            elif key == 'selected_selectors':
+                                for key_item, value_item in value.items():
+                                    if value_item["items"]:
+                                        header_option = header_options[key_item.upper()]
+                                        headers.append({
+                                            'Name' : header_option["Label"],
+                                            'Value' : ", ".join(
+                                                i[header_option["Location"]] for i in value_item["items"]
+                                            ),
+                                            'Sort' : header_option["Sort"],
+                                        })
+            
+            # добавляем в заголовки разделители
+            for header in separator_header_keys_upper:
+                header_option = header_options[header]
+                headers.append({
+                    'Name' :header_option["Label"],
+                    'Value' : "",
+                    'Sort' : header_option["Sort"],
+                })
+        
+        except Exception as err:
+            import traceback
+            tb = traceback.format_exc()
+            error_text = f"error message: {err} , traceback: {tb}"
+            headers.append({
+                        'Name' : "Ошибка",
+                        'Value' : error_text,
+                        'Sort' : 1
+            })
+
+        header_df = pd.DataFrame(headers)
+        header_df = header_df.sort_values(by='Sort')
+        return header_df[['Name', 'Value']]
+
 
     def get_payload(
         self,

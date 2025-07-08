@@ -17,7 +17,7 @@
  * under the License.
  */
 import React from 'react';
-import { styled, useTheme } from '@superset-ui/core';
+import { styled, useTheme, css } from '@superset-ui/core';
 import { Skeleton, AntdCard } from 'src/components';
 import { Tooltip } from 'src/components/Tooltip';
 import ImageLoader, { BackgroundPosition } from './ImageLoader';
@@ -75,7 +75,7 @@ const TitleContainer = styled.div`
 
   .card-actions {
     margin-left: auto;
-    align-self: flex-end;
+    align-self: flex-start;
     padding-left: ${({ theme }) => theme.gridUnit}px;
     span[role='img'] {
       display: flex;
@@ -90,9 +90,20 @@ const TitleContainer = styled.div`
   }
 `;
 
-const TitleLink = styled.span`
+const TitleLink = styled.span<{ isDashboardCard?: boolean }>`
   overflow: hidden;
   text-overflow: ellipsis;
+
+  ${({ isDashboardCard }) =>
+    isDashboardCard &&
+    css`
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      white-space: break-spaces;
+      height: 50px;
+    `}
+
   & a {
     color: ${({ theme }) => theme.colors.grayscale.dark1} !important;
   }
@@ -164,6 +175,7 @@ interface CardProps {
   cover?: React.ReactNode | null;
   certifiedBy?: string;
   certificationDetails?: string;
+  isDashboardCard?: boolean;
 }
 
 function ListViewCard({
@@ -184,6 +196,7 @@ function ListViewCard({
   cover,
   certifiedBy,
   certificationDetails,
+  isDashboardCard = false,
 }: CardProps) {
   const Link = url && linkComponent ? linkComponent : AnchorLink;
   const theme = useTheme();
@@ -255,8 +268,8 @@ function ListViewCard({
             <TitleContainer>
               {subtitle || null}
               <div className="titleRow">
-                <Tooltip title={certificationDetails}>
-                  <TitleLink>
+                <Tooltip title={title}>
+                  <TitleLink isDashboardCard={isDashboardCard}>
                     {certifiedBy && (
                       <>
                         <CertifiedBadge

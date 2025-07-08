@@ -40,6 +40,7 @@ import {
   TimeseriesChartDataResponseResult,
   TimeseriesDataRecord,
   ValueFormatter,
+  getXAxisCategoryFormatter,
 } from '@superset-ui/core';
 import { getOriginalSeries } from '@superset-ui/chart-controls';
 import { EChartsCoreOption, SeriesOption } from 'echarts';
@@ -203,6 +204,15 @@ export default function transformProps(
     metricsB = [],
   }: EchartsMixedTimeseriesFormData = { ...DEFAULT_FORM_DATA, ...formData };
 
+  const { chartLevel } = formData.customizeOptions?.lastNOptions || {
+    chartLevel: undefined,
+  };
+
+  const substituteColumn =
+    typeof formData.xAxisSubstitute === 'string'
+      ? formData.xAxisSubstitute
+      : undefined;
+
   const refs: Refs = {};
   const colorScale = CategoricalColorNamespace.getScale(colorScheme as string);
 
@@ -219,12 +229,12 @@ export default function transformProps(
   const rebasedDataA = rebaseForecastDatum(data1, verboseMap);
   const [rawSeriesA] = extractSeries(rebasedDataA, {
     fillNeighborValue: stack ? 0 : undefined,
-    xAxis: xAxisLabel,
+    xAxis: substituteColumn ? substituteColumn : xAxisLabel,
   });
   const rebasedDataB = rebaseForecastDatum(data2, verboseMap);
   const [rawSeriesB] = extractSeries(rebasedDataB, {
     fillNeighborValue: stackB ? 0 : undefined,
-    xAxis: xAxisLabel,
+    xAxis: substituteColumn ? substituteColumn : xAxisLabel,
   });
 
   const dataTypes = getColtypesMapping(queriesData[0]);
@@ -388,6 +398,7 @@ export default function transformProps(
         seriesType,
         showValue,
         stack: Boolean(stack),
+        stackIdSuffix: '\na',
         yAxisIndex,
         filterState,
         seriesKey: entry.name,
@@ -434,6 +445,7 @@ export default function transformProps(
         seriesType: seriesTypeB,
         showValue: showValueB,
         stack: Boolean(stackB),
+        stackIdSuffix: '\nb',
         yAxisIndex: yAxisIndexB,
         filterState,
         seriesKey: primarySeries.has(entry.name as string)
@@ -467,11 +479,11 @@ export default function transformProps(
   const tooltipFormatter =
     xAxisDataType === GenericDataType.Temporal
       ? getTooltipTimeFormatter(tooltipTimeFormat)
-      : String;
+      : getXAxisCategoryFormatter(true, chartLevel);
   const xAxisFormatter =
     xAxisDataType === GenericDataType.Temporal
       ? getXAxisFormatter(xAxisTimeFormat)
-      : String;
+      : getXAxisCategoryFormatter(true, chartLevel);
 
   const addYAxisTitleOffset = !!(yAxisTitle || yAxisTitleSecondary);
   const addXAxisTitleOffset = !!xAxisTitle;
@@ -491,6 +503,10 @@ export default function transformProps(
   const { setDataMask = () => {}, onContextMenu } = hooks;
   const alignTicks = yAxisIndex !== yAxisIndexB;
 
+  const xAxisData = substituteColumn
+    ? series[0]?.data?.map(r => r[0])
+    : undefined;
+
   const echartOptions: EChartsCoreOption = {
     useUTC: true,
     grid: {
@@ -499,6 +515,7 @@ export default function transformProps(
     },
     xAxis: {
       type: xAxisType,
+      data: xAxisData,
       name: xAxisTitle,
       nameGap: convertInteger(xAxisTitleMargin),
       nameLocation: 'middle',
@@ -581,7 +598,13 @@ export default function transformProps(
           forecastValue.sort((a, b) => b.data[1] - a.data[1]);
         }
 
-        const rows: Array<string> = [`${tooltipFormatter(xValue)}`];
+        const rows: Array<string> = [
+          `${
+            substituteColumn
+              ? tooltipFormatter(xAxisData?.[+xValue])
+              : tooltipFormatter(xValue)
+          }`,
+        ];
         const forecastValues =
           extractForecastValuesFromTooltipParams(forecastValue);
 
@@ -613,7 +636,7 @@ export default function transformProps(
           );
           const content = formatForecastTooltipSeries({
             ...value,
-            seriesName: key,
+            seriesName: getXAxisCategoryFormatter(true, chartLevel)(key),
             formatter: primarySeries.has(key)
               ? tooltipFormatter
               : tooltipFormatterSecondary,
@@ -633,6 +656,7 @@ export default function transformProps(
         theme,
         zoomable,
       ),
+      formatter: v => getXAxisCategoryFormatter(true, chartLevel)(v),
       // @ts-ignore
       data: rawSeriesA
         .concat(rawSeriesB)
@@ -644,7 +668,14 @@ export default function transformProps(
         .map(entry => entry.name || '')
         .concat(extractAnnotationLabels(annotationLayers, annotationData)),
     },
-    series: dedupSeries(series),
+    series: substituteColumn
+      ? dedupSeries(series)
+          .filter(s => s.name !== substituteColumn)
+          .map(s => ({
+            ...s,
+            data: s.data.map((r, i) => [i, r[1]]),
+          }))
+      : dedupSeries(series),
     toolbox: {
       show: zoomable,
       top: TIMESERIES_CONSTANTS.toolboxTop,

@@ -78,7 +78,19 @@ export type Filter = {
   chartsInScope?: number[];
   type: typeof NativeFilterType.NativeFilter;
   description: string;
-  showViewFilterControl: boolean;
+};
+
+export type Selector = {
+  type_selector: string;
+  label_selector: string;
+  selected: boolean;
+  max_selection: number;
+  [key: `selected_${string}`]:
+    | string
+    | string[]
+    | number
+    | number[]
+    | { [key: string]: string | number }[];
 };
 
 export type FilterWithDataMask = Filter & { dataMask: DataMaskWithId };
@@ -112,6 +124,8 @@ export function isFilterDivider(
 }
 
 export type FilterConfiguration = Array<Filter | Divider>;
+
+export type SelectorsConfiguration = Array<Selector>;
 
 export type Filters = {
   [filterId: string]: Filter | Divider;

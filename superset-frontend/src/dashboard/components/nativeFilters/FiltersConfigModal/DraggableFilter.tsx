@@ -39,7 +39,8 @@ const Container = styled.div<TitleContainerProps>`
     cursor: ${isDragging ? 'grabbing' : 'pointer'};
     width: 100%;
     display: flex;
-    padding:  ${theme.gridUnit}px;
+    align-items: center;
+    padding:  ${theme.gridUnit * 0.5}px ${theme.gridUnit}px;
   `}
 `;
 
@@ -48,7 +49,6 @@ const DragIcon = styled(Icons.Drag, {
 })<IconType & { isDragging: boolean }>`
   ${({ isDragging, theme }) => `
     font-size: ${theme.typography.sizes.m}px;
-    margin-top: 15px;
     cursor: ${isDragging ? 'grabbing' : 'grab'};
     padding-left: ${theme.gridUnit}px;
   `}

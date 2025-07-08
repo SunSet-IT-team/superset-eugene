@@ -5,7 +5,7 @@
       "22": ["22"],
       "": {
         "domain": "superset",
-        "plural_forms": "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);",
+        "plural_forms": "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)",
         "lang": "uk"
       },
       "\n                This filter was inherited from the dashboard's context.\n                It won't be saved when saving the chart.\n              ": [
@@ -83,7 +83,6 @@
       "%s Selected (Virtual)": ["%s вибраний (віртуальний)"],
       "%s aggregates(s)": ["%s агреговані"],
       "%s column(s)": ["%s стовпці"],
-      "%s ineligible item(s) are hidden": [""],
       "%s items could not be tagged because you don’t have edit permissions to all selected objects.": [
         ""
       ],
@@ -200,9 +199,11 @@
       "A comma-separated list of schemas that files are allowed to upload to.": [
         "Список схем, відокремлений комами, до яких файли дозволяють завантажувати."
       ],
-      "A database port is required when connecting via SSH Tunnel.": [""],
       "A database with the same name already exists.": [
         "База даних з тим самим іменем вже існує."
+      ],
+      "A dictionary with column names and their data types if you need to change the defaults. Example: {\"user_id\":\"integer\"}": [
+        "Словник із назвами стовпців та їх типами даних, якщо вам потрібно змінити за замовчуванням. Приклад: {\"user_id\": \"Integer\"}"
       ],
       "A full URL pointing to the location of the built plugin (could be hosted on a CDN for example)": [
         "Повна URL -адреса, що вказує на розташування вбудованого плагіна (наприклад, може бути розміщена на CDN)"
@@ -339,6 +340,7 @@
       ],
       "Add new color formatter": ["Додайте новий кольоровий форматер"],
       "Add new formatter": ["Додати новий форматер"],
+      "Add notification method": ["Додайте метод сповіщення"],
       "Add required control values to preview chart": [
         "Додайте необхідні контрольні значення для попереднього перегляду діаграми"
       ],
@@ -400,6 +402,7 @@
         "Попередження, спрацьоване, в пільговий період"
       ],
       "Alert condition": ["Умова попередження"],
+      "Alert condition schedule": ["Розклад умови попередження"],
       "Alert ended grace period.": [
         "Попередження закінчився пільговим періодом."
       ],
@@ -771,6 +774,7 @@
         "Ви впевнені, що хочете зберегти та застосувати зміни?"
       ],
       "Area Chart": ["Діаграма"],
+      "Time-series Area Chart (legacy)": ["Діаграма області (спадщина)"],
       "Area chart": ["Діаграма"],
       "Area chart opacity": ["Область прозоість діаграми"],
       "Area charts are similar to line charts in that they represent variables with the same scale, but area charts stack the metrics on top of each other.": [
@@ -1440,7 +1444,6 @@
         ""
       ],
       "Customize columns": ["Налаштуйте стовпці"],
-      "Customize data source, filters, and layout.": [""],
       "Cyclic dependency detected": ["Виявлена ​​циклічна залежність"],
       "D3 Format": ["Формат D3"],
       "D3 format": ["Формат D3"],
@@ -1497,6 +1500,7 @@
       "Dashboard title": ["Назва інформаційної панелі"],
       "Dashboard usage": ["Використання інформаційної панелі"],
       "Dashboards": ["Дашборди"],
+      "Dashboards added to": ["Дашборди були додані до"],
       "Dashboards do not exist": ["Дашбордів не існує"],
       "Dashed": ["Бридкий"],
       "Data": ["Дані"],
@@ -1666,10 +1670,6 @@
         "Визначте функцію JavaScript, яка отримує масив даних, що використовується у візуалізації, і, як очікується, поверне модифіковану версію цього масиву. Це може бути використане для зміни властивостей даних, фільтра або збагачення масиву."
       ],
       "Define contour layers. Isolines represent a collection of line segments that serparate the area above and below a given threshold. Isobands represent a collection of polygons that fill the are containing values in a given threshold range.": [
-        ""
-      ],
-      "Define delivery schedule, timezone, and frequency settings.": [""],
-      "Define the database, SQL query, and triggering conditions for alert.": [
         ""
       ],
       "Defines a rolling window function to apply, works along with the [Periods] text box": [
@@ -2619,6 +2619,7 @@
       "Light mode": ["Світловий режим"],
       "Like": ["Люблю"],
       "Like (case insensitive)": ["Як (нечутливий до випадків)"],
+      "Limit reached": ["Обмеження досягнуто"],
       "Limit type": ["Тип обмеження"],
       "Limiting rows may result in incomplete data and misleading charts. Consider filtering or grouping source/target names instead.": [
         "Обмеження рядків може призвести до неповних даних та оманливих діаграм. Подумайте про фільтрацію або групування джерел/цільових імен."
@@ -2637,6 +2638,7 @@
       ],
       "Line": ["Лінія"],
       "Line Chart": ["Лінійна діаграма"],
+      "Time-series Line Chart (legacy)": ["Лінійна діаграма (спадщина)"],
       "Line Style": ["Лінійний стиль"],
       "Line chart is used to visualize measurements taken over a given category. Line chart is a type of chart which displays information as a series of data points connected by straight line segments. It is a basic type of chart common in many fields.": [
         "Лінійна діаграма використовується для візуалізації вимірювань, взяті на задану категорію. Лінійна діаграма - це тип діаграми, яка відображає інформацію як ряд точок даних, підключених за допомогою прямих сегментів. Це основний тип діаграми, поширений у багатьох полях."
@@ -3014,9 +3016,6 @@
       "Not added to any dashboard": [
         "Не додано на будь-яку інформаційну панель"
       ],
-      "Not all required fields are complete. Please provide the following:": [
-        ""
-      ],
       "Not available": ["Недоступний"],
       "Not equal to (≠)": ["Не дорівнює (≠)"],
       "Not in": ["Не в"],
@@ -3264,7 +3263,6 @@
       "Percent Change": ["Відсоткова зміна"],
       "Percentage": ["Відсоток"],
       "Percentage change": ["Зміна відсотків"],
-      "Percentage difference between the time periods": [""],
       "Percentage metrics": ["Відсоткові показники"],
       "Percentage threshold": ["Відсоток поріг"],
       "Percentages": ["Відсотки"],
@@ -3521,7 +3519,6 @@
       "Recommended tags": ["Рекомендовані теги"],
       "Record Count": ["Реєстрація"],
       "Rectangle": ["Прямокутник"],
-      "Recurring (every)": [""],
       "Redirects to this endpoint when clicking on the table from the table list": [
         "Перенаправлення до цієї кінцевої точки при натисканні на таблицю зі списку таблиці"
       ],
@@ -3604,6 +3601,7 @@
       "Report a bug": ["Повідомте про помилку"],
       "Report failed": ["Звіт не вдалося"],
       "Report name": ["Назва звіту"],
+      "Report schedule": ["Розклад звіту"],
       "Report schedule client error": ["Помилка звіту про графік звітів"],
       "Report schedule system error": ["Помилка системи розкладу звітів"],
       "Report schedule unexpected error": [
@@ -3624,6 +3622,7 @@
         "Необхідні контрольні значення були видалені"
       ],
       "Resample": ["Перепродаж"],
+      "Resample method should in ": ["Метод REPAMBLE повинен в "],
       "Resample operation requires DatetimeIndex": [
         "REPAMBLE ORTERCTION вимагає DateTimeIndex"
       ],
@@ -3808,6 +3807,7 @@
       ],
       "Schedule email report": ["Розклад звіту електронної пошти"],
       "Schedule query": ["Запит на розклад"],
+      "Schedule settings": ["Налаштування розкладу"],
       "Schedule the query periodically": ["Періодично планувати запит"],
       "Scheduled": ["Запланований"],
       "Scheduled at (UTC)": ["Запланований за адресою (UTC)"],
@@ -3981,11 +3981,7 @@
         "Встановіть інтервал автоматичного рефреша"
       ],
       "Set filter mapping": ["Встановіть картографування фільтра"],
-      "Set the time range that will be used for the comparison metrics. For example, \"Year\" will compare to the same dates one year earlier. Use \"Inherit range from time filters\" to shift the comparison time rangeby the same length as your time range and use \"Custom\" to set a custom comparison range.": [
-        ""
-      ],
       "Set up an email report": ["Налаштування звіту електронної пошти"],
-      "Set up basic details, such as name and description.": [""],
       "Sets the hierarchy levels of the chart. Each level is\n        represented by one ring with the innermost circle as the top of the hierarchy.": [
         "Встановлює рівні ієрархії діаграми. Кожен рівень є\n        Представлений одним кільцем з найпотаємнішим колом як верхівка ієрархії."
       ],
@@ -4023,6 +4019,7 @@
       "Show Dashboard": ["Показати приладову панель"],
       "Show Database": ["Показати базу даних"],
       "Show Labels": ["Показувати етикетки"],
+      "Show Less...": ["Показувати менше ..."],
       "Show Log": ["Показувати журнал"],
       "Show Markers": ["Шоу маркерів"],
       "Show Metric": ["Показати показник"],
@@ -4620,9 +4617,7 @@
         "Радіус окремих точок (тих, які не в кластері). Або чисельна колонка, або `auto`, що масштабує точку на основі найбільшого кластера"
       ],
       "The report has been created": ["Звіт створений"],
-      "The result of this query must be a value capable of numeric interpretation e.g. 1, 1.0, or \"1\" (compatible with Python's float() function).": [
-        ""
-      ],
+      "The result of this query should be a numeric-esque value": [""],
       "The results backend no longer has the data from the query.": [
         "Результати, що бекрономиться, більше не мають даних із запиту."
       ],
@@ -4631,9 +4626,6 @@
       ],
       "The rich tooltip shows a list of all series for that point in time": [
         "Багата підказка показує список усіх серій для цього моменту часу"
-      ],
-      "The row limit set for the chart was reached. The chart may show partial data.": [
-        ""
       ],
       "The schema \"%(schema)s\" does not exist. A valid schema must be used to run this query.": [
         "Схеми “%(schema)s\" не існує. Для запуску цього запиту необхідно використовувати дійсну схему."
@@ -5044,7 +5036,6 @@
       "Time string is ambiguous. Please specify [%(human_readable)s ago] or [%(human_readable)s later].": [
         "Рядок часу неоднозначний. Будь ласка, вкажіть [%(human_readable)s тому] або [%(human_readable)s пізніше]."
       ],
-      "Time-series Area Chart (legacy)": ["Діаграма області (спадщина)"],
       "Time-series Bar Chart (legacy)": ["Діаграма штрих часу (Legacy)"],
       "Time-series Percent Change": ["Зміна відсотків часових рядів"],
       "Time-series Period Pivot": ["Часові періоди періоду повороту"],
@@ -5314,7 +5305,6 @@
       "Value Format": ["Формат значення"],
       "Value bounds": ["Значення цінності"],
       "Value cannot exceed %s": [""],
-      "Value difference between the time periods": [""],
       "Value format": ["Формат значення"],
       "Value is required": ["Значення потрібно"],
       "Value must be greater than 0": ["Значення повинно бути більше 0"],
@@ -5849,6 +5839,9 @@
         "`operation` властивість об'єкта після обробки не визначений"
       ],
       "`prophet` package not installed": ["`prophet` модуль не встановлений"],
+      "`rename_columns` must have the same length as `columns`.": [
+        "`rename_columns` повинен мати таку ж довжину, що і `columns`."
+      ],
       "`row_limit` must be greater than or equal to 0": [
         "`row_limit` повинен бути більшим або рівним 0"
       ],
@@ -5867,6 +5860,7 @@
         "також скопіюйте (зробіть дублікат) діаграм"
       ],
       "ancestor": ["предок"],
+      "and": ["і"],
       "annotation": ["анотація"],
       "annotation_layer": ["анотація_layer"],
       "asfreq": ["асфрек"],

@@ -24,5 +24,6 @@ from . import (
     health,
     sql_lab,
     tags,
+    # korus_custom_filetrs,
 )
 from .log import api as log_api, views

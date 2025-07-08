@@ -17,8 +17,14 @@
  * under the License.
  */
 /* eslint-disable camelcase */
-import { invert } from 'lodash';
 import {
+  extractExtraMetrics,
+  getOriginalSeries,
+  getTimeOffset,
+  isDerivedSeries,
+} from '@superset-ui/chart-controls';
+import {
+  AdhocColumn,
   AnnotationLayer,
   AxisType,
   buildCustomFormatters,
@@ -29,6 +35,7 @@ import {
   getCustomFormatter,
   getMetricLabel,
   getNumberFormatter,
+  getXAxisCategoryFormatter,
   getXAxisLabel,
   isDefined,
   isEventAnnotationLayer,
@@ -36,41 +43,26 @@ import {
   isIntervalAnnotationLayer,
   isPhysicalColumn,
   isTimeseriesAnnotationLayer,
+  sortBySelector,
   t,
   TimeseriesChartDataResponseResult,
 } from '@superset-ui/core';
-import {
-  extractExtraMetrics,
-  getOriginalSeries,
-  isDerivedSeries,
-  getTimeOffset,
-} from '@superset-ui/chart-controls';
 import { EChartsCoreOption, SeriesOption } from 'echarts';
 import { LineStyleOption } from 'echarts/types/src/util/types';
+import { invert } from 'lodash';
 import {
-  EchartsTimeseriesChartProps,
-  EchartsTimeseriesFormData,
-  OrientationType,
-  TimeseriesChartTransformedProps,
-} from './types';
-import { DEFAULT_FORM_DATA } from './constants';
+  StackControlsValue,
+  TIMEGRAIN_TO_TIMESTAMP,
+  TIMESERIES_CONSTANTS,
+} from '../constants';
+import { defaultGrid, defaultYAxis } from '../defaults';
 import { ForecastSeriesEnum, ForecastValue, Refs } from '../types';
-import { parseAxisBound } from '../utils/controls';
-import {
-  calculateLowerLogTick,
-  dedupSeries,
-  extractDataTotalValues,
-  extractSeries,
-  extractShowValueIndexes,
-  getAxisType,
-  getColtypesMapping,
-  getLegendProps,
-  getMinAndMaxFromBounds,
-} from '../utils/series';
 import {
   extractAnnotationLabels,
   getAnnotationData,
 } from '../utils/annotation';
+import { parseAxisBound } from '../utils/controls';
+import { convertInteger } from '../utils/convertInteger';
 import {
   extractForecastSeriesContext,
   extractForecastSeriesContexts,
@@ -78,8 +70,25 @@ import {
   formatForecastTooltipSeries,
   rebaseForecastDatum,
 } from '../utils/forecast';
-import { convertInteger } from '../utils/convertInteger';
-import { defaultGrid, defaultYAxis } from '../defaults';
+import {
+  getPercentFormatter,
+  getTooltipTimeFormatter,
+  getXAxisFormatter,
+  getYAxisFormatter,
+} from '../utils/formatters';
+import {
+  calculateLowerLogTick,
+  dedupSeries,
+  extractDataTotalValues,
+  extractSeries,
+  extractShowValueIndexes,
+  getAdvancedLegendProps,
+  getAxisType,
+  getColtypesMapping,
+  getMinAndMaxFromBounds,
+} from '../utils/series';
+import { getDefaultTooltip } from '../utils/tooltip';
+import { DEFAULT_FORM_DATA } from './constants';
 import {
   getBaselineSeriesForStream,
   getPadding,
@@ -90,17 +99,11 @@ import {
   transformTimeseriesAnnotation,
 } from './transformers';
 import {
-  StackControlsValue,
-  TIMEGRAIN_TO_TIMESTAMP,
-  TIMESERIES_CONSTANTS,
-} from '../constants';
-import { getDefaultTooltip } from '../utils/tooltip';
-import {
-  getPercentFormatter,
-  getTooltipTimeFormatter,
-  getXAxisFormatter,
-  getYAxisFormatter,
-} from '../utils/formatters';
+  EchartsTimeseriesChartProps,
+  EchartsTimeseriesFormData,
+  OrientationType,
+  TimeseriesChartTransformedProps,
+} from './types';
 
 export default function transformProps(
   chartProps: EchartsTimeseriesChartProps,
@@ -117,8 +120,12 @@ export default function transformProps(
     theme,
     inContextMenu,
     emitCrossFilters,
-    extraChartControls,
+    selectedSelectors = {
+      f: ['Misc|<--|some text', 'Shooter', 'Adventure'],
+      a: ['Ubisoft|<--|fuck', 'Electronic Arts', 'Activision'],
+    },
   } = chartProps;
+
   let focusedSeries: string | null = null;
 
   const {
@@ -127,13 +134,20 @@ export default function transformProps(
     currencyFormats = {},
   } = datasource;
   const [queryData] = queriesData;
+
+  // TODO korus: переписать по уточнению требований
+
+  const substituteColumn =
+    typeof formData.xAxisSubstitute === 'string'
+      ? formData.xAxisSubstitute
+      : undefined;
+
   const { data = [], label_map = {} } =
     queryData as TimeseriesChartDataResponseResult;
 
   const dataTypes = getColtypesMapping(queryData);
   const annotationData = getAnnotationData(chartProps);
 
-  const { number_format } = extraChartControls ?? {};
   const {
     area,
     annotationLayers,
@@ -143,6 +157,7 @@ export default function transformProps(
     groupby,
     legendOrientation,
     legendType,
+    legendFontSize = 12,
     legendMargin,
     logAxis,
     markerEnabled,
@@ -153,6 +168,7 @@ export default function transformProps(
     onlyTotal,
     opacity,
     orientation,
+    paddingRight = 0,
     percentageThreshold,
     richTooltip,
     seriesType,
@@ -172,6 +188,8 @@ export default function transformProps(
     xAxisBounds,
     xAxisForceCategorical,
     xAxisLabelRotation,
+    xAxisSort,
+    xAxisSortAsc,
     xAxisSortSeries,
     xAxisSortSeriesAscending,
     xAxisTimeFormat,
@@ -184,12 +202,7 @@ export default function transformProps(
     yAxisTitleMargin,
     yAxisTitlePosition,
     zoomable,
-  }: EchartsTimeseriesFormData = {
-    ...DEFAULT_FORM_DATA,
-    ...formData,
-    ...{ yAxisFormat: number_format || formData.yAxisFormat },
-  };
-
+  }: EchartsTimeseriesFormData = { ...DEFAULT_FORM_DATA, ...formData };
   const refs: Refs = {};
   const groupBy = ensureIsArray(groupby);
   const labelMap = Object.entries(label_map).reduce((acc, entry) => {
@@ -202,10 +215,10 @@ export default function transformProps(
     }
     return { ...acc, [entry[0]]: entry[1] };
   }, {});
-
   const colorScale = CategoricalColorNamespace.getScale(colorScheme as string);
   const rebasedData = rebaseForecastDatum(data, verboseMap);
   let xAxisLabel = getXAxisLabel(chartProps.rawFormData) as string;
+  const yAxisLabel = String(formData.groupby?.[0]);
   if (
     isPhysicalColumn(chartProps.rawFormData?.x_axis) &&
     isDefined(verboseMap[xAxisLabel])
@@ -228,15 +241,48 @@ export default function transformProps(
 
   const isMultiSeries = groupBy.length || metrics?.length > 1;
 
+  const selectorsMap = {
+    fulldesc: selectedSelectors ? selectedSelectors.selectedProducts : [],
+    mkt_name: selectedSelectors ? selectedSelectors.selectedMarkets : [],
+  };
+
+  const getKeyLabel = (key: string | AdhocColumn) => {
+    if (typeof key === 'string') {
+      return key;
+    }
+    if ('label' in key && typeof key.label === 'string') {
+      return key.label;
+    }
+    return null;
+  };
+
+  const getSelectedSelectors = (key: string | AdhocColumn) => {
+    const label = getKeyLabel(key);
+    return label ? selectorsMap[label] : [];
+  };
+
+  const getSelectedSelectorsByXAxis = () => getSelectedSelectors(xAxisLabel);
+
+  const getSelectedSelectorsByGroup = () => {
+    const key = groupBy.find(k => {
+      const label = getKeyLabel(k);
+      return label ? selectorsMap[label] : [];
+    });
+    return key ? getSelectedSelectors(key) : [];
+  };
+
   const [rawSeries, sortedTotalValues, minPositiveValue] = extractSeries(
     rebasedData,
     {
       fillNeighborValue: stack && !forecastEnabled ? 0 : undefined,
-      xAxis: xAxisLabel,
+      xAxis: substituteColumn || xAxisLabel,
+      yAxis: yAxisLabel,
       extraMetricLabels,
       stack,
       totalStackedValues,
       isHorizontal,
+      xAxisSort,
+      xAxisSortAsc: isMultiSeries ? undefined : xAxisSortAsc,
       sortSeriesType,
       sortSeriesAscending,
       xAxisSortSeries: isMultiSeries ? xAxisSortSeries : undefined,
@@ -244,7 +290,9 @@ export default function transformProps(
         ? xAxisSortSeriesAscending
         : undefined,
     },
+    selectedSelectors,
   );
+
   const showValueIndexes = extractShowValueIndexes(rawSeries, {
     stack,
     onlyTotal,
@@ -330,6 +378,7 @@ export default function transformProps(
         lineStyle,
       },
     );
+
     if (transformedSeries) {
       if (stack === StackControlsValue.Stream) {
         // bug in Echarts - `stackStrategy: 'all'` doesn't work with nulls, so we cast them to 0
@@ -430,14 +479,26 @@ export default function transformProps(
     yAxisMin = calculateLowerLogTick(minPositiveValue);
   }
 
+  const { chartLevel } = formData.customizeOptions?.lastNOptions || {
+    chartLevel: undefined,
+  };
+
   const tooltipFormatter =
     xAxisDataType === GenericDataType.Temporal
       ? getTooltipTimeFormatter(tooltipTimeFormat)
-      : String;
+      : getXAxisCategoryFormatter(true, chartLevel);
   const xAxisFormatter =
     xAxisDataType === GenericDataType.Temporal
       ? getXAxisFormatter(xAxisTimeFormat)
-      : String;
+      : getXAxisCategoryFormatter(true, chartLevel);
+
+  const formattedValue = value => {
+    const result = xAxisFormatter?.(value);
+    if (typeof result === 'string') {
+      return result.length > 80 ? `${result.slice(0, 80)}...` : result;
+    }
+    return result;
+  };
 
   const {
     setDataMask = () => {},
@@ -454,6 +515,7 @@ export default function transformProps(
     addYAxisLabelOffset,
     zoomable,
     legendMargin,
+    paddingRight,
     addXAxisLabelOffset,
     yAxisTitlePosition,
     convertInteger(yAxisTitleMargin),
@@ -470,14 +532,28 @@ export default function transformProps(
     .map(entry => entry.name || '')
     .concat(extractAnnotationLabels(annotationLayers, annotationData));
 
+  const xAxisRaw = substituteColumn
+    ? series[0]?.data?.map(r => (isHorizontal ? r[1] : r[0]))
+    : undefined;
+
+  const xAxisData = xAxisRaw
+    ? sortBySelector(xAxisRaw, selectorsMap)
+    : undefined;
+
   let xAxis: any = {
     type: xAxisType,
+    data: xAxisData,
     name: xAxisTitle,
     nameGap: convertInteger(xAxisTitleMargin),
     nameLocation: 'middle',
     axisLabel: {
       hideOverlap: true,
-      formatter: xAxisFormatter,
+      formatter: (value: string, index: number) =>
+        // if (substituteColumn) {
+        //   return formattedValue(data[index][substituteColumn]);
+        // }
+
+        formattedValue(value),
       rotate: xAxisLabelRotation,
     },
     minorTick: { show: minorTicks },
@@ -519,7 +595,6 @@ export default function transformProps(
   if (isHorizontal) {
     [xAxis, yAxis] = [yAxis, xAxis];
     [padding.bottom, padding.left] = [padding.left, padding.bottom];
-    yAxis.inverse = true;
   }
 
   const echartOptions: EChartsCoreOption = {
@@ -555,14 +630,13 @@ export default function transformProps(
             return;
           }
           const originalNumberFormatter = getNumberFormatter(',d');
-
           // if there are no dimensions, key is a verbose name of a metric,
           // otherwise it is a comma separated string where the first part is metric name
           const formatterKey =
             groupBy.length === 0 ? inverted[key] : labelMap[key]?.[0];
           const content = formatForecastTooltipSeries({
             ...value,
-            seriesName: key,
+            seriesName: getXAxisCategoryFormatter(true, chartLevel)(key),
             formatter:
               yAxisFormat === 'treshold-billion'
                 ? originalNumberFormatter
@@ -586,22 +660,41 @@ export default function transformProps(
         if (stack) {
           rows.reverse();
         }
-        rows.unshift(`${tooltipFormatter(xValue)}`);
+        rows.unshift(
+          `${
+            substituteColumn
+              ? tooltipFormatter(xAxisData?.[+xValue])
+              : tooltipFormatter(xValue)
+          }`,
+        );
         return rows.join('<br />');
       },
     },
     legend: {
-      ...getLegendProps(
+      ...getAdvancedLegendProps(
         legendType,
+        legendFontSize,
         legendOrientation,
         showLegend,
         theme,
         zoomable,
         legendState,
       ),
-      data: legendData as string[],
+      padding: [5, 0, 0, 0],
+      data: legendData.filter(el => el !== substituteColumn) as string[],
+      formatter: value => {
+        const val = getXAxisCategoryFormatter(true, chartLevel)(value);
+        return val.length > 80 ? `${val.slice(0, 80)}...` : val;
+      },
     },
-    series: dedupSeries(series),
+    series: substituteColumn
+      ? dedupSeries(series)
+          .filter(s => s.name !== substituteColumn)
+          .map(s => ({
+            ...s,
+            data: s.data.map((r, i) => (isHorizontal ? [r[0], i] : [i, r[1]])),
+          }))
+      : dedupSeries(series),
     toolbox: {
       show: zoomable,
       top: TIMESERIES_CONSTANTS.toolboxTop,

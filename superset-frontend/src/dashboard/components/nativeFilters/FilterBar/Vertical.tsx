@@ -18,25 +18,29 @@
  */
 
 /* eslint-disable no-param-reassign */
+import { FeatureFlag, isFeatureEnabled, styled, t } from '@superset-ui/core';
+import cx from 'classnames';
 import { throttle } from 'lodash';
 import React, {
-  useEffect,
-  useState,
+  createContext,
   useCallback,
+  useEffect,
   useMemo,
   useRef,
-  createContext,
+  useState,
 } from 'react';
-import cx from 'classnames';
-import { FeatureFlag, isFeatureEnabled, styled, t } from '@superset-ui/core';
+import { EmptyStateSmall } from 'src/components/EmptyState';
 import Icons from 'src/components/Icons';
 import Loading from 'src/components/Loading';
-import { EmptyStateSmall } from 'src/components/EmptyState';
-import { getFilterBarTestId } from './utils';
-import { VerticalBarProps } from './types';
-import Header from './Header';
-import FilterControls from './FilterControls/FilterControls';
+import SelectorsControls from '../SelectorsBar/SelectorsControls';
 import CrossFiltersVertical from './CrossFilters/Vertical';
+import FilterControls from './FilterControls/FilterControls';
+import Header from './Header';
+import SelectorsHeader from '../SelectorsBar/SelectorsHeader';
+import { VerticalBarProps } from './types';
+import { getFilterBarTestId } from './utils';
+import CustomizerHeader from '../CustomizeBar/CustomizerHeader';
+import { CustomizeControlsBody } from '../CustomizeBar/CustomizeControls';
 
 const BarWrapper = styled.div<{ width: number }>`
   width: ${({ theme }) => theme.gridUnit * 8}px;
@@ -104,6 +108,22 @@ const StyledCollapseIcon = styled(Icons.Collapse)`
 
 const StyledFilterIcon = styled(Icons.Filter)`
   color: ${({ theme }) => theme.colors.grayscale.base};
+  margin-bottom: ${({ theme }) => theme.gridUnit * 3}px;
+`;
+
+const StyledSelectorIcon = styled(Icons.Selector)`
+  color: ${({ theme }) => theme.colors.grayscale.base};
+  margin-bottom: ${({ theme }) => theme.gridUnit * 3}px;
+  svg {
+    fill: none;
+  }
+`;
+const StyledCustomizerIcon = styled(Icons.Edit)`
+  color: ${({ theme }) => theme.colors.grayscale.base};
+  margin-bottom: ${({ theme }) => theme.gridUnit * 3}px;
+  svg {
+    fill: none;
+  }
 `;
 
 const FilterBarEmptyStateContainer = styled.div`
@@ -116,19 +136,32 @@ const FilterControlsWrapper = styled.div`
   padding-bottom: ${({ theme }) => theme.gridUnit * 27}px;
 `;
 
+const SelectorsControlsWrapper = styled.div`
+  padding: ${({ theme }) => theme.gridUnit * 4}px;
+  padding-bottom: ${({ theme }) => theme.gridUnit * 27}px;
+`;
+
 export const FilterBarScrollContext = createContext(false);
 const VerticalFilterBar: React.FC<VerticalBarProps> = ({
-  actions,
+  filterActions,
+  selectorActions,
+  customizeActions,
   canEdit,
   dataMaskSelected,
   filtersOpen,
+  selectorsOpen,
+  customizerOpen,
   filterValues,
   height,
   isInitialized,
   offset,
   onSelectionChange,
   toggleFiltersBar,
+  toggleSelectorsBar,
+  toggleCustomizerBar,
   width,
+  selectors,
+  updateSelected,
 }) => {
   const [isScrolling, setIsScrolling] = useState(false);
   const timeout = useRef<any>();
@@ -136,6 +169,15 @@ const VerticalFilterBar: React.FC<VerticalBarProps> = ({
   const openFiltersBar = useCallback(
     () => toggleFiltersBar(true),
     [toggleFiltersBar],
+  );
+
+  const openSelectorsBar = useCallback(
+    () => toggleSelectorsBar(true),
+    [toggleSelectorsBar],
+  );
+  const openCustomizerBar = useCallback(
+    () => toggleCustomizerBar(true),
+    [toggleCustomizerBar],
   );
 
   const onScroll = useMemo(
@@ -160,6 +202,41 @@ const VerticalFilterBar: React.FC<VerticalBarProps> = ({
   const tabPaneStyle = useMemo(
     () => ({ overflow: 'auto', height, overscrollBehavior: 'contain' }),
     [height],
+  );
+
+  const selectorsControls = useMemo(
+    () =>
+      Object.keys(selectors).length === 0 ? (
+        <FilterBarEmptyStateContainer>
+          <EmptyStateSmall
+            title={t('No selectors are currently added')}
+            image="filter.svg"
+            description={
+              canEdit &&
+              t(
+                'Click on "+Add/Edit Selectors" button to create new dashboard selectors',
+              )
+            }
+          />
+        </FilterBarEmptyStateContainer>
+      ) : (
+        <SelectorsControlsWrapper>
+          <SelectorsControls
+            selectors={selectors}
+            updateSelected={updateSelected}
+          />
+        </SelectorsControlsWrapper>
+      ),
+    [canEdit, selectors],
+  );
+
+  const customizerControls = useMemo(
+    () => (
+      <SelectorsControlsWrapper>
+        <CustomizeControlsBody />
+      </SelectorsControlsWrapper>
+    ),
+    [],
   );
 
   const filterControls = useMemo(
@@ -200,22 +277,33 @@ const VerticalFilterBar: React.FC<VerticalBarProps> = ({
     <FilterBarScrollContext.Provider value={isScrolling}>
       <BarWrapper
         {...getFilterBarTestId()}
-        className={cx({ open: filtersOpen })}
+        className={cx({ open: filtersOpen || selectorsOpen })}
         width={width}
       >
         <CollapsedBar
           {...getFilterBarTestId('collapsable')}
-          className={cx({ open: !filtersOpen })}
-          onClick={openFiltersBar}
+          className={cx({ open: !filtersOpen && !selectorsOpen })}
           offset={offset}
         >
-          <StyledCollapseIcon
+          {/* <StyledCollapseIcon
             {...getFilterBarTestId('expand-button')}
             iconSize="l"
+            onClick={openFiltersBar}
+          /> */}
+          <StyledSelectorIcon
+            {...getFilterBarTestId('selector-icon')}
+            iconSize="l"
+            onClick={openSelectorsBar}
           />
           <StyledFilterIcon
             {...getFilterBarTestId('filter-icon')}
             iconSize="l"
+            onClick={openFiltersBar}
+          />
+          <StyledCustomizerIcon
+            {...getFilterBarTestId('edit-icon')}
+            iconSize="l"
+            onClick={openCustomizerBar}
           />
         </CollapsedBar>
         <Bar className={cx({ open: filtersOpen })} width={width}>
@@ -232,7 +320,39 @@ const VerticalFilterBar: React.FC<VerticalBarProps> = ({
               </>
             </div>
           )}
-          {actions}
+          {filterActions}
+        </Bar>
+        <Bar className={cx({ open: selectorsOpen })} width={width}>
+          <SelectorsHeader
+            toggleSelectorsBar={toggleSelectorsBar}
+            openCustomizerBar={openCustomizerBar}
+          />
+          {!isInitialized ? (
+            <div css={{ height }}>
+              <Loading />
+            </div>
+          ) : (
+            <div css={tabPaneStyle} onScroll={onScroll}>
+              {selectorsControls}
+            </div>
+          )}
+          {selectorActions}
+        </Bar>
+        <Bar className={cx({ open: customizerOpen })} width={width}>
+          <CustomizerHeader
+            toggleCustomizerBar={toggleCustomizerBar}
+            openSelectorsBar={openSelectorsBar}
+          />
+          {!isInitialized ? (
+            <div css={{ height }}>
+              <Loading />
+            </div>
+          ) : (
+            <div css={tabPaneStyle} onScroll={onScroll}>
+              {customizerControls}
+            </div>
+          )}
+          {customizeActions}
         </Bar>
       </BarWrapper>
     </FilterBarScrollContext.Provider>

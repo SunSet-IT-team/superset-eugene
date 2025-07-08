@@ -197,6 +197,23 @@ export const tableColumnDefinition: ColumnsType<ITableColumn> = [
       alphabeticalSort('type', a, b),
   },
 ];
+export const tableCustomColumnDefinition: ColumnsType<ITableColumn> = [
+  {
+    title: 'Name',
+    dataIndex: 'name',
+    key: 'name',
+    sorter: (a: ITableColumn, b: ITableColumn) =>
+      alphabeticalSort('name', a, b),
+  },
+  {
+    title: 'Type',
+    dataIndex: 'type',
+    key: 'type',
+    width: '100px',
+    sorter: (a: ITableColumn, b: ITableColumn) =>
+      alphabeticalSort('type', a, b),
+  },
+];
 
 /**
  * Props interface for DatasetPanel
@@ -219,6 +236,7 @@ export interface IDatasetPanelProps {
    */
   loading: boolean;
   datasets?: DatasetObject[] | undefined;
+  isCustom?: boolean;
 }
 
 const EXISTING_DATASET_DESCRIPTION = t(
@@ -260,6 +278,7 @@ const DatasetPanel = ({
   loading,
   hasError,
   datasets,
+  isCustom,
 }: IDatasetPanelProps) => {
   const theme = useTheme();
   const hasColumns = columnList?.length > 0 ?? false;
@@ -291,7 +310,11 @@ const DatasetPanel = ({
                 <Table
                   loading={loading}
                   size={TableSize.Small}
-                  columns={tableColumnDefinition}
+                  columns={
+                    isCustom
+                      ? tableCustomColumnDefinition
+                      : tableColumnDefinition
+                  }
                   data={columnList}
                   pageSizeOptions={pageSizeOptions}
                   defaultPageSize={DEFAULT_PAGE_SIZE}
@@ -304,7 +327,11 @@ const DatasetPanel = ({
                 <Table
                   loading={loading}
                   size={TableSize.Small}
-                  columns={tableColumnDefinition}
+                  columns={
+                    isCustom
+                      ? tableCustomColumnDefinition
+                      : tableColumnDefinition
+                  }
                   data={columnList}
                   pageSizeOptions={pageSizeOptions}
                   defaultPageSize={DEFAULT_PAGE_SIZE}

@@ -198,3 +198,8 @@ export enum FilterPlugins {
   TimeGrain = 'filter_timegrain',
   NumberFormat = 'filter_numberformat',
 }
+
+export const ORDERS_STORAGE_KEYS = {
+  orders: 'selectedOrders',
+  companies: 'selectedCompanies',
+};

@@ -15,29 +15,39 @@
 # specific language governing permissions and limitations
 # under the License.
 """Defines the templating context for SQL Lab"""
+import logging
 import json
 import re
 from datetime import datetime
+from collections import defaultdict
 from functools import lru_cache, partial
 from typing import Any, Callable, cast, Optional, TYPE_CHECKING, TypedDict, Union
 
+import sqlalchemy as sa
 import dateutil
-from flask import current_app, g, has_request_context, request
+from flask import current_app, g, has_request_context, request, session
 from flask_babel import gettext as _
 from jinja2 import DebugUndefined, Environment
 from jinja2.sandbox import SandboxedEnvironment
 from sqlalchemy.engine.interfaces import Dialect
 from sqlalchemy.sql.expression import bindparam
 from sqlalchemy.types import String
-
+from superset.exceptions import SupersetSecurityException
 from superset.commands.dataset.exceptions import DatasetNotFoundError
-from superset.constants import LRU_CACHE_MAX_SIZE
+from superset.constants import LRU_CACHE_MAX_SIZE, PERIOD_COLUMN_NAME, PERIOD_MAPPING_SELECTOR, SELECTOR_DATASOURCES, DATASOURCE_TYPE, COMPARISON_PERIOD_TYPES
 from superset.exceptions import SupersetTemplateException
 from superset.extensions import feature_flag_manager
 from superset.utils.core import (
     convert_legacy_filters_into_adhoc,
     get_user,
     merge_extra_filters,
+    flatten_and_unique,
+)
+from superset.constants import (
+    PERIOD_COLUMN_NAME,
+    MARKET_COLUMN,
+    PRODUCT_COLUMN,
+    NO_SELECTOR
 )
 
 if TYPE_CHECKING:
@@ -71,6 +81,12 @@ class Filter(TypedDict):
     op: str  # pylint: disable=C0103
     col: str
     val: Union[None, Any, list[Any]]
+
+class Selector(TypedDict):
+    op: str  # pylint: disable=C0103
+    col: str
+    val: Union[None, Any, list[Any]]
+    period_type = Union[None, str]
 
 
 class ExtraCache:
@@ -194,6 +210,205 @@ class ExtraCache:
         if add_to_cache_keys:
             self.cache_key_wrapper(result)
         return result
+    
+    def selector_values(
+            self, column: str, default: Optional[str] = None, remove_filter: bool = False, period_type: Optional[str] = None
+        ) -> list[Selector]:
+        
+        from superset.views.utils import get_queries
+        import logging
+        
+        logger = logging.getLogger(__name__)
+        
+        return_val: list[Any] = []
+        queries = get_queries()
+        
+        if isinstance(queries, list):
+            for query in queries:
+                selectors = query.get("selectors", []) if query else []
+                restriction = query["rls_restriction"]
+                if len(restriction) > 0:
+                    selector_filters = [{"col": restriction["column"], "val": restriction["value"]}]
+                else:
+                    selector_filters = []
+                filters = self.process_selectors(selectors, column, period_type, selector_filters)
+                return_val.extend(filters)
+        elif isinstance(queries, dict):
+            selectors = queries.get("selectors", [])
+            restriction = queries["rls_restriction"]
+            if len(restriction) > 0:
+                selector_filters = [{"col": restriction["column"], "val": restriction["value"]}]
+            else:
+                selector_filters = []
+            filters = self.process_selectors(selectors, column, period_type, selector_filters)
+            return_val.extend(filters)
+        else:
+            logger.warning(f"Unexpected queries type: {type(queries)}")
+
+        if (not return_val) and default:
+            return_val = [default]
+        
+        return return_val
+
+
+    def process_selectors(
+            self, 
+            selectors: list[dict], 
+            column: str, 
+            period_type: Optional[str] = None, 
+            selector_filters: Optional[list[dict]] = None
+            ) -> list[Any]:
+        
+        from superset.daos.datasource import DatasourceDAO
+        from superset.utils.core import DatasourceType
+        from superset.commands.exceptions import DatasourceNotFoundValidationError
+        from superset.views.utils import get_datasource
+        import logging
+
+        logger = logging.getLogger(__name__)
+
+        COLUMN_MAPPING = {
+            "Period": PERIOD_COLUMN_NAME,
+            "Market": MARKET_COLUMN,
+            "Product": PRODUCT_COLUMN,
+            "100_Market": "mkt_total_tag",
+            "100_Product": "prod_total_tag",
+            "Comparison Period": PERIOD_COLUMN_NAME,
+        }
+
+        LIST_VALUE_KEYS = [
+            "selected_markets",
+            "selected_products",
+            "selected_markets_100",
+            "selected_products_100",
+        ]
+
+        SINGLE_VALUE_KEYS = [
+            "selected_period",
+            "selected_comparison_period",
+            "selected_fact",
+        ]
+
+        filter_list = []
+        period_list = []
+        comparison_period_value = ""
+        has_comparison_period = False
+
+        for s in selectors:
+            type_selector = s.get("type_selector")
+            col = COLUMN_MAPPING.get(type_selector)
+            
+            if not col:
+                continue
+            
+            for key, value in s.items():
+                if key in LIST_VALUE_KEYS and isinstance(value, list):
+                    # process list of lists in selected_products 
+                    if key in ["selected_products", "selected_products_100"]:
+                        cleaned_values = flatten_and_unique([v for v in value if v != NO_SELECTOR])
+                    else:
+                        cleaned_values = [v for v in value if v != NO_SELECTOR]
+                    if cleaned_values:
+                        filter_list.append({"col": col, "op": "IN", "val": sorted(set(cleaned_values)), "period_type": None})
+
+                elif key in SINGLE_VALUE_KEYS and isinstance(value, str) and value != NO_SELECTOR:
+                    if key == "selected_period":
+                        # может зациклиться если источник данных для графика и источник данных для получения значений периода будут одинаковыми
+                        # можно просто склонировать источник данных (создать аналогичный датасет) и указать его номер в этой переменной, тогда периоды с графика не будут конфликтовать с  периодами в отдельном датасете
+                        datasource_id = SELECTOR_DATASOURCES.get("Period") # источник datasource_id - должна быть не виртуальная таблица
+                        current_datasource = get_datasource().get("id")
+                        
+                        if str(current_datasource) == str(datasource_id):
+                            raise DatasourceNotFoundValidationError(
+                                "Data source for calculating date and data source for request match - they need to be different."
+                                )
+                                
+                        datasource = DatasourceDAO.get_datasource(
+                                DatasourceType(DATASOURCE_TYPE), # DATASOURCE_TYPE - тут должен быть таблицей или тем, где лежит колонка с периодами
+                                datasource_id
+                            )
+                        datasource.raise_for_access()
+
+                        period_selector_type = s.get("period_selector_type")
+
+                        if period_selector_type == 'Predefined':
+                            if value in PERIOD_MAPPING_SELECTOR:
+                                period_list = datasource.get_periods_by_selected_value(
+                                    selected_period=value,
+                                    period_column_name=PERIOD_COLUMN_NAME.upper(),
+                                    selector_filters=selector_filters
+                                )
+                        elif period_selector_type == 'Custom':
+                            period_list = datasource.get_custom_periods_by_selected_value(
+                                selected_period=value,
+                                period_column_name=PERIOD_COLUMN_NAME.upper(),
+                                selector_filters=selector_filters
+                            )
+                        else:
+                            raise ValueError(f"Unexpected period selector type: {period_selector_type}")
+
+                        if period_list:
+                            filter_list.append({"col": col, "op": "IN", "val": sorted(set(period_list)), "period_type": "normal"})
+                    
+                    elif key == "selected_comparison_period":
+                        has_comparison_period = True
+                        comparison_period_value = value
+                        comparison_period_selector_type = s.get("comparison_period_selector_type")
+            
+    
+        if has_comparison_period and period_list:
+            comparison_period_list = []
+
+            if comparison_period_selector_type == 'Predefined':
+                if comparison_period_value == COMPARISON_PERIOD_TYPES['ANALOGOUS']['value']:
+                    comparison_period_list = datasource.get_comparison_periods_year_analogous(
+                        selected_periods=period_list,
+                        period_column_name=PERIOD_COLUMN_NAME.upper(),
+                        selector_filters=selector_filters
+                    )
+                elif comparison_period_value == COMPARISON_PERIOD_TYPES['PREVIOUS']['value']:
+                    comparison_period_list = datasource.get_comparison_periods_previous(
+                        selected_periods=period_list,
+                        period_column_name=PERIOD_COLUMN_NAME.upper(),
+                        selector_filters=selector_filters
+                    )
+            elif comparison_period_selector_type == 'Custom':
+                comparison_period_list = datasource.get_custom_periods_by_selected_value(
+                    selected_period=comparison_period_value,
+                    period_column_name=PERIOD_COLUMN_NAME.upper(),
+                    selector_filters=selector_filters
+                )
+            else:
+                raise ValueError(f"Unexpected comparison period selector type: {comparison_period_selector_type}")
+
+            comparison_col = COLUMN_MAPPING.get("Comparison Period")
+
+            if comparison_col and comparison_period_list:
+                filter_list.append({"col": comparison_col, "op": "IN", "val": sorted(set(comparison_period_list)), "period_type": "comparison"})
+                        
+        
+        #add rls_restriction to a filter
+        if selector_filters:
+            rls_column = selector_filters[0]["col"]        
+            rls_value = selector_filters[0]["val"]
+            filter_list.append({"col": rls_column, "op": "IN", "val": sorted(set([rls_value])), "period_type": "rls_value"})
+
+        
+        return_val = []
+        for flt in filter_list:
+            if period_type and flt.get("period_type") != period_type:
+                continue
+
+            col = flt.get("col")
+            val = flt.get("val")
+            if col == column:
+                if isinstance(val, list):
+                    return_val.extend(val)
+                elif val:
+                    return_val.append(val)
+        
+        return return_val
+
 
     def filter_values(
         self, column: str, default: Optional[str] = None, remove_filter: bool = False
@@ -532,6 +747,7 @@ class JinjaTemplateProcessor(BaseTemplateProcessor):
                 "current_username": partial(safe_proxy, extra_cache.current_username),
                 "cache_key_wrapper": partial(safe_proxy, extra_cache.cache_key_wrapper),
                 "filter_values": partial(safe_proxy, extra_cache.filter_values),
+                "selector_values": partial(safe_proxy, extra_cache.selector_values),
                 "get_filters": partial(safe_proxy, extra_cache.get_filters),
                 "dataset": partial(safe_proxy, dataset_macro_with_context),
             }

@@ -161,6 +161,10 @@ export interface SelectProps extends BaseSelectProps {
    * True by default.
    * */
   allowSelectAll?: boolean;
+  allowSelectFirstN?: boolean;
+  selectFirstNCount?: number;
+  dropdownMatchSelectWidth?: boolean | number;
+  optionLabelProp?: string;
   /**
    * It defines the options of the Select.
    * The options can be static, an array of options.

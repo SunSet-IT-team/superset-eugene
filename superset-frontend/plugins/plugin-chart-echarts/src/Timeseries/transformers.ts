@@ -34,6 +34,11 @@ import {
 } from '@superset-ui/core';
 import { SeriesOption } from 'echarts';
 import {
+  MarkArea1DDataItemOption,
+  MarkArea2DDataItemOption,
+} from 'echarts/types/src/component/marker/MarkAreaModel';
+import { MarkLine1DDataItemOption } from 'echarts/types/src/component/marker/MarkLineModel';
+import {
   CallbackDataParams,
   DefaultStatesMixin,
   ItemStyleOption,
@@ -44,18 +49,18 @@ import {
   ZRLineType,
 } from 'echarts/types/src/util/types';
 import {
-  MarkArea1DDataItemOption,
-  MarkArea2DDataItemOption,
-} from 'echarts/types/src/component/marker/MarkAreaModel';
-import { MarkLine1DDataItemOption } from 'echarts/types/src/component/marker/MarkLineModel';
-import { extractForecastSeriesContext } from '../utils/forecast';
-import {
   EchartsTimeseriesSeriesType,
   ForecastSeriesEnum,
   LegendOrientation,
   StackType,
 } from '../types';
+import { extractForecastSeriesContext } from '../utils/forecast';
 
+import {
+  OpacityEnum,
+  StackControlsValue,
+  TIMESERIES_CONSTANTS,
+} from '../constants';
 import {
   evalFormula,
   extractRecordAnnotations,
@@ -63,11 +68,6 @@ import {
   parseAnnotationOpacity,
 } from '../utils/annotation';
 import { getChartPadding } from '../utils/series';
-import {
-  OpacityEnum,
-  StackControlsValue,
-  TIMESERIES_CONSTANTS,
-} from '../constants';
 
 // based on weighted wiggle algorithm
 // source: https://ieeexplore.ieee.org/document/4658136
@@ -151,6 +151,7 @@ export function transformSeries(
     areaOpacity?: number;
     seriesType?: EchartsTimeseriesSeriesType;
     stack?: StackType;
+    stackIdSuffix?: string;
     yAxisIndex?: number;
     showValue?: boolean;
     onlyTotal?: boolean;
@@ -178,6 +179,7 @@ export function transformSeries(
     areaOpacity = 1,
     seriesType,
     stack,
+    stackIdSuffix,
     yAxisIndex = 0,
     showValue,
     onlyTotal,
@@ -222,6 +224,9 @@ export function transformSeries(
     stackId = 'obs';
   } else if (stack && isTrend) {
     stackId = forecastSeries.type;
+  }
+  if (stackId && stackIdSuffix) {
+    stackId += stackIdSuffix;
   }
   let plotType;
   if (
@@ -306,7 +311,7 @@ export function transformSeries(
     symbolSize: markerSize,
     label: {
       show: !!showValue,
-      position: isHorizontal ? 'right' : 'top',
+      position: onlyTotal ? (isHorizontal ? 'right' : 'top') : 'inside',
       formatter: (params: any) => {
         const { value, dataIndex, seriesIndex, seriesName } = params;
         const numericValue = isHorizontal ? value[0] : value[1];
@@ -549,6 +554,7 @@ export function getPadding(
   addYAxisTitleOffset: boolean,
   zoomable: boolean,
   margin?: string | number | null,
+  paddingRight?: number,
   addXAxisTitleOffset?: boolean,
   yAxisTitlePosition?: string,
   yAxisTitleMargin?: number,
@@ -564,10 +570,6 @@ export function getPadding(
     ? TIMESERIES_CONSTANTS.yAxisLabelTopOffset
     : 0;
   const xAxisOffset = addXAxisTitleOffset ? Number(xAxisTitleMargin) || 0 : 0;
-  const showLegendTopOffset =
-    isHorizontal && showLegend && legendOrientation === LegendOrientation.Top
-      ? 100
-      : 0;
 
   return getChartPadding(
     showLegend,
@@ -576,12 +578,8 @@ export function getPadding(
     {
       top:
         yAxisTitlePosition && yAxisTitlePosition === 'Top'
-          ? TIMESERIES_CONSTANTS.gridOffsetTop +
-            showLegendTopOffset +
-            (Number(yAxisTitleMargin) || 0)
-          : TIMESERIES_CONSTANTS.gridOffsetTop +
-            showLegendTopOffset +
-            yAxisOffset,
+          ? TIMESERIES_CONSTANTS.gridOffsetTop + (Number(yAxisTitleMargin) || 0)
+          : TIMESERIES_CONSTANTS.gridOffsetTop + yAxisOffset,
       bottom:
         zoomable && !isHorizontal
           ? TIMESERIES_CONSTANTS.gridOffsetBottomZoomable + xAxisOffset
@@ -592,9 +590,9 @@ export function getPadding(
             (Number(yAxisTitleMargin) || 0)
           : TIMESERIES_CONSTANTS.gridOffsetLeft,
       right:
-        showLegend && legendOrientation === LegendOrientation.Right
+        (showLegend && legendOrientation === LegendOrientation.Right
           ? 0
-          : TIMESERIES_CONSTANTS.gridOffsetRight,
+          : TIMESERIES_CONSTANTS.gridOffsetRight) + Number(paddingRight),
     },
     isHorizontal,
   );

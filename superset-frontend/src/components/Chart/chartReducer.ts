@@ -38,7 +38,7 @@ export const chart: ChartState = {
   sliceFormData: null,
   queryController: null,
   queriesResponse: null,
-  triggerQuery: true,
+  triggerQuery: false,
   lastRendered: 0,
 };
 

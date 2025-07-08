@@ -144,7 +144,6 @@ export const createHandleSave =
           sortMetric: formInputs.sortMetric,
           type: formInputs.type,
           description: (formInputs.description || '').trim(),
-          showViewFilterControl: formInputs.showViewFilterControl || false,
         };
       });
 

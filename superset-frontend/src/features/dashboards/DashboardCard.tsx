@@ -17,17 +17,19 @@
  * under the License.
  */
 import React from 'react';
+
+import { FeatureFlag, isFeatureEnabled, t, useTheme } from '@superset-ui/core';
 import { Link, useHistory } from 'react-router-dom';
-import { isFeatureEnabled, FeatureFlag, t, useTheme } from '@superset-ui/core';
-import { CardStyles } from 'src/views/CRUD/utils';
 import { AntdDropdown } from 'src/components';
-import { Menu } from 'src/components/Menu';
-import ListViewCard from 'src/components/ListViewCard';
-import Icons from 'src/components/Icons';
-import Label from 'src/components/Label';
 import FacePile from 'src/components/FacePile';
 import FaveStar from 'src/components/FaveStar';
+import Icons from 'src/components/Icons';
+import Label from 'src/components/Label';
+import ListViewCard from 'src/components/ListViewCard';
+import { Menu } from 'src/components/Menu';
 import { Dashboard } from 'src/views/CRUD/types';
+import { CardStyles } from 'src/views/CRUD/utils';
+// import { getDateTranslation } from '../../utils/dateTranslation';
 
 interface DashboardCardProps {
   isChart?: boolean;
@@ -114,13 +116,12 @@ function DashboardCard({
       }}
     >
       <ListViewCard
+        isDashboardCard
         loading={dashboard.loading || false}
         title={dashboard.dashboard_title}
         certifiedBy={dashboard.certified_by}
         certificationDetails={dashboard.certification_details}
-        titleRight={
-          <Label>{dashboard.published ? t('published') : t('draft')}</Label>
-        }
+        titleRight={!dashboard.published ? <Label>{t('draft')}</Label> : null}
         cover={
           !isFeatureEnabled(FeatureFlag.Thumbnails) || !showThumbnails ? (
             <></>
@@ -130,7 +131,7 @@ function DashboardCard({
         linkComponent={Link}
         imgURL={dashboard.thumbnail_url}
         imgFallbackURL="/static/assets/images/dashboard-card-fallback.svg"
-        description={t('Modified %s', dashboard.changed_on_delta_humanized)}
+        description=""
         coverLeft={<FacePile users={dashboard.owners || []} />}
         actions={
           <ListViewCard.Actions

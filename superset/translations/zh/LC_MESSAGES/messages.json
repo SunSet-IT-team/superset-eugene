@@ -5,7 +5,7 @@
       "22": [""],
       "": {
         "domain": "superset",
-        "plural_forms": "nplurals=1; plural=0;",
+        "plural_forms": "nplurals=1; plural=0",
         "lang": "zh"
       },
       "\n                This filter was inherited from the dashboard's context.\n                It won't be saved when saving the chart.\n              ": [
@@ -55,7 +55,6 @@
       "%s Selected (Virtual)": ["%s 个被选中（虚拟）"],
       "%s aggregates(s)": ["%s 聚合"],
       "%s column(s)": ["%s 列"],
-      "%s ineligible item(s) are hidden": [""],
       "%s items could not be tagged because you don’t have edit permissions to all selected objects.": [
         ""
       ],
@@ -133,9 +132,8 @@
       "A comma separated list of columns that should be parsed as dates.": [
         "应作为日期解析的列的逗号分隔列表。"
       ],
-      "A database port is required when connecting via SSH Tunnel.": [""],
       "A database with the same name already exists.": ["已存在同名的数据库。"],
-      "A dictionary with column names and their data types if you need to change the defaults. Example: {\"user_id\":\"int\"}. Check Python's Pandas library for supported data types.": [
+      "A dictionary with column names and their data types if you need to change the defaults. Example: {\"user_id\":\"integer\"}": [
         ""
       ],
       "A full URL pointing to the location of the built plugin (could be hosted on a CDN for example)": [
@@ -227,6 +225,7 @@
       "Add metrics to dataset in \"Edit datasource\" modal": [""],
       "Add new color formatter": ["添加新的颜色"],
       "Add new formatter": ["新增格式化"],
+      "Add notification method": ["添加注释层"],
       "Add required control values to preview chart": [""],
       "Add required control values to save chart": [""],
       "Add sheet": ["添加sheet页"],
@@ -266,6 +265,7 @@
       "Aggregation function": ["聚合功能"],
       "Alert Triggered, In Grace Period": ["告警已触发，在宽限期内"],
       "Alert condition": ["告警条件"],
+      "Alert condition schedule": ["告警条件计划"],
       "Alert ended grace period.": ["告警已结束宽限期。"],
       "Alert failed": ["告警失败"],
       "Alert fired during grace period.": ["在宽限期内触发告警。"],
@@ -986,7 +986,6 @@
         ""
       ],
       "Customize columns": ["自定义列"],
-      "Customize data source, filters, and layout.": [""],
       "Cyclic dependency detected": [""],
       "D3 Format": ["D3 格式"],
       "D3 format": ["D3 格式"],
@@ -1150,10 +1149,6 @@
         ""
       ],
       "Define contour layers. Isolines represent a collection of line segments that serparate the area above and below a given threshold. Isobands represent a collection of polygons that fill the are containing values in a given threshold range.": [
-        ""
-      ],
-      "Define delivery schedule, timezone, and frequency settings.": [""],
-      "Define the database, SQL query, and triggering conditions for alert.": [
         ""
       ],
       "Defines a rolling window function to apply, works along with the [Periods] text box": [
@@ -1866,6 +1861,7 @@
       "Lift percent precision": ["提升百分比精度"],
       "Light mode": ["光模式"],
       "Like": [""],
+      "Limit reached": ["达到限制"],
       "Limiting rows may result in incomplete data and misleading charts. Consider filtering or grouping source/target names instead.": [
         "限制行数可能导致不完整的数据和误导性的图表。可以考虑过滤或分组源/目标名称。"
       ],
@@ -1878,6 +1874,7 @@
       ],
       "Line": ["行"],
       "Line Chart": ["多线图"],
+      "Line Chart (legacy)": [""],
       "Line Style": ["线条样式"],
       "Line interpolation as defined by d3.js": ["由 d3.js 定义的线插值"],
       "Line width": ["线宽"],
@@ -2126,9 +2123,6 @@
       "Normalize Across": ["标准化通过"],
       "Normalized": ["标准化"],
       "Not Time Series": ["美誉时间序列"],
-      "Not all required fields are complete. Please provide the following:": [
-        ""
-      ],
       "Not null": ["非空"],
       "Not triggered": ["没有触发"],
       "Not up to date": ["不是最新的"],
@@ -2305,7 +2299,6 @@
       ],
       "Pattern": ["规则"],
       "Percent Change": ["百分比变化"],
-      "Percentage difference between the time periods": [""],
       "Percentage metrics": ["百分比指标"],
       "Percentage threshold": ["百分比阈值"],
       "Percentages": ["百分比"],
@@ -2496,7 +2489,6 @@
       "Recommended tags": ["推荐标签"],
       "Record Count": ["记录数"],
       "Rectangle": ["长方形"],
-      "Recurring (every)": [""],
       "Redirects to this endpoint when clicking on the table from the table list": [
         "点击表列表中的表时将重定向到此端点"
       ],
@@ -2555,6 +2547,7 @@
       "Report a bug": ["报告bug"],
       "Report failed": ["报告失败"],
       "Report name": ["报告名称"],
+      "Report schedule": ["报告时间表"],
       "Report schedule unexpected error": ["报告计划意外错误。"],
       "Report sending": ["报告发送"],
       "Report sent": ["已发送报告"],
@@ -2680,6 +2673,7 @@
       "Schedule": ["调度"],
       "Schedule email report": ["为图表配置电子邮件报告"],
       "Schedule query": ["分享查询"],
+      "Schedule settings": ["计划设置"],
       "Schedule the query periodically": ["定期调度查询"],
       "Scheduled": ["被调度"],
       "Scheduled at (UTC)": ["计划时间"],
@@ -2791,10 +2785,6 @@
       "Service Account": ["服务帐户"],
       "Set auto-refresh interval": ["设置自动刷新"],
       "Set filter mapping": ["设置过滤映射"],
-      "Set the time range that will be used for the comparison metrics. For example, \"Year\" will compare to the same dates one year earlier. Use \"Inherit range from time filters\" to shift the comparison time rangeby the same length as your time range and use \"Custom\" to set a custom comparison range.": [
-        ""
-      ],
-      "Set up basic details, such as name and description.": [""],
       "Sets the hierarchy levels of the chart. Each level is\n        represented by one ring with the innermost circle as the top of the hierarchy.": [
         ""
       ],
@@ -2826,6 +2816,7 @@
       "Show Dashboard": ["显示看板"],
       "Show Database": ["显示数据库"],
       "Show Labels": ["显示标签"],
+      "Show Less...": ["显示. ."],
       "Show Log": ["查看日志"],
       "Show Markers": ["显示标记"],
       "Show Metric": ["显示指标"],
@@ -3290,9 +3281,7 @@
         "单个点的半径（不在簇中的点）。一个数值列或“AUTO”，它根据最大的聚类来缩放点。"
       ],
       "The report has been created": ["数据集已保存"],
-      "The result of this query must be a value capable of numeric interpretation e.g. 1, 1.0, or \"1\" (compatible with Python's float() function).": [
-        ""
-      ],
+      "The result of this query should be a numeric-esque value": [""],
       "The results backend no longer has the data from the query.": [
         "结果后端不再拥有来自查询的数据。"
       ],
@@ -3301,9 +3290,6 @@
       ],
       "The rich tooltip shows a list of all series for that point in time": [
         "详细提示显示了该时间点的所有序列的列表。"
-      ],
-      "The row limit set for the chart was reached. The chart may show partial data.": [
-        ""
       ],
       "The schema \"%(schema)s\" does not exist. A valid schema must be used to run this query.": [
         "表 \"%(schema)s\" 不存在。必须使用有效的表来运行此查询。"
@@ -3823,7 +3809,6 @@
       "Value Format": ["数值格式"],
       "Value bounds": ["值边界"],
       "Value cannot exceed %s": [""],
-      "Value difference between the time periods": [""],
       "Value format": ["数值格式"],
       "Value is required": ["需要名称"],
       "Value must be greater than 0": ["`行偏移量` 必须大于或等于0"],
@@ -4218,6 +4203,9 @@
         "后处理必须指定操作类型（`operation`）"
       ],
       "`prophet` package not installed": ["未安装程序包 `fbprophet`"],
+      "`rename_columns` must have the same length as `columns`.": [
+        "长度必须保持一致"
+      ],
       "`row_limit` must be greater than or equal to 0": [
         "`行限制` 必须大于或等于1"
       ],
@@ -4230,6 +4218,7 @@
       "alerts": ["警报"],
       "also copy (duplicate) charts": ["同时复制图表"],
       "ancestor": ["上一个"],
+      "and": ["和"],
       "annotation": ["注释"],
       "annotation_layer": ["注释层"],
       "asfreq": [""],

@@ -37,6 +37,7 @@ import { DndControlProps } from './types';
 export type DndColumnSelectProps = DndControlProps<QueryFormColumn> & {
   options: ColumnMeta[];
   isTemporal?: boolean;
+  canSubstituteColumn?: boolean;
 };
 
 function DndColumnSelect(props: DndColumnSelectProps) {
@@ -46,6 +47,7 @@ function DndColumnSelect(props: DndColumnSelectProps) {
     multi = true,
     onChange,
     canDelete = true,
+    canSubstituteColumn = false,
     ghostButtonText,
     name,
     label,
@@ -204,6 +206,7 @@ function DndColumnSelect(props: DndColumnSelectProps) {
         closePopover={closePopover}
         visible={newColumnPopoverVisible}
         isTemporal={isTemporal}
+        canSubstituteColumn={canSubstituteColumn}
       >
         <div />
       </ColumnSelectPopoverTrigger>

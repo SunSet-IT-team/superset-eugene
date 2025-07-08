@@ -16,11 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useHistory } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import PropTypes from 'prop-types';
-import { Tooltip } from 'src/components/Tooltip';
 import {
   CategoricalColorNamespace,
   css,
@@ -29,15 +24,21 @@ import {
   t,
   tn,
 } from '@superset-ui/core';
-import { chartPropShape } from 'src/dashboard/util/propShapes';
+import PropTypes from 'prop-types';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { useHistory } from 'react-router-dom';
 import AlteredSliceTag from 'src/components/AlteredSliceTag';
 import Button from 'src/components/Button';
 import Icons from 'src/components/Icons';
-import PropertiesModal from 'src/explore/components/PropertiesModal';
-import { sliceUpdated } from 'src/explore/actions/exploreActions';
-import { PageHeaderWithActions } from 'src/components/PageHeaderWithActions';
 import MetadataBar, { MetadataType } from 'src/components/MetadataBar';
+import { PageHeaderWithActions } from 'src/components/PageHeaderWithActions';
+import { Tooltip } from 'src/components/Tooltip';
+import { chartPropShape } from 'src/dashboard/util/propShapes';
+import { sliceUpdated } from 'src/explore/actions/exploreActions';
 import { setSaveChartModalVisibility } from 'src/explore/actions/saveModalActions';
+import PropertiesModal from 'src/explore/components/PropertiesModal';
+import { getDateTranslation } from "../../../utils/dateTranslation";
 import { useExploreAdditionalActionsMenu } from '../useExploreAdditionalActionsMenu';
 
 const propTypes = {
@@ -198,14 +199,14 @@ export const ExploreChartHeader = ({
     });
     items.push({
       type: MetadataType.LastModified,
-      value: metadata.changed_on_humanized,
+      value: getDateTranslation(metadata.changed_on_humanized),
       modifiedBy: metadata.changed_by || t('Not available'),
     });
     items.push({
       type: MetadataType.Owner,
       createdBy: metadata.created_by || t('Not available'),
       owners: metadata.owners.length > 0 ? metadata.owners : t('None'),
-      createdOn: metadata.created_on_humanized,
+      createdOn: getDateTranslation(metadata.created_on_humanized),
     });
     if (slice?.description) {
       items.push({

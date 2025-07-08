@@ -1,6 +1,6 @@
 {
   "name": "superset",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "description": "Superset is a data exploration platform designed to be visual, intuitive, and interactive.",
   "keywords": [
     "big",
@@ -200,6 +200,7 @@
     "rison": "^0.1.1",
     "scroll-into-view-if-needed": "^2.2.28",
     "shortid": "^2.2.16",
+    "simple-zstd": "^1.4.2",
     "tinycolor2": "^1.4.2",
     "urijs": "^1.19.8",
     "use-event-callback": "^0.1.0",

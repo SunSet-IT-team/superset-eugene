@@ -48,6 +48,7 @@ import DndColumnSelectControl, {
 import XAxisSortControl from './XAxisSortControl';
 import CurrencyControl from './CurrencyControl';
 import ColumnConfigControl from './ColumnConfigControl';
+import { CustomTextarea } from 'plugins/plugin-chart-echarts/src/BubbleCustom/components/TextArea/CustomTextarea';
 
 const controlMap = {
   AnnotationLayerControl,
@@ -80,6 +81,7 @@ const controlMap = {
   ConditionalFormattingControl,
   XAxisSortControl,
   ContourControl,
+  CustomTextarea,
   ...sharedControlComponents,
 };
 export default controlMap;

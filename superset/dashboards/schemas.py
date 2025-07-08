@@ -66,7 +66,6 @@ published_description = (
 charts_description = (
     "The names of the dashboard's charts. Names are used for legacy reasons."
 )
-business_unit_description = "Business unit"
 certified_by_description = "Person or group that has certified this dashboard"
 certification_details_description = "Details of the certification"
 
@@ -107,6 +106,8 @@ def validate_json_metadata(value: Union[bytes, bytearray, str]) -> None:
 
 
 class DashboardJSONMetadataSchema(Schema):
+    # selector_configuration is for dashboard selectors
+    selector_configuration = fields.List(fields.Dict(), allow_none=True)
     # native_filter_configuration is for dashboard-native filters
     native_filter_configuration = fields.List(fields.Dict(), allow_none=True)
     # chart_configuration for now keeps data about cross-filter scoping for charts
@@ -185,7 +186,6 @@ class DashboardGetResponseSchema(Schema):
     css = fields.String(metadata={"description": css_description})
     json_metadata = fields.String(metadata={"description": json_metadata_description})
     position_json = fields.String(metadata={"description": position_json_description})
-    business_unit = fields.String(metadata={"description": business_unit_description})
     certified_by = fields.String(metadata={"description": certified_by_description})
     certification_details = fields.String(
         metadata={"description": certification_details_description}
@@ -300,9 +300,6 @@ class DashboardPostSchema(BaseDashboardSchema):
         validate=validate_json_metadata,
     )
     published = fields.Boolean(metadata={"description": published_description})
-    business_unit = fields.String(
-        metadata={"description": business_unit_description}, allow_none=True
-    )
     certified_by = fields.String(
         metadata={"description": certified_by_description}, allow_none=True
     )
@@ -362,9 +359,6 @@ class DashboardPutSchema(BaseDashboardSchema):
     )
     published = fields.Boolean(
         metadata={"description": published_description}, allow_none=True
-    )
-    business_unit = fields.String(
-        metadata={"description": business_unit_description}, allow_none=True
     )
     certified_by = fields.String(
         metadata={"description": certified_by_description}, allow_none=True

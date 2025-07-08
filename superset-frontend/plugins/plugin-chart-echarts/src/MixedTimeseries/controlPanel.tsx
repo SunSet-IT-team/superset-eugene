@@ -287,7 +287,7 @@ const config: ControlPanelConfig = {
     {
       label: t('Shared query fields'),
       expanded: true,
-      controlSetRows: [['x_axis'], ['time_grain_sqla']],
+      controlSetRows: [['x_axis_substitute'], ['x_axis'], ['time_grain_sqla']],
     },
     createQuerySection(t('Query A'), ''),
     createAdvancedAnalyticsSection(t('Advanced analytics Query A'), ''),

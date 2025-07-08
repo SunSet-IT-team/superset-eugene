@@ -16,9 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import React, { RefObject } from 'react';
+import React from 'react';
+
 import {
   ChartDataResponseResult,
+  ChartMetadata,
+  ChartPlugin,
   ChartProps,
   ContextMenuFilters,
   FilterState,
@@ -27,12 +30,11 @@ import {
   PlainObject,
   QueryFormColumn,
   SetDataMaskHook,
-  ChartPlugin,
   SqlaFormData,
-  ChartMetadata,
 } from '@superset-ui/core';
-import { EChartsCoreOption, ECharts } from 'echarts';
+import { ECharts, EChartsCoreOption } from 'echarts';
 import { TooltipMarker } from 'echarts/types/src/util/format';
+import React, { RefObject } from 'react';
 import { StackControlsValue } from './constants';
 
 export type EchartsStylesProps = {
@@ -93,10 +95,15 @@ export type ForecastValue = {
 };
 
 export type LegendFormData = {
+  legendFontSize: number;
   legendMargin: number | null | string;
   legendOrientation: LegendOrientation;
   legendType: LegendType;
   showLegend: boolean;
+};
+
+export type PaddingFormData = {
+  paddingRight: number;
 };
 
 export type EventHandlers = Record<string, { (props: any): void }>;

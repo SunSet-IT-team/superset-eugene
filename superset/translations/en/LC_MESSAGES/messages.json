@@ -5,7 +5,7 @@
       "22": [""],
       "": {
         "domain": "superset",
-        "plural_forms": "nplurals=2; plural=(n != 1);",
+        "plural_forms": "nplurals=2; plural=(n != 1)",
         "lang": "en"
       },
       "\n                This filter was inherited from the dashboard's context.\n                It won't be saved when saving the chart.\n              ": [
@@ -56,13 +56,11 @@
       "%s Selected (Virtual)": [""],
       "%s aggregates(s)": [""],
       "%s column(s)": [""],
-      "%s ineligible item(s) are hidden": [""],
       "%s items could not be tagged because you don’t have edit permissions to all selected objects.": [
         ""
       ],
       "%s operator(s)": [""],
       "%s option(s)": [""],
-      "%s recipients": [""],
       "%s saved metric(s)": [""],
       "%s updated": [""],
       "%s%s": [""],
@@ -158,9 +156,8 @@
       "A comma-separated list of schemas that files are allowed to upload to.": [
         ""
       ],
-      "A database port is required when connecting via SSH Tunnel.": [""],
       "A database with the same name already exists.": [""],
-      "A dictionary with column names and their data types if you need to change the defaults. Example: {\"user_id\":\"int\"}. Check Python's Pandas library for supported data types.": [
+      "A dictionary with column names and their data types if you need to change the defaults. Example: {\"user_id\":\"integer\"}": [
         ""
       ],
       "A full URL pointing to the location of the built plugin (could be hosted on a CDN for example)": [
@@ -250,7 +247,6 @@
       "Add and edit filters": [""],
       "Add annotation": [""],
       "Add annotation layer": [""],
-      "Add another notification method": [""],
       "Add calculated columns to dataset in \"Edit datasource\" modal": [""],
       "Add calculated temporal columns to dataset in \"Edit datasource\" modal": [
         ""
@@ -272,6 +268,7 @@
       "Add metrics to dataset in \"Edit datasource\" modal": [""],
       "Add new color formatter": [""],
       "Add new formatter": [""],
+      "Add notification method": [""],
       "Add required control values to preview chart": [""],
       "Add required control values to save chart": [""],
       "Add sheet": [""],
@@ -298,7 +295,6 @@
       "Advanced analytics": [""],
       "Advanced analytics Query A": [""],
       "Advanced analytics Query B": [""],
-      "Advanced analytics post processing": [""],
       "Advanced data type": [""],
       "Advanced-Analytics": [""],
       "Aesthetic": [""],
@@ -320,12 +316,11 @@
       "Alert": [""],
       "Alert Triggered, In Grace Period": [""],
       "Alert condition": [""],
-      "Alert contents": [""],
+      "Alert condition schedule": [""],
       "Alert ended grace period.": [""],
       "Alert failed": [""],
       "Alert fired during grace period.": [""],
       "Alert found an error while executing a query.": [""],
-      "Alert is active": [""],
       "Alert name": [""],
       "Alert on grace period": [""],
       "Alert query returned a non-number value.": [""],
@@ -539,6 +534,7 @@
       "Are you sure you want to proceed?": [""],
       "Are you sure you want to save and apply changes?": [""],
       "Area Chart": [""],
+      "Time-series Area Chart (legacy)": [""],
       "Area chart": [""],
       "Area chart opacity": [""],
       "Area charts are similar to line charts in that they represent variables with the same scale, but area charts stack the metrics on top of each other.": [
@@ -795,7 +791,6 @@
       "Choose a source and a target": [""],
       "Choose a target": [""],
       "Choose chart type": [""],
-      "Choose notification method and recipients.": [""],
       "Choose one of the available databases from the panel on the left.": [""],
       "Choose the annotation layer type": [""],
       "Choose the format for legend values": [""],
@@ -972,10 +967,7 @@
       "Connect this database with a SQLAlchemy URI string instead": [""],
       "Connection": [""],
       "Connection failed, please check your connection settings": [""],
-      "Connection failed, please check your connection settings.": [""],
       "Connection looks good!": [""],
-      "Content format": [""],
-      "Content type": [""],
       "Continue": [""],
       "Continuous": [""],
       "Contours": [""],
@@ -1068,7 +1060,6 @@
         ""
       ],
       "Customize columns": [""],
-      "Customize data source, filters, and layout.": [""],
       "Cyclic dependency detected": [""],
       "D3 Format": [""],
       "D3 format": [""],
@@ -1105,6 +1096,7 @@
       "Dashboard title": [""],
       "Dashboard usage": [""],
       "Dashboards": [""],
+      "Dashboards added to": [""],
       "Dashboards could not be created.": [""],
       "Dashboards do not exist": [""],
       "Dashed": [""],
@@ -1118,7 +1110,6 @@
       "Data could not be retrieved from the results backend. You need to re-run the original query.": [
         ""
       ],
-      "Data for %s": [""],
       "Data preview": [""],
       "Data refreshed": [""],
       "Data type": [""],
@@ -1251,10 +1242,6 @@
         ""
       ],
       "Define contour layers. Isolines represent a collection of line segments that serparate the area above and below a given threshold. Isobands represent a collection of polygons that fill the are containing values in a given threshold range.": [
-        ""
-      ],
-      "Define delivery schedule, timezone, and frequency settings.": [""],
-      "Define the database, SQL query, and triggering conditions for alert.": [
         ""
       ],
       "Defines a rolling window function to apply, works along with the [Periods] text box": [
@@ -1539,10 +1526,8 @@
       "Enter a delimiter for this data": [""],
       "Enter a name for this sheet": [""],
       "Enter a new title for the tab": [""],
-      "Enter alert name": [""],
       "Enter duration in seconds": [""],
       "Enter fullscreen": [""],
-      "Enter report name": [""],
       "Enter the required %(dbModelName)s credentials": [""],
       "Entity": [""],
       "Entity ID": [""],
@@ -1761,7 +1746,6 @@
       "GROUP BY": [""],
       "Gauge Chart": [""],
       "General": [""],
-      "General information": [""],
       "Generating link, please wait..": [""],
       "Generic Chart": [""],
       "Geo": [""],
@@ -1880,7 +1864,6 @@
       "In": [""],
       "Include Series": [""],
       "Include a description that will be sent with your report": [""],
-      "Include description to be sent with %s": [""],
       "Include series name as an axis": [""],
       "Include time": [""],
       "Increase": [""],
@@ -2045,6 +2028,7 @@
       "Light mode": [""],
       "Like": [""],
       "Like (case insensitive)": [""],
+      "Limit reached": [""],
       "Limit type": [""],
       "Limiting rows may result in incomplete data and misleading charts. Consider filtering or grouping source/target names instead.": [
         ""
@@ -2059,6 +2043,7 @@
       ],
       "Line": [""],
       "Line Chart": [""],
+      "Time-series Line Chart (legacy)": [""],
       "Line Style": [""],
       "Line chart is used to visualize measurements taken over a given category. Line chart is a type of chart which displays information as a series of data points connected by straight line segments. It is a basic type of chart common in many fields.": [
         ""
@@ -2357,9 +2342,6 @@
       "Normalized": [""],
       "Not Time Series": [""],
       "Not added to any dashboard": [""],
-      "Not all required fields are complete. Please provide the following:": [
-        ""
-      ],
       "Not available": [""],
       "Not defined": [""],
       "Not equal to (≠)": [""],
@@ -2368,7 +2350,6 @@
       "Not triggered": [""],
       "Not up to date": [""],
       "Nothing triggered": [""],
-      "Notification Method": [""],
       "Notification method": [""],
       "November": [""],
       "Now": [""],
@@ -2535,7 +2516,6 @@
       "Percent of total": [""],
       "Percentage": [""],
       "Percentage change": [""],
-      "Percentage difference between the time periods": [""],
       "Percentage metrics": [""],
       "Percentage threshold": [""],
       "Percentages": [""],
@@ -2729,7 +2709,6 @@
       "Recommended tags": [""],
       "Record Count": [""],
       "Rectangle": [""],
-      "Recurring (every)": [""],
       "Redirects to this endpoint when clicking on the table from the table list": [
         ""
       ],
@@ -2784,10 +2763,9 @@
       "Report Schedule reached a working timeout.": [""],
       "Report Schedule state not found": [""],
       "Report a bug": [""],
-      "Report contents": [""],
       "Report failed": [""],
-      "Report is active": [""],
       "Report name": [""],
+      "Report schedule": [""],
       "Report schedule client error": [""],
       "Report schedule system error": [""],
       "Report schedule unexpected error": [""],
@@ -2804,7 +2782,7 @@
       "Required": [""],
       "Required control values have been removed": [""],
       "Resample": [""],
-      "Resample method should be in ": [""],
+      "Resample method should in ": [""],
       "Resample operation requires DatetimeIndex": [""],
       "Reset": [""],
       "Reset state": [""],
@@ -2955,8 +2933,8 @@
       "Schedule a new email report": [""],
       "Schedule email report": [""],
       "Schedule query": [""],
+      "Schedule settings": [""],
       "Schedule the query periodically": [""],
-      "Schedule type": [""],
       "Scheduled": [""],
       "Scheduled at (UTC)": [""],
       "Scheduled task executor not found": [""],
@@ -2973,7 +2951,6 @@
       "Scroll": [""],
       "Scroll down to the bottom to enable overwriting changes. ": [""],
       "Search": [""],
-      "Search %s records": [""],
       "Search / Filter": [""],
       "Search Metrics & Columns": [""],
       "Search all charts": [""],
@@ -3026,14 +3003,10 @@
       "Select all data": [""],
       "Select all items": [""],
       "Select any columns for metadata inspection": [""],
-      "Select chart to use": [""],
       "Select charts": [""],
       "Select color scheme": [""],
       "Select column": [""],
-      "Select content type": [""],
       "Select current page": [""],
-      "Select dashboard to use": [""],
-      "Select database": [""],
       "Select database or type to search databases": [""],
       "Select databases require additional fields to be completed in the Advanced tab to successfully connect the database. Learn what requirements your databases has ": [
         ""
@@ -3043,7 +3016,6 @@
       "Select filter": [""],
       "Select filter plugin using AntD": [""],
       "Select first filter value by default": [""],
-      "Select format": [""],
       "Select one or many metrics to display, that will be displayed in the percentages of total. Percentage metrics will be calculated only from data within the row limit. You can use an aggregation function on a column or write custom SQL to create a percentage metric.": [
         ""
       ],
@@ -3094,11 +3066,7 @@
       "Service Account": [""],
       "Set auto-refresh interval": [""],
       "Set filter mapping": [""],
-      "Set the time range that will be used for the comparison metrics. For example, \"Year\" will compare to the same dates one year earlier. Use \"Inherit range from time filters\" to shift the comparison time rangeby the same length as your time range and use \"Custom\" to set a custom comparison range.": [
-        ""
-      ],
       "Set up an email report": [""],
-      "Set up basic details, such as name and description.": [""],
       "Sets the hierarchy levels of the chart. Each level is\n        represented by one ring with the innermost circle as the top of the hierarchy.": [
         ""
       ],
@@ -3130,6 +3098,7 @@
       "Show Dashboard": [""],
       "Show Database": [""],
       "Show Labels": [""],
+      "Show Less...": [""],
       "Show Log": [""],
       "Show Markers": [""],
       "Show Metric": [""],
@@ -3623,17 +3592,12 @@
         ""
       ],
       "The report has been created": [""],
-      "The result of this query must be a value capable of numeric interpretation e.g. 1, 1.0, or \"1\" (compatible with Python's float() function).": [
-        ""
-      ],
+      "The result of this query should be a numeric-esque value": [""],
       "The results backend no longer has the data from the query.": [""],
       "The results stored in the backend were stored in a different format, and no longer can be deserialized.": [
         ""
       ],
       "The rich tooltip shows a list of all series for that point in time": [
-        ""
-      ],
-      "The row limit set for the chart was reached. The chart may show partial data.": [
         ""
       ],
       "The schema \"%(schema)s\" does not exist. A valid schema must be used to run this query.": [
@@ -3914,9 +3878,7 @@
       "Time string is ambiguous. Please specify [%(human_readable)s ago] or [%(human_readable)s later].": [
         ""
       ],
-      "Time-series Area Chart (legacy)": [""],
       "Time-series Bar Chart (legacy)": [""],
-      "Time-series Line Chart (legacy)": [""],
       "Time-series Percent Change": [""],
       "Time-series Period Pivot": [""],
       "Time-series Table": [""],
@@ -4097,7 +4059,6 @@
       "Used internally to identify the plugin. Should be set to the package name from the pluginʼs package.json": [
         ""
       ],
-      "Used metrics list": [""],
       "Used to summarize a set of data by grouping together multiple statistics along two axes. Examples: Sales numbers by region and month, tasks by status and assignee, active users by age and location. Not the most visually stunning visualization, but highly informative and versatile.": [
         ""
       ],
@@ -4122,10 +4083,8 @@
       "Value and Percentage": [""],
       "Value bounds": [""],
       "Value cannot exceed %s": [""],
-      "Value difference between the time periods": [""],
       "Value format": [""],
       "Value is required": [""],
-      "Value must be 0 or greater": [""],
       "Value must be greater than 0": [""],
       "Values are dependent on other filters": [""],
       "Values dependent on": [""],
@@ -4522,20 +4481,18 @@
       ],
       "`operation` property of post processing object undefined": [""],
       "`prophet` package not installed": [""],
-      "`rename_columns` must have the same length as `columns` + `time_shift_columns`.": [
-        ""
-      ],
+      "`rename_columns` must have the same length as `columns`.": [""],
       "`row_limit` must be greater than or equal to 0": [""],
       "`row_offset` must be greater than or equal to 0": [""],
       "`width` must be greater or equal to 0": [""],
       "aggregate": [""],
       "alert": [""],
-      "alert condition": [""],
       "alert dark": [""],
       "alerts": [""],
       "all": [""],
       "also copy (duplicate) charts": [""],
       "ancestor": [""],
+      "and": [""],
       "annotation": [""],
       "annotation_layer": [""],
       "asfreq": [""],
@@ -4565,12 +4522,10 @@
       "code International Olympic Committee (cioc)": [""],
       "column": [""],
       "connecting to %(dbModelName)s.": [""],
-      "content type": [""],
       "count": [""],
       "create": [""],
       "create a new chart": [""],
       "create dataset from SQL query": [""],
-      "crontab": [""],
       "css": [""],
       "css_template": [""],
       "cumsum": [""],
@@ -4683,7 +4638,6 @@
       "or use existing ones from the panel on the right": [""],
       "orderby column must be populated": [""],
       "overall": [""],
-      "owners": [""],
       "p-value precision": [""],
       "p1": [""],
       "p5": [""],
@@ -4711,7 +4665,6 @@
       "reboot": [""],
       "recent": [""],
       "recents": [""],
-      "recipients": [""],
       "report": [""],
       "reports": [""],
       "restore zoom": [""],
@@ -4724,7 +4677,6 @@
       "series: Treat each series independently; overall: All series use the same scale; change: Show changes compared to the first data point in each series": [
         ""
       ],
-      "sql": [""],
       "square": [""],
       "stack": [""],
       "staggered": [""],
@@ -4761,7 +4713,6 @@
       "week": [""],
       "week ending Saturday": [""],
       "week starting Sunday": [""],
-      "working timeout": [""],
       "x": [""],
       "x: values are normalized within each column": [""],
       "y": [""],

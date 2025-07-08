@@ -30,6 +30,8 @@ from superset import security_manager
 from superset.extensions import db
 from superset.utils.core import override_user
 
+from flask_babel import gettext as __
+
 logger = logging.getLogger(__name__)
 
 
@@ -77,7 +79,7 @@ def export_dashboards(dashboard_file: Optional[str] = None) -> None:
 
     dashboard_ids = [id_ for (id_,) in db.session.query(Dashboard.id).all()]
     timestamp = datetime.now().strftime("%Y%m%dT%H%M%S")
-    root = f"dashboard_export_{timestamp}"
+    root = f"{__('dashboard_export')}_{timestamp}"
     dashboard_file = dashboard_file or f"{root}.zip"
 
     try:

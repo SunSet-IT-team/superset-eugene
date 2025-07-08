@@ -20,12 +20,33 @@ from typing import Any
 import pandas as pd
 
 
+def quote_formulas(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Make sure to quote any formulas for security reasons.
+    """
+    formula_prefixes = {"=", "+", "-", "@"}
+
+    for column in df.select_dtypes(include=["object"]).columns:
+        df[column] = df[column].apply(
+            lambda x: (
+                f"'{x}"
+                if isinstance(x, str) and len(x) and x[0] in formula_prefixes
+                else x
+            )
+        )
+
+    return df
+
+
 def df_to_excel(df: pd.DataFrame, **kwargs: Any) -> Any:
     output = io.BytesIO()
 
     # timezones are not supported
     for column in df.select_dtypes(include=["datetimetz"]).columns:
         df[column] = df[column].astype(str)
+
+    # make sure formulas are quoted, to prevent malicious injections
+    df = quote_formulas(df)
 
     # pylint: disable=abstract-class-instantiated
     with pd.ExcelWriter(output, engine="xlsxwriter") as writer:

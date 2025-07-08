@@ -138,7 +138,6 @@ class Dashboard(AuditMixinNullable, ImportExportMixin, Model):
     position_json = Column(utils.MediumText())
     description = Column(Text)
     css = Column(utils.MediumText())
-    business_unit = Column(Text)
     certified_by = Column(Text)
     certification_details = Column(Text)
     json_metadata = Column(utils.MediumText())

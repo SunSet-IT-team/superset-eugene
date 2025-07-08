@@ -48,7 +48,7 @@ import FilterConfigurePane from './FilterConfigurePane';
 import FiltersConfigForm, {
   FilterPanels,
 } from './FiltersConfigForm/FiltersConfigForm';
-import Footer from './Footer/Footer';
+import Footer from '../components/Footer/Footer';
 import { useOpenModal, useRemoveCurrentFilter } from './state';
 import { FilterRemoval, NativeFiltersForm } from './types';
 import {
@@ -587,6 +587,7 @@ function FiltersConfigModal({
               />
             ) : (
               <FiltersConfigForm
+                expanded={expanded}
                 ref={configFormRef}
                 form={form}
                 filterId={id}
@@ -619,6 +620,7 @@ function FiltersConfigModal({
       validateDependencies,
       getDependencySuggestion,
       handleActiveFilterPanelChange,
+      expanded,
     ],
   );
 

@@ -64,6 +64,7 @@ export const dndGroupByControl: SharedControlConfig<
   clearable: true,
   default: [],
   includeTime: false,
+
   description: t(
     'Dimensions contain qualitative values such as names, dates, or geographical data. ' +
       'Use dimensions to categorize, segment, and reveal the details in your data. ' +
@@ -98,6 +99,33 @@ export const dndGroupByControl: SharedControlConfig<
     return newState;
   },
   commaChoosesOption: false,
+};
+
+export const dndSubstituteControl: typeof dndGroupByControl = {
+  ...dndGroupByControl,
+  label: t('Columns'),
+  mapStateToProps(state, controlState) {
+    const newState: ExtraControlProps = {};
+    const { datasource } = state;
+    if (datasource?.columns[0]?.hasOwnProperty('groupby')) {
+      const options = (datasource as Dataset).columns.filter(c => c.groupby);
+      if (controlState?.includeTime) {
+        options.unshift(DATASET_TIME_COLUMN_OPTION);
+      }
+      newState.options = options;
+      //TODO korus: переписать по уточнению требований. Убрать canSubstituteColumn?
+      // вариант 2
+      // newState.canSubstituteColumn = true;
+      newState.savedMetrics = (datasource as Dataset).metrics || [];
+    } else {
+      const options = (datasource?.columns as QueryColumn[]) || [];
+      if (controlState?.includeTime) {
+        options.unshift(QUERY_TIME_COLUMN_OPTION);
+      }
+      newState.options = options;
+    }
+    return newState;
+  },
 };
 
 export const dndColumnsControl: typeof dndGroupByControl = {
@@ -228,6 +256,26 @@ export const dndYControl: typeof dndAdhocMetricControl = {
   default: null,
 };
 
+export const dndDottedYControl: typeof dndAdhocMetricControl = {
+  ...dndAdhocMetricControl,
+  validators: [],
+  label: t('Dotted Horizontal Axis'),
+  description: t(
+    "The dataset column/metric that returns the values on your chart's y-axis.",
+  ),
+  default: null,
+};
+
+export const dndDottedXControl: typeof dndAdhocMetricControl = {
+  ...dndAdhocMetricControl,
+  validators: [],
+  label: t('Dotted Vertical Axis'),
+  description: t(
+    "The dataset column/metric that returns the values on your chart's y-axis.",
+  ),
+  default: null,
+};
+
 export const dndSecondaryMetricControl: typeof dndAdhocMetricControl = {
   ...dndAdhocMetricControl,
   label: t('Color Metric'),
@@ -259,4 +307,11 @@ export const dndGranularitySqlaControl: typeof dndSeriesControl = {
 export const dndXAxisControl: typeof dndGroupByControl = {
   ...dndGroupByControl,
   ...xAxisMixin,
+};
+
+export const dndXAxisSubstituteControl: typeof dndGroupByControl = {
+  ...dndSubstituteControl,
+  multi: false,
+  validators: undefined,
+  label: t('Axis to substitute'),
 };

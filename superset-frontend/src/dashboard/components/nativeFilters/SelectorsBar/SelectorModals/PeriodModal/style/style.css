@@ -1,0 +1,7 @@
+.ant-picker-cell-disabled::before {
+  background-color: white !important;
+}
+
+.ant-picker-cell-disabled .ant-picker-cell-inner {
+  background-color: white !important;
+}

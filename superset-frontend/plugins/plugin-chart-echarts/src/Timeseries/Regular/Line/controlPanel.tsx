@@ -17,7 +17,7 @@
  * under the License.
  */
 import React from 'react';
-import { t } from '@superset-ui/core';
+
 import {
   ControlPanelConfig,
   ControlPanelsContainerProps,
@@ -27,14 +27,10 @@ import {
   sections,
   sharedControls,
 } from '@superset-ui/chart-controls';
+import { t } from '@superset-ui/core';
 
-import { EchartsTimeseriesSeriesType } from '../../types';
 import {
-  DEFAULT_FORM_DATA,
-  TIME_SERIES_DESCRIPTION_TEXT,
-} from '../../constants';
-import {
-  legendSection,
+  legendAdvancedSection,
   minorTicks,
   richTooltipSection,
   seriesOrderSection,
@@ -43,6 +39,11 @@ import {
   xAxisBounds,
   xAxisLabelRotation,
 } from '../../../controls';
+import {
+  DEFAULT_FORM_DATA,
+  TIME_SERIES_DESCRIPTION_TEXT,
+} from '../../constants';
+import { EchartsTimeseriesSeriesType } from '../../types';
 
 const {
   area,
@@ -59,7 +60,13 @@ const {
 } = DEFAULT_FORM_DATA;
 const config: ControlPanelConfig = {
   controlPanelSections: [
-    sections.echartsTimeSeriesQueryWithXAxisSort,
+    {
+      ...sections.echartsTimeSeriesQueryWithXAxisSort,
+      controlSetRows: [
+        ['x_axis_substitute'],
+        ...sections.echartsTimeSeriesQueryWithXAxisSort.controlSetRows,
+      ],
+    },
     sections.advancedAnalyticsControls,
     sections.annotationsAndLayersControls,
     sections.forecastIntervalControls,
@@ -170,7 +177,7 @@ const config: ControlPanelConfig = {
           },
         ],
         [minorTicks],
-        ...legendSection,
+        ...legendAdvancedSection,
         [<ControlSubSectionHeader>{t('X Axis')}</ControlSubSectionHeader>],
         [
           {

@@ -73,6 +73,7 @@ interface ColumnSelectPopoverProps {
   getCurrentTab: (tab: string) => void;
   label: string;
   isTemporal?: boolean;
+  canSubstituteColumn?: boolean;
   setDatasetModal?: Dispatch<SetStateAction<boolean>>;
 }
 
@@ -102,6 +103,7 @@ const ColumnSelectPopover = ({
   onClose,
   setDatasetModal,
   setLabel,
+  canSubstituteColumn,
 }: ColumnSelectPopoverProps) => {
   const datasourceType = useSelector<ExplorePageState, string | undefined>(
     state => state.explore.datasource.type,
@@ -119,6 +121,9 @@ const ColumnSelectPopover = ({
   const [selectedSimpleColumn, setSelectedSimpleColumn] = useState<
     ColumnMeta | undefined
   >(initialSimpleColumn);
+  const [selectedSubstituteColumn, setSelectedSubstituteColumn] = useState<
+    ColumnMeta | undefined
+  >(undefined);
   const [selectedTab, setSelectedTab] = useState<string | null>(null);
 
   const [resizeButton, width, height] = useResizeButton(
@@ -181,6 +186,15 @@ const ColumnSelectPopover = ({
       );
     },
     [setLabel, simpleColumns],
+  );
+  const onSubstituteColumnChange = useCallback(
+    selectedColumnName => {
+      const selectedColumn = simpleColumns.find(
+        col => col.column_name === selectedColumnName,
+      );
+      setSelectedSubstituteColumn(selectedColumn);
+    },
+    [simpleColumns],
   );
 
   const defaultActiveTabKey = initialAdhocColumn
@@ -285,6 +299,7 @@ const ColumnSelectPopover = ({
 
   const savedExpressionsLabel = t('Saved expressions');
   const simpleColumnsLabel = t('Column');
+  const simpleSubstituteColumnsLabel = t('Column to substitute');
 
   return (
     <Form layout="vertical" id="metrics-edit-popover">
@@ -398,24 +413,47 @@ const ColumnSelectPopover = ({
               }
             />
           ) : (
-            <FormItem label={simpleColumnsLabel}>
-              <Select
-                ariaLabel={simpleColumnsLabel}
-                value={selectedSimpleColumn?.column_name}
-                onChange={onSimpleColumnChange}
-                allowClear
-                autoFocus={!selectedSimpleColumn}
-                placeholder={t('%s column(s)', simpleColumns.length)}
-                options={simpleColumns.map(simpleColumn => ({
-                  value: simpleColumn.column_name,
-                  label: simpleColumn.verbose_name || simpleColumn.column_name,
-                  customLabel: (
-                    <StyledColumnOption column={simpleColumn} showType />
-                  ),
-                  key: simpleColumn.column_name,
-                }))}
-              />
-            </FormItem>
+            <>
+              <FormItem label={simpleColumnsLabel}>
+                <Select
+                  ariaLabel={simpleColumnsLabel}
+                  value={selectedSimpleColumn?.column_name}
+                  onChange={onSimpleColumnChange}
+                  allowClear
+                  autoFocus={!selectedSimpleColumn}
+                  placeholder={t('%s column(s)', simpleColumns.length)}
+                  options={simpleColumns.map(simpleColumn => ({
+                    value: simpleColumn.column_name,
+                    label:
+                      simpleColumn.verbose_name || simpleColumn.column_name,
+                    customLabel: (
+                      <StyledColumnOption column={simpleColumn} showType />
+                    ),
+                    key: simpleColumn.column_name,
+                  }))}
+                />
+              </FormItem>
+              {canSubstituteColumn && (
+                <FormItem label={simpleSubstituteColumnsLabel}>
+                  <Select
+                    ariaLabel={simpleSubstituteColumnsLabel}
+                    value={selectedSubstituteColumn?.column_name}
+                    onChange={onSubstituteColumnChange}
+                    allowClear
+                    placeholder={t('%s column(s)', simpleColumns.length)}
+                    options={simpleColumns.map(simpleColumn => ({
+                      value: simpleColumn.column_name,
+                      label:
+                        simpleColumn.verbose_name || simpleColumn.column_name,
+                      customLabel: (
+                        <StyledColumnOption column={simpleColumn} showType />
+                      ),
+                      key: simpleColumn.column_name,
+                    }))}
+                  />
+                </FormItem>
+              )}
+            </>
           )}
         </Tabs.TabPane>
 

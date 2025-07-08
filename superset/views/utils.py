@@ -143,6 +143,32 @@ def loads_request_json(request_json_data: str) -> dict[Any, Any]:
         return {}
 
 
+def get_queries(
+) -> tuple[dict[str, Any], Optional[Slice]]:
+    if has_request_context():
+        # chart data API requests are JSON
+        queries = (
+            request.json["queries"][0]
+            if request.is_json and "queries" in request.json
+            else None
+        )
+    
+    return queries
+
+
+def get_datasource(
+) -> tuple[dict[str, Any], Optional[Slice]]:
+    if has_request_context():
+        # chart data API requests are JSON
+        datasource_id = (
+            request.json["datasource"]
+            if request.is_json and "datasource" in request.json
+            else None
+        )
+    
+    return datasource_id
+
+
 def get_form_data(
     slice_id: Optional[int] = None,
     use_slice_data: bool = False,

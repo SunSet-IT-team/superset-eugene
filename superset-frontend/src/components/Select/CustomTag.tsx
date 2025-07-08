@@ -21,7 +21,7 @@ import { Tag as AntdTag } from 'antd';
 import { styled, useCSSTextTruncation } from '@superset-ui/core';
 import { Tooltip } from '../Tooltip';
 import { CustomTagProps } from './types';
-import { SELECT_ALL_VALUE } from './utils';
+import { SELECT_ALL_VALUE, SELECT_FIRST_N_VALUE } from './utils';
 import { NoElement } from './styles';
 
 const StyledTag = styled(AntdTag)`
@@ -70,7 +70,7 @@ export const customTagRender = (props: CustomTagProps) => {
     }
   };
 
-  if (value !== SELECT_ALL_VALUE) {
+  if (value !== SELECT_ALL_VALUE && value !== SELECT_FIRST_N_VALUE) {
     return (
       <Tag onMouseDown={onPreventMouseDown} {...(props as object)}>
         {label}

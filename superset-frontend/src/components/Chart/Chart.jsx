@@ -82,7 +82,6 @@ const propTypes = {
   datasetsStatus: PropTypes.oneOf(['loading', 'error', 'complete']),
   isInView: PropTypes.bool,
   emitCrossFilters: PropTypes.bool,
-  extraChartControls: PropTypes.object,
 };
 
 const BLANK = {};
@@ -157,14 +156,16 @@ class Chart extends React.PureComponent {
 
   runQuery() {
     // Create chart with POST request
-    this.props.actions.postChartFormData(
-      this.props.formData,
-      Boolean(this.props.force || getUrlParam(URL_PARAMS.force)), // allow override via url params force=true
-      this.props.timeout,
-      this.props.chartId,
-      this.props.dashboardId,
-      this.props.ownState,
-    );
+    if (this.props.selectorsDataLoaded || !this.props.dashboardId) {
+      this.props.actions.postChartFormData(
+        this.props.formData,
+        Boolean(this.props.force || getUrlParam(URL_PARAMS.force)), // allow override via url params force=true
+        this.props.timeout,
+        this.props.chartId,
+        this.props.dashboardId,
+        this.props.ownState,
+      );
+    }
   }
 
   handleRenderContainerFailure(error, info) {

@@ -16,60 +16,42 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import {
-  getExtensionsRegistry,
-  styled,
-  SupersetClient,
-  t,
-} from '@superset-ui/core';
-import React, {
-  FunctionComponent,
-  useState,
-  useMemo,
-  useCallback,
-} from 'react';
-import { Link, useHistory } from 'react-router-dom';
+import {getExtensionsRegistry, styled, SupersetClient, t,} from '@superset-ui/core';
+import React, {FunctionComponent, useCallback, useMemo, useState,} from 'react';
+import {Link, useHistory} from 'react-router-dom';
 import rison from 'rison';
-import {
-  createFetchRelated,
-  createFetchDistinct,
-  createErrorHandler,
-} from 'src/views/CRUD/utils';
-import { ColumnObject } from 'src/features/datasets/types';
-import { useListViewResource } from 'src/views/CRUD/hooks';
+import {createErrorHandler, createFetchDistinct, createFetchRelated,} from 'src/views/CRUD/utils';
+import {ColumnObject} from 'src/features/datasets/types';
+import {useListViewResource} from 'src/views/CRUD/hooks';
 import ConfirmStatusChange from 'src/components/ConfirmStatusChange';
-import { DatasourceModal } from 'src/components/Datasource';
+import {DatasourceModal} from 'src/components/Datasource';
 import DeleteModal from 'src/components/DeleteModal';
 import handleResourceExport from 'src/utils/export';
-import ListView, {
-  ListViewProps,
-  Filters,
-  FilterOperator,
-} from 'src/components/ListView';
+import ListView, {FilterOperator, Filters, ListViewProps,} from 'src/components/ListView';
 import Loading from 'src/components/Loading';
-import SubMenu, { SubMenuProps, ButtonProps } from 'src/features/home/SubMenu';
+import SubMenu, {ButtonProps, SubMenuProps} from 'src/features/home/SubMenu';
 import Owner from 'src/types/Owner';
 import withToasts from 'src/components/MessageToasts/withToasts';
-import { Tooltip } from 'src/components/Tooltip';
+import {Tooltip} from 'src/components/Tooltip';
 import Icons from 'src/components/Icons';
 import FacePile from 'src/components/FacePile';
 import CertifiedBadge from 'src/components/CertifiedBadge';
 import InfoTooltip from 'src/components/InfoTooltip';
 import ImportModelsModal from 'src/components/ImportModal/index';
 import WarningIconWithTooltip from 'src/components/WarningIconWithTooltip';
-import { isUserAdmin } from 'src/dashboard/util/permissionUtils';
-import { GenericLink } from 'src/components/GenericLink/GenericLink';
+import {isUserAdmin} from 'src/dashboard/util/permissionUtils';
+import {GenericLink} from 'src/components/GenericLink/GenericLink';
 
 import {
-  PAGE_SIZE,
-  SORT_BY,
-  PASSWORDS_NEEDED_MESSAGE,
   CONFIRM_OVERWRITE_MESSAGE,
+  PAGE_SIZE,
+  PASSWORDS_NEEDED_MESSAGE,
+  SORT_BY,
 } from 'src/features/datasets/constants';
 import DuplicateDatasetModal from 'src/features/datasets/DuplicateDatasetModal';
-import { useSelector } from 'react-redux';
-import { ModifiedInfo } from 'src/components/AuditInfo';
-import { QueryObjectColumns } from 'src/views/CRUD/types';
+import {useSelector} from 'react-redux';
+import {ModifiedInfo} from 'src/components/AuditInfo';
+import {QueryObjectColumns} from 'src/views/CRUD/types';
 
 const extensionsRegistry = getExtensionsRegistry();
 const DatasetDeleteRelatedExtension = extensionsRegistry.get(
@@ -292,6 +274,14 @@ const DatasetList: FunctionComponent<DatasetListProps> = ({
             );
           }
 
+          if (kind === 'json') {
+            return (
+              <Tooltip id="json-dataset-tooltip" title={t('JSON dataset')}>
+                <Icons.DatasetVirtualGreyscale />
+              </Tooltip>
+            );
+          }
+
           return (
             <Tooltip id="virtual-dataset-tooltip" title={t('Virtual dataset')}>
               <Icons.DatasetVirtual />
@@ -361,7 +351,12 @@ const DatasetList: FunctionComponent<DatasetListProps> = ({
           row: {
             original: { kind },
           },
-        }: any) => (kind === 'physical' ? t('Physical') : t('Virtual')),
+               }: any) =>
+          kind === 'physical'
+            ? t('Physical')
+            : kind === 'virtual'
+              ? t('Virtual')
+              : t('JSON'),
         Header: t('Type'),
         accessor: 'kind',
         disableSortBy: true,

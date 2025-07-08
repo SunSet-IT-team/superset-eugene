@@ -33,6 +33,9 @@ import { UrlParamEntries } from 'src/utils/urlUtils';
 
 import { UserWithPermissionsAndRoles } from 'src/types/bootstrapTypes';
 import { ChartState } from '../explore/types';
+import { InitialState } from './features/selectors/types';
+import { OrdersStateType } from './reducers/ordersSlice';
+import { CustomizeStateType } from './reducers/customizeSlice';
 
 export type { Dashboard } from 'src/types/Dashboard';
 
@@ -155,12 +158,15 @@ export type RootState = {
   charts: ChartsState;
   dashboardLayout: DashboardLayoutState;
   dashboardFilters: {};
+  selectors: InitialState;
   dashboardState: DashboardState;
   dashboardInfo: DashboardInfo;
   dataMask: DataMaskStateWithId;
   impressionId: string;
   nativeFilters: NativeFiltersState;
   user: UserWithPermissionsAndRoles;
+  orders: OrdersStateType;
+  customizeOptions: CustomizeStateType;
 };
 
 /** State of dashboardLayout in redux */

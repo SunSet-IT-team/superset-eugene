@@ -16,16 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import React, {
-  forwardRef,
-  ReactElement,
-  RefObject,
-  useEffect,
-  useMemo,
-  useState,
-  useCallback,
-  ClipboardEvent,
-} from 'react';
 import {
   ensureIsArray,
   formatNumber,
@@ -35,27 +25,24 @@ import {
 } from '@superset-ui/core';
 import AntdSelect, { LabeledValue as AntdLabeledValue } from 'antd/lib/select';
 import { debounce, isEqual, uniq } from 'lodash';
+import React, {
+  ClipboardEvent,
+  forwardRef,
+  ReactElement,
+  RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { FAST_DEBOUNCE } from 'src/constants';
 import {
-  getValue,
-  hasOption,
-  isLabeledValue,
-  renderSelectOptions,
-  sortSelectedFirstHelper,
-  sortComparatorWithSearchHelper,
-  handleFilterOptionHelper,
-  dropDownRenderHelper,
-  getSuffixIcon,
-  SELECT_ALL_VALUE,
-  selectAllOption,
-  mapValues,
-  mapOptions,
-  hasCustomLabels,
-  getOption,
-  isObject,
-  isEqual as utilsIsEqual,
-} from './utils';
-import { RawValue, SelectOptionsType, SelectProps } from './types';
+  DEFAULT_SORT_COMPARATOR,
+  EMPTY_OPTIONS,
+  MAX_TAG_COUNT,
+  TOKEN_SEPARATORS,
+} from './constants';
+import { customTagRender } from './CustomTag';
 import {
   StyledCheckOutlined,
   StyledContainer,
@@ -63,13 +50,28 @@ import {
   StyledSelect,
   StyledStopOutlined,
 } from './styles';
+import { RawValue, SelectOptionsType, SelectProps } from './types';
 import {
-  EMPTY_OPTIONS,
-  MAX_TAG_COUNT,
-  TOKEN_SEPARATORS,
-  DEFAULT_SORT_COMPARATOR,
-} from './constants';
-import { customTagRender } from './CustomTag';
+  dropDownRenderHelper,
+  getOption,
+  getSuffixIcon,
+  getValue,
+  handleFilterOptionHelper,
+  hasCustomLabels,
+  hasOption,
+  isLabeledValue,
+  isObject,
+  mapOptions,
+  mapValues,
+  renderSelectOptions,
+  SELECT_ALL_VALUE,
+  selectAllOption,
+  SELECT_FIRST_N_VALUE,
+  selectFirstNOption,
+  sortComparatorWithSearchHelper,
+  sortSelectedFirstHelper,
+  isEqual as utilsIsEqual,
+} from './utils';
 
 /**
  * This component is a customized version of the Antdesign 4.X Select component
@@ -89,6 +91,8 @@ const Select = forwardRef(
       allowClear,
       allowNewOptions = false,
       allowSelectAll = true,
+      allowSelectFirstN = false,
+      selectFirstNCount = 3,
       ariaLabel,
       autoClearSearchValue = false,
       filterOption = true,
@@ -118,6 +122,7 @@ const Select = forwardRef(
       getPopupContainer,
       oneLine,
       maxTagCount: propsMaxTagCount,
+      dropdownMatchSelectWidth = true,
       ...props
     }: SelectProps,
     ref: RefObject<HTMLInputElement>,
@@ -189,8 +194,16 @@ const Select = forwardRef(
         missingValues.length > 0
           ? missingValues.concat(selectOptions)
           : selectOptions;
-      return result.filter(opt => opt.value !== SELECT_ALL_VALUE);
+      return result.filter(
+        opt =>
+          opt.value !== SELECT_ALL_VALUE && opt.value !== SELECT_FIRST_N_VALUE,
+      );
     }, [selectOptions, selectValue]);
+
+    const firstNOptions = useMemo(
+      () => fullSelectOptions.slice(0, selectFirstNCount),
+      [fullSelectOptions, selectFirstNCount],
+    );
 
     const enabledOptions = useMemo(
       () => fullSelectOptions.filter(option => !option.disabled),
@@ -221,10 +234,54 @@ const Select = forwardRef(
       ],
     );
 
+    const selectFirstNEnabled = useMemo(
+      () =>
+        !isSingleMode &&
+        allowSelectFirstN &&
+        selectOptions.length > 0 &&
+        enabledOptions.length > 1 &&
+        !inputValue,
+      [
+        isSingleMode,
+        allowSelectFirstN,
+        selectOptions.length,
+        enabledOptions.length,
+        inputValue,
+      ],
+    );
+
     const selectAllMode = useMemo(
       () => ensureIsArray(selectValue).length === selectAllEligible.length + 1,
       [selectValue, selectAllEligible],
     );
+
+    const selectFirstNMode = useMemo(() => {
+      const selectValues = ensureIsArray(selectValue);
+      return (
+        selectValues.includes(SELECT_FIRST_N_VALUE) &&
+        selectValues.length === firstNOptions.length + 1 &&
+        firstNOptions
+          .map(opt => opt.value)
+          .every(opt => selectValues.includes(opt))
+      );
+    }, [selectValue, firstNOptions]);
+
+    const selectNEnabled = allowSelectFirstN
+      ? selectFirstNEnabled
+      : selectAllEnabled;
+    const selectNMode = allowSelectFirstN ? selectFirstNMode : selectAllMode;
+    const SELECT_N_VALUE = allowSelectFirstN
+      ? SELECT_FIRST_N_VALUE
+      : SELECT_ALL_VALUE;
+    const selectNOption = allowSelectFirstN
+      ? selectFirstNOption
+      : selectAllOption;
+    const selectNOptions = allowSelectFirstN
+      ? firstNOptions
+      : selectAllEligible;
+    const selectNFullOptions = allowSelectFirstN
+      ? fullSelectOptions
+      : selectAllEligible;
 
     const handleOnSelect: SelectProps['onSelect'] = (selectedItem, option) => {
       if (isSingleMode) {
@@ -243,16 +300,13 @@ const Select = forwardRef(
           const array = ensureIsArray(previousState);
           const value = getValue(selectedItem);
           // Tokenized values can contain duplicated values
-          if (value === getValue(SELECT_ALL_VALUE)) {
+          if (value === getValue(SELECT_N_VALUE)) {
             if (isLabeledValue(selectedItem)) {
-              return [
-                ...selectAllEligible,
-                selectAllOption,
-              ] as AntdLabeledValue[];
+              return [...selectNOptions, selectNOption] as AntdLabeledValue[];
             }
             return [
-              SELECT_ALL_VALUE,
-              ...selectAllEligible.map(opt => opt.value),
+              SELECT_N_VALUE,
+              ...selectNOptions.map(opt => opt.value),
             ] as AntdLabeledValue[];
           }
           if (!hasOption(value, array)) {
@@ -295,7 +349,7 @@ const Select = forwardRef(
 
     const handleOnDeselect: SelectProps['onDeselect'] = (value, option) => {
       if (Array.isArray(selectValue)) {
-        if (getValue(value) === getValue(SELECT_ALL_VALUE)) {
+        if (getValue(value) === getValue(SELECT_N_VALUE)) {
           clear();
         } else {
           let array = selectValue as AntdLabeledValue[];
@@ -303,9 +357,9 @@ const Select = forwardRef(
             element => getValue(element) !== getValue(value),
           );
           // if this was not a new item, deselect select all option
-          if (selectAllMode && !option.isNewOption) {
+          if (selectNMode && !option.isNewOption) {
             array = array.filter(
-              element => getValue(element) !== SELECT_ALL_VALUE,
+              element => getValue(element) !== SELECT_N_VALUE,
             );
           }
           setSelectValue(array);
@@ -413,33 +467,72 @@ const Select = forwardRef(
     }, [labelInValue, selectAllEligible.length, selectAllEnabled, value]);
 
     useEffect(() => {
-      const checkSelectAll = ensureIsArray(selectValue).some(
-        v => getValue(v) === SELECT_ALL_VALUE,
+      // if first N values are selected, add select first N to value
+      const firstNOptionsSelected =
+        firstNOptions
+          .map(opt => opt.value)
+          .every(opt => ensureIsArray(value).includes(opt)) &&
+        ensureIsArray(value).length === firstNOptions.length;
+      if (
+        selectFirstNEnabled &&
+        firstNOptionsSelected &&
+        !ensureIsArray(value).includes(SELECT_FIRST_N_VALUE)
+      ) {
+        setSelectValue(
+          labelInValue
+            ? ([
+                ...ensureIsArray(value),
+                selectFirstNOption,
+              ] as AntdLabeledValue[])
+            : ([...ensureIsArray(value), SELECT_FIRST_N_VALUE] as RawValue[]),
+        );
+      }
+    }, [
+      labelInValue,
+      firstNOptions.length,
+      selectFirstNEnabled,
+      selectFirstNCount,
+      value,
+    ]);
+
+    useEffect(() => {
+      const checkSelectN = ensureIsArray(selectValue).some(
+        v => getValue(v) === SELECT_N_VALUE,
       );
-      if (checkSelectAll && !selectAllMode) {
-        const optionsToSelect = selectAllEligible.map(option =>
+      if (checkSelectN && !selectNMode) {
+        const optionsToSelect = selectNOptions.map(option =>
           labelInValue ? option : option.value,
         );
-        optionsToSelect.push(labelInValue ? selectAllOption : SELECT_ALL_VALUE);
+        optionsToSelect.push(labelInValue ? selectNOption : SELECT_N_VALUE);
         setSelectValue(optionsToSelect);
         fireOnChange();
       }
     }, [
       selectValue,
-      selectAllMode,
+      SELECT_N_VALUE,
+      selectNMode,
       labelInValue,
-      selectAllEligible,
+      selectNOptions,
+      selectNOption,
       fireOnChange,
     ]);
 
     const selectAllLabel = useMemo(
       () => () =>
-        // TODO: localize
-        `${SELECT_ALL_VALUE} (${formatNumber(
+        `${t(SELECT_ALL_VALUE)} (${formatNumber(
           NumberFormats.INTEGER,
           selectAllEligible.length,
         )})`,
       [selectAllEligible],
+    );
+
+    const selectFirstNLabel = useMemo(
+      () => () =>
+        `${t(SELECT_FIRST_N_VALUE)} (${formatNumber(
+          NumberFormats.INTEGER,
+          Math.min(selectFirstNCount, selectAllEligible.length),
+        )})`,
+      [selectFirstNCount, selectAllEligible],
     );
 
     const handleOnBlur = (event: React.FocusEvent<HTMLElement>) => {
@@ -457,21 +550,21 @@ const Select = forwardRef(
         if (!isSingleMode) {
           if (
             ensureIsArray(newValues).some(
-              val => getValue(val) === SELECT_ALL_VALUE,
+              val => getValue(val) === SELECT_N_VALUE,
             )
           ) {
             // send all options to onchange if all are not currently there
-            if (!selectAllMode) {
-              newValues = mapValues(selectAllEligible, labelInValue);
-              newOptions = mapOptions(selectAllEligible);
+            if (!selectNMode) {
+              newValues = mapValues(selectNOptions, labelInValue);
+              newOptions = mapOptions(selectNFullOptions);
             } else {
               newValues = ensureIsArray(values).filter(
-                (val: any) => getValue(val) !== SELECT_ALL_VALUE,
+                (val: any) => getValue(val) !== SELECT_N_VALUE,
               );
             }
           } else if (
             ensureIsArray(values).length === selectAllEligible.length &&
-            selectAllMode
+            selectNMode
           ) {
             const array = selectAllEligible.filter(
               option => hasOption(option.value, selectValue) && option.disabled,
@@ -480,14 +573,18 @@ const Select = forwardRef(
             newOptions = mapOptions(array);
           }
         }
+
         onChange?.(newValues, newOptions);
       },
       [
         isSingleMode,
-        labelInValue,
         onChange,
         selectAllEligible,
-        selectAllMode,
+        selectNMode,
+        SELECT_N_VALUE,
+        selectNOptions,
+        labelInValue,
+        selectNFullOptions,
         selectValue,
       ],
     );
@@ -516,28 +613,31 @@ const Select = forwardRef(
     ]);
 
     const shouldRenderChildrenOptions = useMemo(
-      () => selectAllEnabled || hasCustomLabels(options),
-      [selectAllEnabled, options],
+      () => selectNEnabled || hasCustomLabels(options),
+      [selectNEnabled, options],
     );
 
     const omittedCount = useMemo(() => {
       const num_selected = ensureIsArray(selectValue).length;
       const num_shown = maxTagCount as number;
-      return num_selected - num_shown - (selectAllMode ? 1 : 0);
-    }, [maxTagCount, selectAllMode, selectValue]);
+      return (
+        num_selected -
+        num_shown -
+        (selectNMode ? 1 : 0) -
+        (num_selected === 4 ? 1 : 0)
+      );
+    }, [maxTagCount, selectNMode, selectValue]);
 
     const customMaxTagPlaceholder = () =>
       `+ ${omittedCount > 0 ? omittedCount : 1} ...`;
 
-    // We can't remove the + tag so when Select All
-    // is the only item omitted, we subtract one from maxTagCount
     let actualMaxTagCount = maxTagCount;
     if (
       actualMaxTagCount !== 'responsive' &&
-      omittedCount === 0 &&
-      selectAllMode
+      omittedCount === -1 &&
+      selectNMode
     ) {
-      actualMaxTagCount -= 1;
+      actualMaxTagCount += 1;
     }
 
     const getPastedTextValue = useCallback(
@@ -602,6 +702,7 @@ const Select = forwardRef(
           dropdownRender={dropdownRender}
           filterOption={handleFilterOption}
           filterSort={sortComparatorWithSearch}
+          dropdownMatchSelectWidth={dropdownMatchSelectWidth}
           getPopupContainer={
             getPopupContainer || (triggerNode => triggerNode.parentNode)
           }
@@ -651,6 +752,16 @@ const Select = forwardRef(
               value={SELECT_ALL_VALUE}
             >
               {selectAllLabel()}
+            </Option>
+          )}
+          {selectFirstNEnabled && (
+            <Option
+              id="select-first-n"
+              className="select-all"
+              key={SELECT_FIRST_N_VALUE}
+              value={SELECT_FIRST_N_VALUE}
+            >
+              {selectFirstNLabel()}
             </Option>
           )}
           {shouldRenderChildrenOptions &&

@@ -891,7 +891,7 @@ class Superset(BaseSupersetView):
     @app.errorhandler(500)
     def show_traceback(self) -> FlaskResponse:
         return (
-            render_template("superset/traceback.html", error_msg=get_error_msg()),
+            render_template("assets/staticPages/500.html", error_msg=get_error_msg()),
             500,
         )
 
@@ -930,8 +930,12 @@ class Superset(BaseSupersetView):
     @deprecated(new_target="/sqllab/history")
     def sqllab_history(self) -> FlaskResponse:
         return redirect("/sqllab/history")
+    
 
-@app.before_request
-def before_request():
-    if getattr(g, "user") and not g.user.is_anonymous and len(g.user.roles) == 0:
-        return Response(response="Доступ запрещен: у пользователя нет ролей")
+    @app.before_request
+    def before_request():
+        if getattr(
+                g, "user") and not g.user.is_anonymous and len(
+                g.user.roles) == 0:
+            return Response(render_template("assets/staticPages/403.html"), mimetype="text/html"
+                            )

@@ -38,7 +38,7 @@ interface LeftPanelProps {
 const LeftPanelStyle = styled.div`
   ${({ theme }) => `
     padding: ${theme.gridUnit * 4}px;
-    height: 100%;
+    // height: 100%; - TODO: find out need or not
     background-color: ${theme.colors.grayscale.light5};
     position: relative;
     .emptystate {

@@ -154,6 +154,8 @@ export default function PivotTableChart(props: PivotTableProps) {
     dateFormatters,
     onContextMenu,
     timeGrainSqla,
+    selectedSelectors,
+    orderDesc,
   } = props;
 
   const theme = useTheme();
@@ -555,6 +557,8 @@ export default function PivotTableChart(props: PivotTableProps) {
           subtotalOptions={subtotalOptions}
           namesMapping={verboseMap}
           onContextMenu={handleContextMenu}
+          selectedSelectors={selectedSelectors}
+          orderDesc={orderDesc}
         />
       </PivotTableWrapper>
     </Styles>

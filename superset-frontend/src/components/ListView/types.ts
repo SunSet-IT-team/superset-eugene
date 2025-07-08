@@ -39,6 +39,7 @@ export interface Filter {
   Header: ReactNode;
   key: string;
   id: string;
+  toolTipDescription?: string;
   urlDisplay?: string;
   operator?: FilterOperator;
   input?:
@@ -84,6 +85,7 @@ export interface FetchDataConfig {
   pageSize: number;
   sortBy: SortColumn[];
   filters: FilterValue[];
+  orderId?: number;
 }
 
 export interface InternalFilter extends FilterValue {

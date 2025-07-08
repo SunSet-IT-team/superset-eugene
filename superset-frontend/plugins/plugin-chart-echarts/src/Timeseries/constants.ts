@@ -47,6 +47,8 @@ export const DEFAULT_FORM_DATA: EchartsTimeseriesFormData = {
   xAxisTitleMargin: 0,
   yAxisTitle: '',
   yAxisTitleMargin: 0,
+  showXaxis: true,
+  showYaxis: true,
   yAxisTitlePosition: 'Top',
   // Now that the weird bug workaround is over, here's the rest...
   ...DEFAULT_SORT_SERIES_DATA,
@@ -71,7 +73,7 @@ export const DEFAULT_FORM_DATA: EchartsTimeseriesFormData = {
   seriesType: EchartsTimeseriesSeriesType.Line,
   stack: false,
   tooltipTimeFormat: 'smart_date',
-  truncateXAxis: true,
+  truncateXAxis: false,
   truncateYAxis: false,
   yAxisBounds: [null, null],
   zoomable: false,
@@ -83,8 +85,9 @@ export const DEFAULT_FORM_DATA: EchartsTimeseriesFormData = {
   onlyTotal: false,
   percentageThreshold: 0,
   orientation: OrientationType.Vertical,
-  sort_series_type: 'sum',
-  sort_series_ascending: false,
+  sort_series_type: 'name',
+  sort_series_ascending: true,
+  stackByDimension: false,
 };
 
 export const TIME_SERIES_DESCRIPTION_TEXT: string = t(

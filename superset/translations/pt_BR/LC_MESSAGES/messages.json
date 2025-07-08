@@ -5,7 +5,7 @@
       "22": [""],
       "": {
         "domain": "superset",
-        "plural_forms": "nplurals=2; plural=(n > 1);",
+        "plural_forms": "nplurals=2; plural=(n > 1)",
         "lang": "pt_BR"
       },
       "!= (Is not equal)": ["!= (diferente)"],
@@ -54,7 +54,6 @@
       "%s Selected (Virtual)": ["%s Selecionado (Virtual)"],
       "%s aggregates(s)": ["%s agregado(s)"],
       "%s column(s)": ["%s coluna(s)"],
-      "%s ineligible item(s) are hidden": [""],
       "%s items could not be tagged because you don’t have edit permissions to all selected objects.": [
         ""
       ],
@@ -156,11 +155,10 @@
       "A comma-separated list of schemas that files are allowed to upload to.": [
         "Uma lista separada por vírgulas de esquemas para os quais os arquivos têm permissão para fazer upload."
       ],
-      "A database port is required when connecting via SSH Tunnel.": [""],
       "A database with the same name already exists.": [
         "Já existe um banco de dados com o mesmo nome."
       ],
-      "A dictionary with column names and their data types if you need to change the defaults. Example: {\"user_id\":\"int\"}. Check Python's Pandas library for supported data types.": [
+      "A dictionary with column names and their data types if you need to change the defaults. Example: {\"user_id\":\"integer\"}": [
         ""
       ],
       "A full URL pointing to the location of the built plugin (could be hosted on a CDN for example)": [
@@ -288,6 +286,7 @@
       "Add metric": ["Adicionar métrica"],
       "Add new color formatter": ["Adicionar novo formatador de cores"],
       "Add new formatter": ["Adicionar novo formatador"],
+      "Add notification method": ["Adicionar método de notificação"],
       "Add required control values to preview chart": [
         "Adicionar controle de valores obrigatórios para visualizar o gráfico"
       ],
@@ -348,6 +347,7 @@
         "Alerta Acionado, em período de carência"
       ],
       "Alert condition": ["Condição de alerta"],
+      "Alert condition schedule": ["Programação do estado de alerta"],
       "Alert ended grace period.": ["O alerta terminou o período de carência."],
       "Alert failed": ["Falha no alerta"],
       "Alert fired during grace period.": [
@@ -710,6 +710,7 @@
         "Tem certeza que deseja salvar e aplicar mudanças ?"
       ],
       "Area Chart": ["Gráfico de área"],
+      "Time-series Area Chart (legacy)": ["Gráfico de área (legado)"],
       "Area chart": ["Gráfico de área"],
       "Area chart opacity": ["Opacidade do gráfico de área"],
       "Area charts are similar to line charts in that they represent variables with the same scale, but area charts stack the metrics on top of each other.": [
@@ -1359,7 +1360,6 @@
         ""
       ],
       "Customize columns": ["Personalizar colunas"],
-      "Customize data source, filters, and layout.": [""],
       "Cyclic dependency detected": ["Detectada dependência cíclica"],
       "D3 Format": ["Formato D3"],
       "D3 format": ["Formato D3"],
@@ -1412,6 +1412,7 @@
       "Dashboard title": ["Título do painel"],
       "Dashboard usage": ["Uso do painel"],
       "Dashboards": ["Painéis"],
+      "Dashboards added to": ["Painéis adicionados a"],
       "Dashboards do not exist": ["Os painéis não existem"],
       "Dashed": ["Traço"],
       "Data": ["Dados"],
@@ -1595,10 +1596,6 @@
         "Defina uma função javascript que receba a matriz de dados utilizada na visualização e que deva devolver uma versão modificada dessa matriz. Esta pode ser utilizada para alterar as propriedades dos dados, filtrar ou enriquecer a matriz."
       ],
       "Define contour layers. Isolines represent a collection of line segments that serparate the area above and below a given threshold. Isobands represent a collection of polygons that fill the are containing values in a given threshold range.": [
-        ""
-      ],
-      "Define delivery schedule, timezone, and frequency settings.": [""],
-      "Define the database, SQL query, and triggering conditions for alert.": [
         ""
       ],
       "Defines a rolling window function to apply, works along with the [Periods] text box": [
@@ -2520,6 +2517,7 @@
       "Like (case insensitive)": [
         "Como (não diferencia maiúsculas de minúsculas)"
       ],
+      "Limit reached": ["Limite atingido"],
       "Limit type": ["Tipo de limite"],
       "Limiting rows may result in incomplete data and misleading charts. Consider filtering or grouping source/target names instead.": [
         "Limitar as linhas pode resultar em dados incompletos e gráficos errôneos. Em vez disso, considere filtrar ou agrupar nomes de origem/destino."
@@ -2538,6 +2536,7 @@
       ],
       "Line": ["Linha"],
       "Line Chart": ["Gráfico de linhas"],
+      "Time-series Line Chart (legacy)": ["Gráfico de linhas (herdado)"],
       "Line Style": ["Estilo da linha"],
       "Line chart is used to visualize measurements taken over a given category. Line chart is a type of chart which displays information as a series of data points connected by straight line segments. It is a basic type of chart common in many fields.": [
         "O gráfico de linhas é utilizado para visualizar as medições efetuadas numa determinada categoria. O gráfico de linhas é um tipo de gráfico que apresenta informações como uma série de pontos de dados ligados por segmentos de linha reta. É um tipo básico de gráfico comum em muitos domínios."
@@ -2918,9 +2917,6 @@
       "Normalized": ["Normalizado"],
       "Not Time Series": ["Não é uma série temporal"],
       "Not added to any dashboard": ["Não adicionado a nenhum painel"],
-      "Not all required fields are complete. Please provide the following:": [
-        ""
-      ],
       "Not available": ["Não disponível"],
       "Not equal to (≠)": ["Diferente de (≠)"],
       "Not in": ["Não está em"],
@@ -3156,7 +3152,6 @@
       "Percent Change": ["Variação percentual"],
       "Percentage": ["Porcentagem"],
       "Percentage change": ["Variação percentual"],
-      "Percentage difference between the time periods": [""],
       "Percentage metrics": ["Métricas de porcentagem"],
       "Percentage threshold": ["Limiar da Porcentagem"],
       "Percentages": ["Porcentagens"],
@@ -3412,7 +3407,6 @@
       "Recommended tags": ["Etiquetas recomendadas"],
       "Record Count": ["Contagem de registos"],
       "Rectangle": ["Retângulo"],
-      "Recurring (every)": [""],
       "Redirects to this endpoint when clicking on the table from the table list": [
         "Redireciona para este endpoint quando se clica na tabela a partir da lista de tabelas"
       ],
@@ -3495,6 +3489,7 @@
       "Report a bug": ["Relatar um bug"],
       "Report failed": ["Relatório falhou"],
       "Report name": ["Nome do relatório"],
+      "Report schedule": ["Agendamento do relatório"],
       "Report schedule client error": [
         "Relatar erro do cliente de programação"
       ],
@@ -3705,6 +3700,7 @@
       "Schedule a new email report": ["Agendar um novo relatório de e-mail"],
       "Schedule email report": ["Agendar relatório por e-mail"],
       "Schedule query": ["Consulta de agendamento"],
+      "Schedule settings": ["Configurações de agendamento"],
       "Schedule the query periodically": ["Agendar a consulta periodicamente"],
       "Scheduled": ["Agendado"],
       "Scheduled at (UTC)": ["Programado em (UTC)"],
@@ -3871,11 +3867,7 @@
         "Definir intervalo da atualização automática"
       ],
       "Set filter mapping": ["Definir o mapeamento de filtros"],
-      "Set the time range that will be used for the comparison metrics. For example, \"Year\" will compare to the same dates one year earlier. Use \"Inherit range from time filters\" to shift the comparison time rangeby the same length as your time range and use \"Custom\" to set a custom comparison range.": [
-        ""
-      ],
       "Set up an email report": ["Configurar um relatório de e-mail"],
-      "Set up basic details, such as name and description.": [""],
       "Sets the hierarchy levels of the chart. Each level is\n        represented by one ring with the innermost circle as the top of the hierarchy.": [
         "Define os níveis hierárquicos do gráfico. Cada nível é\n representado por um anel, sendo o círculo mais interno o topo da hierarquia."
       ],
@@ -3910,6 +3902,7 @@
       "Show Dashboard": ["Mostrar Painel"],
       "Show Database": ["Mostrar Banco de dados"],
       "Show Labels": ["Mostrar rótulos"],
+      "Show Less...": ["Mostrar Menos..."],
       "Show Log": ["Mostrar log"],
       "Show Markers": ["Mostrar Marcadores"],
       "Show Metric": ["Mostrar Métricas"],
@@ -4499,9 +4492,7 @@
         "O raio de pontos individuais (aqueles que não estão em um cluster). Uma coluna numérica ou `Auto`, que dimensiona o ponto com base no maior cluster"
       ],
       "The report has been created": ["O relatório foi criado"],
-      "The result of this query must be a value capable of numeric interpretation e.g. 1, 1.0, or \"1\" (compatible with Python's float() function).": [
-        ""
-      ],
+      "The result of this query should be a numeric-esque value": [""],
       "The results backend no longer has the data from the query.": [
         "O backend de resultados não tem mais os dados da consulta."
       ],
@@ -4510,9 +4501,6 @@
       ],
       "The rich tooltip shows a list of all series for that point in time": [
         "A dica de ferramenta avançada mostra uma lista de todas as séries para esse ponto no tempo"
-      ],
-      "The row limit set for the chart was reached. The chart may show partial data.": [
-        ""
       ],
       "The schema \"%(schema)s\" does not exist. A valid schema must be used to run this query.": [
         "O esquema \"%(schema)s\" não existe. Um esquema válido deve ser usado para executar essa consulta."
@@ -4915,7 +4903,6 @@
       "Time string is ambiguous. Please specify [%(human_readable)s ago] or [%(human_readable)s later].": [
         "A cadeia de tempo é ambígua. Especifique [%(human_readable)s ago] ou [%(human_readable)s later]."
       ],
-      "Time-series Area Chart (legacy)": ["Gráfico de área (legado)"],
       "Time-series Bar Chart (legacy)": [
         "Gráfico de barras de séries temporais (legado)"
       ],
@@ -5188,7 +5175,6 @@
       "Value Format": ["Formato do valor"],
       "Value bounds": ["Limites de valor"],
       "Value cannot exceed %s": [""],
-      "Value difference between the time periods": [""],
       "Value format": ["Formato do valor"],
       "Value is required": ["O valor é necessário"],
       "Value must be greater than 0": ["O valor deve ser maior que 0"],
@@ -5736,6 +5722,9 @@
         "Propriedade `operation` do objeto de pós-processamento indefinida"
       ],
       "`prophet` package not installed": ["Pacote `prophet` não instalado"],
+      "`rename_columns` must have the same length as `columns`.": [
+        "`rename_columns` deve ter o mesmo comprimento que `columns`."
+      ],
       "`row_limit` must be greater than or equal to 0": [
         "O `row_limit` deve ser maior ou igual a 0"
       ],
@@ -5751,6 +5740,7 @@
       "all": ["todos"],
       "also copy (duplicate) charts": ["também copiar (duplicar) gráficos"],
       "ancestor": ["ancestral"],
+      "and": ["e"],
       "annotation": ["anotação"],
       "annotation_layer": ["camada de anotação"],
       "asfreq": ["asfreq"],

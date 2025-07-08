@@ -20,7 +20,7 @@ import { FeatureFlag, isFeatureEnabled } from '@superset-ui/core';
 import React, { lazy } from 'react';
 
 // not lazy loaded since this is the home page.
-import Home from 'src/pages/Home';
+// import Home from 'src/pages/Home';
 
 const ChartCreation = lazy(
   () =>
@@ -133,12 +133,13 @@ type Routes = {
 export const routes: Routes = [
   {
     path: '/superset/welcome/',
-    Component: Home,
-  },
-  {
-    path: '/dashboard/list/',
     Component: DashboardList,
   },
+  // TODO: вернуть, когда подключим целевое решение по главной странице
+  // {
+  //   path: '/dashboard/list/',
+  //   Component: DashboardList,
+  // },
   {
     path: '/superset/dashboard/:idOrSlug/',
     Component: Dashboard,

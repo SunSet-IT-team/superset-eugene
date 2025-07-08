@@ -17,26 +17,26 @@
  * under the License.
  */
 import rison from 'rison';
-import React, { useCallback } from 'react';
+import React, {useCallback} from 'react';
 import PropTypes from 'prop-types';
-import { Radio } from 'src/components/Radio';
+import {Radio} from 'src/components/Radio';
 import Card from 'src/components/Card';
 import Alert from 'src/components/Alert';
 import Badge from 'src/components/Badge';
 import shortid from 'shortid';
 import {
   css,
-  isFeatureEnabled,
-  getCurrencySymbol,
   ensureIsArray,
   FeatureFlag,
+  getCurrencySymbol,
+  isFeatureEnabled,
   styled,
   SupersetClient,
   t,
   withTheme,
 } from '@superset-ui/core';
-import { Select, AsyncSelect, Row, Col } from 'src/components';
-import { FormLabel } from 'src/components/Form';
+import {AsyncSelect, Col, Row, Select} from 'src/components';
+import {FormLabel} from 'src/components/Form';
 import Button from 'src/components/Button';
 import Tabs from 'src/components/Tabs';
 import CertifiedBadge from 'src/components/CertifiedBadge';
@@ -46,7 +46,7 @@ import Label from 'src/components/Label';
 import Loading from 'src/components/Loading';
 import TableSelector from 'src/components/TableSelector';
 import EditableTitle from 'src/components/EditableTitle';
-import { getClientErrorObject } from 'src/utils/getClientErrorObject';
+import {getClientErrorObject} from 'src/utils/getClientErrorObject';
 import CheckboxControl from 'src/explore/components/controls/CheckboxControl';
 import TextControl from 'src/explore/components/controls/TextControl';
 import TextAreaControl from 'src/explore/components/controls/TextAreaControl';
@@ -57,6 +57,7 @@ import CurrencyControl from 'src/explore/components/controls/CurrencyControl';
 import CollectionTable from './CollectionTable';
 import Fieldset from './Fieldset';
 import Field from './Field';
+import {JsonEditor} from '../AsyncAceEditor';
 
 const DatasourceContainer = styled.div`
   .change-warning {
@@ -153,6 +154,7 @@ const DATA_TYPES = [
 const DATASOURCE_TYPES_ARR = [
   { key: 'physical', label: t('Physical (table or view)') },
   { key: 'virtual', label: t('Virtual (SQL)') },
+  { key: 'json', label: t('Custom (JSON)') },
 ];
 const DATASOURCE_TYPES = {};
 DATASOURCE_TYPES_ARR.forEach(o => {
@@ -174,6 +176,55 @@ function CollectionTabTitle({ title, collection }) {
 CollectionTabTitle.propTypes = {
   title: PropTypes.string,
   collection: PropTypes.array,
+};
+
+function StyledLabelCustom({ label }) {
+  return (
+    <div
+      css={theme => ({
+        color: theme.colors.grayscale.base,
+        paddingTop: theme.gridUnit * 3,
+        paddingBottom: theme.gridUnit,
+        textTransform: 'uppercase',
+        fontSize: theme.typography.sizes.s,
+      })}
+    >
+      {t(label)}
+    </div>
+  );
+}
+
+function JSONEditor({ json, onChange }) {
+  return (
+    <JsonEditor
+      showLoadingForImport
+      name="json_metadata"
+      value={json}
+      onChange={e => {
+        // console.log(e);
+        onChange(e);
+        // this.onDatasourcePropChange('json', e || '');
+      }}
+      // onChange={onChange}
+      tabSize={2}
+      width="100%"
+      height="320px"
+      setOptions={{
+        enableBasicAutocompletion: true,
+        enableLiveAutocompletion: true,
+        enableSnippets: true,
+        showLineNumbers: true,
+        tabSize: 2,
+        showGutter: true,
+      }}
+      wrapEnabled
+    />
+  );
+}
+
+JSONEditor.propTypes = {
+  json: PropTypes.string,
+  onChange: PropTypes.func.isRequired,
 };
 
 function ColumnCollectionTable({
@@ -603,6 +654,7 @@ class DatasourceEditor extends React.PureComponent {
           };
         }),
       },
+
       errors: [],
       isSqla:
         props.datasource.datasource_type === 'table' ||
@@ -615,7 +667,9 @@ class DatasourceEditor extends React.PureComponent {
       metadataLoading: false,
       activeTabKey: 0,
       datasourceType: props.datasource.sql
-        ? DATASOURCE_TYPES.virtual.key
+        ? props.datasource.kind === 'json'
+          ? DATASOURCE_TYPES.json.key
+          : DATASOURCE_TYPES.virtual.key
         : DATASOURCE_TYPES.physical.key,
     };
 
@@ -663,6 +717,7 @@ class DatasourceEditor extends React.PureComponent {
 
   onDatasourcePropChange(attr, value) {
     if (value === undefined) return; // if value is undefined do not update state
+
     const datasource = { ...this.state.datasource, [attr]: value };
     this.setState(
       prevState => ({
@@ -676,6 +731,8 @@ class DatasourceEditor extends React.PureComponent {
 
   onDatasourceTypeChange(datasourceType) {
     this.setState({ datasourceType });
+
+    this.props?.applyJson(datasourceType === 'json');
   }
 
   setColumns(obj) {
@@ -873,6 +930,7 @@ class DatasourceEditor extends React.PureComponent {
 
   renderSettingsFieldset() {
     const { datasource } = this.state;
+
     return (
       <Fieldset
         title={t('Basic')}
@@ -1200,6 +1258,30 @@ class DatasourceEditor extends React.PureComponent {
                 />
               )}
             </Col>
+          )}
+          {this.state.datasourceType === DATASOURCE_TYPES.json.key && (
+            <div>
+              <>
+                <Col xs={24} md={12}>
+                  <div css={{ width: 'calc(100% - 34px)', marginTop: -16 }}>
+                    <StyledLabelCustom label="Name" />
+                    <TextControl
+                      onChange={table => {
+                        this.onDatasourcePropChange('json_name', table);
+                      }}
+                      value={datasource.json_name}
+                      placeholder={t('Dataset name')}
+                      disabled={!this.state.isEditMode}
+                    />
+                  </div>
+                </Col>
+                <StyledLabelCustom label="Dataset JSON" />
+                <JSONEditor
+                  json={datasource.json}
+                  onChange={e => this.onDatasourcePropChange('json', e)}
+                />
+              </>
+            </div>
           )}
         </Fieldset>
       </div>

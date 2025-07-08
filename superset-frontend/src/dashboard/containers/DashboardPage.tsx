@@ -16,48 +16,40 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import React, { FC, useEffect, useMemo, useRef } from 'react';
-import { Global } from '@emotion/react';
-import { useHistory } from 'react-router-dom';
-import {
-  CategoricalColorNamespace,
-  getSharedLabelColor,
-  SharedLabelColorSource,
-  t,
-  useTheme,
-} from '@superset-ui/core';
-import { useDispatch, useSelector } from 'react-redux';
-import { useToasts } from 'src/components/MessageToasts/withToasts';
+import React, {FC, useEffect, useMemo, useRef} from 'react';
+import {Global} from '@emotion/react';
+import {useHistory} from 'react-router-dom';
+import {CategoricalColorNamespace, getSharedLabelColor, SharedLabelColorSource, t, useTheme,} from '@superset-ui/core';
+import {useDispatch, useSelector} from 'react-redux';
+import {useToasts} from 'src/components/MessageToasts/withToasts';
 import Loading from 'src/components/Loading';
-import {
-  useDashboard,
-  useDashboardCharts,
-  useDashboardDatasets,
-} from 'src/hooks/apiResources';
-import { hydrateDashboard } from 'src/dashboard/actions/hydrate';
-import { setDatasources } from 'src/dashboard/actions/datasources';
+import {useDashboard, useDashboardCharts, useDashboardDatasets,} from 'src/hooks/apiResources';
+import {hydrateDashboard} from 'src/dashboard/actions/hydrate';
+import {setDatasources} from 'src/dashboard/actions/datasources';
 import injectCustomCss from 'src/dashboard/util/injectCustomCss';
 
-import { LocalStorageKeys, setItem } from 'src/utils/localStorageHelpers';
-import { URL_PARAMS } from 'src/constants';
-import { getUrlParam } from 'src/utils/urlUtils';
-import { setDatasetsStatus } from 'src/dashboard/actions/dashboardState';
-import {
-  getFilterValue,
-  getPermalinkValue,
-} from 'src/dashboard/components/nativeFilters/FilterBar/keyValue';
+import {LocalStorageKeys, setItem} from 'src/utils/localStorageHelpers';
+import {URL_PARAMS} from 'src/constants';
+import {getUrlParam} from 'src/utils/urlUtils';
+import {setDatasetsStatus} from 'src/dashboard/actions/dashboardState';
+import {getFilterValue, getPermalinkValue,} from 'src/dashboard/components/nativeFilters/FilterBar/keyValue';
 import DashboardContainer from 'src/dashboard/containers/Dashboard';
 
 import shortid from 'shortid';
-import { RootState } from '../types';
+import {triggerQuery} from 'src/components/Chart/chartAction';
 import {
-  chartContextMenuStyles,
-  filterCardPopoverStyle,
-  headerStyles,
-} from '../styles';
-import SyncDashboardState, {
-  getDashboardContextLocalStorage,
-} from '../components/SyncDashboardState';
+  resetAllParams,
+  setSelectorsInfoLoaded,
+  updateInitialSelectorsToGet,
+  updateSelectorByKey,
+  updateSelectorsToGet,
+} from '../features/selectors/selectorsSlice';
+import {RootState} from '../types';
+import {alertNotificationStyles, chartContextMenuStyles, filterCardPopoverStyle, headerStyles,} from '../styles';
+import SyncDashboardState, {getDashboardContextLocalStorage,} from '../components/SyncDashboardState';
+import {getFactIds} from '../components/nativeFilters/SelectorsConfigModal/utils';
+import {selectorType} from '../components/nativeFilters/constants';
+import {InitialState} from '../features/selectors/types';
 
 export const DashboardPageIdContext = React.createContext('');
 
@@ -100,6 +92,13 @@ export const DashboardPage: FC<PageProps> = ({ idOrSlug }: PageProps) => {
   const error = dashboardApiError || chartsApiError;
   const readyToRender = Boolean(dashboard && charts);
   const { dashboard_title, css, metadata, id = 0 } = dashboard || {};
+
+  const chartsIds = charts?.map((chart: any) => chart.id);
+
+  const { selectors }: InitialState = useSelector(
+    (state: RootState) => state.selectors,
+  );
+  const { selectedDict } = selectors.facts;
 
   useEffect(() => {
     // mark tab id as redundant when user closes browser tab - a new id will be
@@ -160,11 +159,143 @@ export const DashboardPage: FC<PageProps> = ({ idOrSlug }: PageProps) => {
             dataMask,
           }),
         );
+        const { selector_configuration } = metadata;
+        if (selector_configuration) {
+          const [factsSelector] = selector_configuration.filter(
+            el => el.type_selector === selectorType.facts,
+          );
+          let factIds = [];
+          const selectorsToGet = [];
+
+          if (factsSelector?.selected) {
+            factIds = await getFactIds(
+              factsSelector.selected_facts,
+              factsSelector.datasource_id,
+              factsSelector.datasource_type,
+              factsSelector.column_name,
+            );
+          }
+          selector_configuration.forEach((el: any) => {
+            if (el.type_selector === selectorType.period) {
+              if (el.selected) {
+                selectorsToGet.push(selectorType.period);
+              }
+              dispatch(
+                updateSelectorByKey({
+                  key: 'period',
+                  updates: {
+                    isActive: el.selected,
+                  },
+                }),
+              );
+            }
+            if (el.type_selector === selectorType.comparisonPeriod) {
+              if (el.selected) {
+                selectorsToGet.push(selectorType.comparisonPeriod);
+              }
+              dispatch(
+                updateSelectorByKey({
+                  key: 'comparisonPeriod',
+                  updates: {
+                    isActive: el.selected,
+                  },
+                }),
+              );
+            }
+            if (el.type_selector === selectorType.market) {
+              if (el.selected) {
+                selectorsToGet.push(selectorType.market);
+              }
+              dispatch(
+                updateSelectorByKey({
+                  key: 'market',
+                  updates: {
+                    isActive: el.selected,
+                    dashboardQuantity: el.max_selection || 1,
+                  },
+                }),
+              );
+            }
+            if (el.type_selector === selectorType.marketAll) {
+              if (el.selected) {
+                selectorsToGet.push(selectorType.marketAll);
+              }
+              dispatch(
+                updateSelectorByKey({
+                  key: 'marketAll',
+                  updates: {
+                    isActive: el.selected,
+                  },
+                }),
+              );
+            }
+            if (el.type_selector === selectorType.product) {
+              if (el.selected) {
+                selectorsToGet.push(selectorType.product);
+              }
+              dispatch(
+                updateSelectorByKey({
+                  key: 'product',
+                  updates: {
+                    isActive: el.selected,
+                    dashboardQuantity: el.max_selection || 1,
+                  },
+                }),
+              );
+            }
+            if (el.type_selector === selectorType.productAll) {
+              if (el.selected) {
+                selectorsToGet.push(selectorType.productAll);
+              }
+              dispatch(
+                updateSelectorByKey({
+                  key: 'productAll',
+                  updates: {
+                    isActive: el.selected,
+                  },
+                }),
+              );
+            }
+            if (el.type_selector === selectorType.facts) {
+              const selectedDictOptions = el.selected_facts?.map(fact => ({
+                label: fact,
+                value: fact,
+              }));
+              dispatch(
+                updateSelectorByKey({
+                  key: 'facts',
+                  updates: {
+                    isActive: el.selected,
+                    dictOptions: selectedDictOptions || [],
+                    options: selectedDictOptions || [],
+                    selectedDict: {
+                      ...selectedDict,
+                      datasource_name: el.datasource_name,
+                      datasource_type: el.datasource_type,
+                      datasource_id: el.datasource_id,
+                      column: el.column_name,
+                      options_ids: factIds,
+                    },
+                  },
+                }),
+              );
+            }
+          });
+          dispatch(updateInitialSelectorsToGet(selectorsToGet));
+          dispatch(updateSelectorsToGet(selectorsToGet));
+        }
+        dispatch(setSelectorsInfoLoaded(true));
       }
       return null;
     }
     if (id) getDataMaskApplied();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => {
+      dispatch(resetAllParams());
+      chartsIds?.forEach(id => {
+        dispatch(triggerQuery(false, id));
+      });
+    };
   }, [readyToRender]);
 
   useEffect(() => {
@@ -218,6 +349,7 @@ export const DashboardPage: FC<PageProps> = ({ idOrSlug }: PageProps) => {
           filterCardPopoverStyle(theme),
           headerStyles(theme),
           chartContextMenuStyles(theme),
+          alertNotificationStyles(theme),
         ]}
       />
       <SyncDashboardState dashboardPageId={dashboardPageId} />

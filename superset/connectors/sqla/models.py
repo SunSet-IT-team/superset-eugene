@@ -121,6 +121,7 @@ from superset.superset_typing import (
 from superset.utils import core as utils
 from superset.utils.backports import StrEnum
 from superset.utils.core import GenericDataType, MediumText
+from superset.constants import JSON_PREFIX, JSON_TABLE_NAME, BASE_FACTS, PRODUCT_COLUMN, PERIOD_COLUMN_NAME, MARKET_COLUMN, FACT_ID_PREFIX, CHART_PREVIEW_DATA
 
 config = app.config
 metadata = Model.metadata  # pylint: disable=no-member
@@ -173,6 +174,7 @@ COLUMN_FORM_DATA_PARAMS = [
 class DatasourceKind(StrEnum):
     VIRTUAL = "virtual"
     PHYSICAL = "physical"
+    JSON = "json"
 
 
 class BaseDatasource(
@@ -224,6 +226,8 @@ class BaseDatasource(
 
     @property
     def kind(self) -> DatasourceKind:
+        if self.sql and self.sql.strip().startswith(JSON_PREFIX):
+            return DatasourceKind.JSON
         return DatasourceKind.VIRTUAL if self.sql else DatasourceKind.PHYSICAL
 
     @property
@@ -1418,6 +1422,51 @@ class SqlaTable(
         query_obj: QueryObjectDict,
         mutate: bool = True,
     ) -> QueryStringExtended:
+        # Json Virtual Dataset custom logic
+        if self.is_json_dataset:
+            # сохраяем json_dataset 
+            original_sql = self.sql
+            try:
+                custom_sql = self._generate_json_dataset_sql(query_obj)
+                labels_expected = self._get_json_labels_expected(query_obj)
+
+                #raise ValueError(f"custom_sql: {custom_sql}, query_obj: {query_obj}")
+                # используем наш сгенерированный custom_sql как sql виртуального датасета
+                # временно перезаписываем sql
+                self.sql = custom_sql
+
+                #нужна логика здесь или выше, где мы проверяем, есть ли [[]] в выбранных продуктах или 100 продуктах
+                #для json dataset нужно еще, чтобы в Rows были prod_name или prod_tag
+                #если есть, то нам нужно для колонок, которые выводятся финально на чарт: 
+                # все _tag и прочее заменить на "", a prod_name заменить на fulldesc.split("|=|")[-1]
+
+                #перезаписываем query_obj, удаляя selectors
+                json_query_obj = query_obj.copy()
+                json_query_obj['selectors'] = []
+                # используем привычный пайплайн обработки виртуальных датасетов
+                sqlaq = self.get_sqla_query(**json_query_obj)
+                sql = self.database.compile_sqla_query(sqlaq.sqla_query)
+                sql = self._apply_cte(sql, sqlaq.cte)
+                sql = sqlparse.format(sql, reindent=True)
+                if mutate:
+                    sql = self.mutate_query_from_config(sql)
+
+                return QueryStringExtended(
+                    applied_template_filters=sqlaq.applied_template_filters, #[]
+                    applied_filter_columns=sqlaq.applied_filter_columns, #[]
+                    rejected_filter_columns=sqlaq.rejected_filter_columns, #[]
+                    labels_expected=sqlaq.labels_expected, #labels_expected,
+                    prequeries=sqlaq.prequeries, #[]
+                    sql=sql,
+                    )
+
+            except Exception as ex:
+                from superset.exceptions import QueryObjectValidationError
+                raise QueryObjectValidationError(f"JSON dataset SQL generation failed: {str(ex)}") from ex
+            finally: #
+                    # перезаписываем json dataset обратно
+                    self.sql = original_sql #
+        
         sqlaq = self.get_sqla_query(**query_obj)
         sql = self.database.compile_sqla_query(sqlaq.sqla_query)
         sql = self._apply_cte(sql, sqlaq.cte)
@@ -1492,6 +1541,30 @@ class SqlaTable(
                         msg=ex.message,
                     )
                 ) from ex
+
+        # в этой логике мы берем json датасета и преобразуем его в sql запрос
+        # при выполнении запроса из результата get_rendered_sql мы возвращаем 0 строк
+        stripped = sql.strip()
+        if stripped.lower().startswith(JSON_PREFIX.lower()):
+            import ast
+            payload = stripped[len(JSON_PREFIX) :].strip()
+            try:
+                data = ast.literal_eval(payload)
+            except (SyntaxError, ValueError) as ex:
+                raise QueryObjectValidationError(
+                    f"Invalid JSON payload in virtual dataset: {ex}"
+                ) from ex
+            
+            rows = data.get('Rows', [])
+            columns = data.get('Columns', [])
+            
+            select_cols = rows + columns
+
+            if select_cols:
+                sql = f"SELECT {', '.join(select_cols)} FROM {JSON_TABLE_NAME}"
+            else:
+                sql = f"SELECT 1 FROM {JSON_TABLE_NAME}"
+        
         sql = sqlparse.format(sql.strip("\t\r\n; "), strip_comments=True)
         if not sql:
             raise QueryObjectValidationError(_("Virtual dataset query cannot be empty"))
@@ -2067,6 +2140,597 @@ class SqlaTable(
         ):
             session = inspect(self).session  # pylint: disable=disallowed-name
             self.database = session.query(Database).filter_by(id=self.database_id).one()
+
+    def _generate_json_dataset_sql(self, query_obj: QueryObjectDict) -> str:
+        """
+        Generate custom SQL for JSON datasets based on selector values and chart configuration
+        """
+        from sqlalchemy import text, column, select, and_, bindparam
+        from superset.constants import (
+            PERIOD_COLUMN_NAME, MARKET_COLUMN, PRODUCT_COLUMN, 
+            JSON_TABLE_NAME, NO_SELECTOR, SELECTOR_DATASOURCES, 
+            DATASOURCE_TYPE, PERIOD_MAPPING_SELECTOR, COMPARISON_PERIOD_TYPES
+        )
+        from superset.utils.core import flatten_and_unique
+        from superset.daos.datasource import DatasourceDAO
+        from superset.utils.core import DatasourceType
+        
+        selectors = query_obj.get("selectors", [])
+        filters = query_obj.get("filters", [])
+        columns = query_obj.get("columns", [])
+        metrics = query_obj.get("metrics", [])
+
+        #is_dashboard = query_obj.get("dashboardId", False) # its not working now, change it later
+
+        if not selectors:
+           raise ValueError("Missing selectors in query_obj for JSON dataset")
+        
+        rls_restriction = query_obj.get("rls_restriction", {})
+        # временное условие, пока нет другого явного атрибута-признака, что чарт на dashboard
+        if rls_restriction:
+            is_dashboard = True
+        else:
+            is_dashboard = False
+
+        # временный коммент, пока нет rls_restriction в query_obj в момент создания чарта
+        if is_dashboard:
+            if not rls_restriction.get("column") or not rls_restriction.get("value"):
+                raise ValueError("Missing RLS restriction in query_obj for JSON dataset")
+        else:
+            rls_restriction = {"column": "order_id", "value": "1"}
+
+        COLUMN_MAPPING = {
+            "Period": PERIOD_COLUMN_NAME,
+            "Market": MARKET_COLUMN,
+            "Product": PRODUCT_COLUMN,
+        }
+        
+        all_markets = []
+        selected_markets = []
+        selected_markets_100 = []
+        all_products = []
+        selected_products = []
+        selected_products_100 = []
+
+        all_periods = []
+        period_list = []
+        comparison_period_list = []
+
+        # определять значения селекторов и конвертировать их в значения из бд только при наличии чарта на дашборде
+        if is_dashboard:
+            datasource = self._get_datasource_for_selectors("Period") # added
+            
+            selector_filters = [{"col": rls_restriction["column"], "val": rls_restriction["value"]}]
+            
+            for selector in selectors:
+                selector_type = selector.get("type_selector")
+                
+                if selector_type == "Period":
+                    period_list = self._process_period_selector(selector, datasource, selector_filters) # added
+                    if period_list and period_list != [NO_SELECTOR]:
+                        all_periods.extend(period_list)
+                        
+                elif selector_type == "Comparison Period":
+                    comparison_period_list = self._process_comparison_period_selector( # added
+                        selector, datasource, period_list, selector_filters
+                    )
+                    if comparison_period_list and comparison_period_list != [NO_SELECTOR]:
+                        all_periods.extend(comparison_period_list)
+                        
+                elif selector_type == "Market":
+                    selected_markets = selector.get("selected_markets", [])
+                    if selected_markets and selected_markets != [NO_SELECTOR]:
+                        all_markets.extend(selected_markets)
+                        
+                elif selector_type == "100_Market":
+                    selected_markets_100 = selector.get("selected_markets_100", [])
+                    if selected_markets_100 and selected_markets_100 != [NO_SELECTOR]:
+                        all_markets.extend(selected_markets_100)
+                        
+                elif selector_type == "Product":
+                    selected_products = selector.get("selected_products", [])
+                    if selected_products and selected_products != [NO_SELECTOR]:
+                        all_products.extend(flatten_and_unique(selected_products))
+                        
+                elif selector_type == "100_Product":
+                    selected_products_100 = selector.get("selected_products_100", [])
+                    if selected_products_100 and selected_products_100 != [NO_SELECTOR]:
+                        all_products.extend(flatten_and_unique(selected_products_100))
+        else:
+            pass
+
+        # проверяем, чтобы выбранные значения в селекторах не равнялись NO_SELECTOR
+        def replace_no_selector(selector_list, no_selector=NO_SELECTOR):
+            return [] if selector_list == no_selector else selector_list
+
+        selected_markets = replace_no_selector(selected_markets)
+        selected_markets_100 = replace_no_selector(selected_markets_100)
+        selected_products = replace_no_selector(flatten_and_unique(selected_products))
+        selected_products_100 = replace_no_selector(flatten_and_unique(selected_products_100))
+        period_list = replace_no_selector(period_list)
+        comparison_period_list = replace_no_selector(comparison_period_list)
+
+        # переназначаем значения селекторов для preview чарта
+        if is_dashboard == False:
+            selected_markets = CHART_PREVIEW_DATA[MARKET_COLUMN]
+            selected_products = CHART_PREVIEW_DATA[PRODUCT_COLUMN]
+            selected_markets_100 = CHART_PREVIEW_DATA["selected_markets_100"]
+            selected_products_100 = CHART_PREVIEW_DATA["selected_products_100"]
+            period_list = CHART_PREVIEW_DATA["selected_periods"]
+            comparison_period_list = CHART_PREVIEW_DATA["selected_comparison_periods"]
+            all_periods = period_list + comparison_period_list
+            all_markets = selected_markets + selected_markets_100
+            all_products = selected_products + selected_products_100
+        
+        return self._build_final_sql( # present
+            query_obj=query_obj,
+            all_periods=all_periods,
+            period_list=period_list,
+            comparison_period_list=comparison_period_list,
+            all_markets=all_markets,
+            selected_markets=selected_markets,
+            selected_markets_100=selected_markets_100,
+            all_products=all_products,
+            selected_products=selected_products,
+            selected_products_100=selected_products_100,
+            rls_restriction=rls_restriction,
+            COLUMN_MAPPING=COLUMN_MAPPING,
+            is_dashboard=is_dashboard
+        )
+    
+    def _build_final_sql(
+        self, 
+        query_obj: QueryObjectDict,
+        all_periods: list,
+        period_list: list,
+        comparison_period_list: list,
+        all_markets: list, 
+        selected_markets: list,
+        selected_markets_100: list,
+        all_products: list,
+        selected_products: list,
+        selected_products_100: list,
+        rls_restriction: dict,
+        COLUMN_MAPPING: dict,
+        is_dashboard: bool
+    ) -> str:
+        """
+        Build the final SQL query for JSON dataset
+        """
+        from sqlalchemy import text, column, select, and_, bindparam
+        from superset.constants import JSON_TABLE_NAME
+        
+        # парсим json датасет
+        json_structure = self.json_structure
+        rows = json_structure.get('Rows', [])
+        columns_data = json_structure.get('Columns', [])
+        facts = json_structure.get('Facts', [])
+        
+        # 1. формируем base_req подзапрос
+        # формируем список колонок для select из json_structure и базовых метрик для base_req
+        select_columns = [text(col) for col in rows + columns_data + BASE_FACTS]
+        
+        # FROM для base_req
+        table_ref = text(JSON_TABLE_NAME)
+        
+        # WHERE для base_req
+        where_conditions = [
+            column(rls_restriction["column"]) == bindparam('rls_value', rls_restriction["value"])
+        ]
+
+        # # признак, если чарт не на dashboard, добавляем значения для preview чарта
+        # if is_dashboard == False:
+        #     #where_conditions.append(text("1=0")) , то добавляем условие на возвращение 0 строк во WHERE
+        #     where_conditions.append(column(MARKET_COLUMN).in_(CHART_PREVIEW_DATA[MARKET_COLUMN]))
+        #     where_conditions.append(column(PRODUCT_COLUMN).in_(CHART_PREVIEW_DATA[PRODUCT_COLUMN]))
+        
+        # добавляем фильтры для периодов, рынков и продуктов
+        self._add_filter_to_query('Period', all_periods, where_conditions, COLUMN_MAPPING) # added
+        self._add_filter_to_query('Market', all_markets, where_conditions, COLUMN_MAPPING)
+        self._add_filter_to_query('Product', all_products, where_conditions, COLUMN_MAPPING)
+    
+        
+        ## check logic later!
+        # additional_filters = query_obj.get("filters", [])
+        # for filter_obj in additional_filters:
+        #     if filter_obj.get("col") not in [rls_restriction["column"], COLUMN_MAPPING["Period"], COLUMN_MAPPING["Market"], COLUMN_MAPPING["Product"]]:
+        #         self._add_additional_filter(filter_obj, where_conditions) # func is not added, add it later
+        
+        # формируем запрос base_req в формате sqlalchemy
+        query = select(select_columns).select_from(table_ref).where(and_(*where_conditions)) # possibly take select_columns here from json_structure
+        
+        # these two functions are not added, add them later
+        # orderby = query_obj.get("orderby", [])
+        # if orderby:
+        #     query = self._apply_ordering(query, orderby)
+        
+        # row_limit = query_obj.get("row_limit")
+        # if row_limit:
+        #     query = query.limit(row_limit)
+        
+        # преобразуем запрос base_req в строку
+        base_req_sql = str(query.compile(compile_kwargs={"literal_binds": True}))
+
+        # if is_dashboard == False:
+        #     try:
+        #         return base_req_sql
+        #     except Exception as e:
+        #         raise ValueError(f"Error in base_req_sql: {base_req_sql, str(e)}") from e
+        # else:
+        #     pass
+
+        # преобразуем запрос base_req в sqlalchemy
+        text_sql = text(base_req_sql)
+
+        # помещаем base_req в подзапрос и создаем для него alias   
+        subquery = TextAsFrom(text_sql, []).alias("base_req")
+
+        # 2. формируем base_agg подзапрос
+        base_agg_select_columns = [text(col) for col in rows]
+
+        # формируем словарь с условиями для CASE выражений
+        select_case_columns = self._generate_select_case_columns(
+            columns_data=columns_data,
+            selected_products=selected_products,
+            selected_products_100=selected_products_100,
+            period_list=period_list,
+            comparison_period_list=comparison_period_list,
+            selected_markets=selected_markets,
+            selected_markets_100=selected_markets_100
+        )
+
+        # формируем все комбинации условий для CASE выражений в формате: SUM(CASE WHEN {base_condition} AND {period_condition} THEN
+        case_when_conditions = self._generate_case_expressions(select_case_columns)
+
+        alias_columns = {
+            "products_period": "cur",
+            "products_100_period": "cur_tp",
+            "products_comparison_period": "prev",
+            "products_100_comparison_period": "prev_tp",
+            "markets_period": "cur",
+            "markets_100_period": "cur_tp",
+            "markets_comparison_period": "prev",
+            "markets_100_comparison_period": "prev_tp",
+        }
+
+        # формируем финальные CASE выражения для всех базовых фактов
+        for base_fact in BASE_FACTS:
+            for condition, expression in case_when_conditions.items():
+                base_agg_select_columns.append(f"{expression} THEN {base_fact} END) AS {base_fact.lower()}_{alias_columns[condition]}")
+            #рассчитываем суммы базовых фактов
+            base_agg_select_columns.append(f"SUM({base_fact}) AS {base_fact.lower()}")
+            
+
+        columns_str = ', '.join(str(col) for col in base_agg_select_columns)
+        group_by_str = ', '.join(str(col) for col in rows)
+        query = select([text(f"{columns_str}")]).select_from(subquery).group_by(text(f"{group_by_str}"))
+        base_agg_sql = str(query.compile(compile_kwargs={"literal_binds": True}))
+
+        # 3. формируем final_agg запрос
+        # преобразуем запрос base_agg в sqlalchemy
+        base_agg_text_sql = text(base_agg_sql)
+
+        # помещаем base_agg в подзапрос и создаем для него alias   
+        base_agg_subquery = TextAsFrom(base_agg_text_sql, []).alias("base_agg")
+
+        # формируем список колонок для select
+        final_agg_select_columns = rows
+
+        # формируем словарь с формулами для фактов
+        fact_formulas = {
+            1: "U",
+            2: "E",
+            3: "V",
+            12: "V [Период] - V [Период сравнения]", 
+            20: "U [Продукт] / U [100% Продукт] * 100",
+            21: "E [Продукт] / E [100% Продукт] * 100", 
+            22: "V [Продукт] / V [100% Продукт] * 100"
+        }
+        
+        # соотнесение наименований фактов и их временных aliasов в нашем запросе
+        fact_sql_dict = {
+                "U": "u",
+                "E": "e",
+                "V": "v",
+                "V [Период]":"v_cur", 
+                "V [Период сравнения]":"v_cur_tp", 
+			    "U [Продукт]": "u_cur", 
+                "U [100% Продукт]": "u_cur_tp",
+				"E [Продукт]": "e_cur", 
+                "E [100% Продукт]": "e_cur_tp",
+				"V [Продукт]": "v_cur", 
+                "V [100% Продукт]": "v_cur_tp"
+        }
+
+        # наименование фактов для alias. Вероятно, эти названия не нужны, тк будем брать из контракта чарта, чтобы чарт подставил названия колонок
+        fact_names = {
+                12 : "Абс. изм. продаж в деньгах",
+                16 : "Цена за упаковку", 
+                17 : "Цена за единицу объёма",
+                20 : "Доля, упаковки, %",
+                21 : "Доля, натур. продажи, %",
+                22 : "Доля, деньги, %",
+                33 : "Взвешенная дистрибуция",
+                34 : "Кумулятивная взвешенная дистрибуция",
+                35 : "Числовая дистрибуция"
+        }
+
+        english_aliases = {
+            12: "abs_change_sales_money",
+            16: "price_per_package", 
+            17: "price_per_unit_volume",
+            20: "share_packages_pct",
+            21: "share_natural_sales_pct",
+            22: "share_money_pct",
+            33: "weighted_distribution",
+            34: "cumulative_weighted_distribution",
+            35: "numeric_distribution"
+        }
+        
+        # добавляем финальные формулы для фактов в select_columns
+        # определяем выбранные факты в чарте
+        selected_metrics = query_obj.get("metrics", [])
+        selected_facts = []
+
+        # собираем id фактов из selected_metrics, если генерим данные для запроса для чарта на дашборде
+        #if is_dashboard:
+        if selected_metrics:
+            for fact in selected_metrics:
+                # получаем id факта из query_object
+                column_name = fact.get("column", {}).get("column_name") #fact #
+                if column_name:
+                    fact_id = int(column_name.split('_')[1])
+                    selected_facts.append(fact_id)
+                else:
+                    raise ValueError("Missing column_name in a column of a query_object in a Chart")
+        
+        for fact in selected_facts: #facts:
+            formula = fact_formulas[fact]
+            # отсортируем, чтобы в V [Период] - V не заменилась на v маленькую вместо v_cur
+            replacement_keys = sorted(fact_sql_dict.keys(), key=len, reverse=True)
+
+            for key in replacement_keys:
+                value = fact_sql_dict[key]
+                formula = formula.replace(key, value)
+
+            fact_alias = f"{FACT_ID_PREFIX}{fact}" # english_aliases[fact] # fact_names[fact]
+            final_agg_select_columns.append(f"{formula} AS `{fact_alias}`")
+
+        final_agg_columns_str = ', '.join(str(col) for col in final_agg_select_columns)
+
+        query = select([text(f"{final_agg_columns_str}")]).select_from(base_agg_subquery) #.group_by(text(f"{group_by_str}"))
+        final_agg_sql = str(query.compile(compile_kwargs={"literal_binds": True}))
+
+        #raise ValueError(f'final_agg_sql: {final_agg_sql}')
+        try:
+            return final_agg_sql
+        except Exception as e:
+            raise ValueError(f"Error in final_sql: {final_agg_sql, str(e)}") from e
+
+    def _get_json_labels_expected(self, query_obj: QueryObjectDict) -> list[str]: # JSON_DATASET
+        """Generate expected column labels for JSON dataset results"""
+        json_structure = self.json_structure
+        rows = json_structure.get('Rows', [])
+        facts = json_structure.get('Facts', [])
+        
+        labels_expected = rows.copy()
+
+        rls_restriction = query_obj.get("rls_restriction", {})
+
+        if rls_restriction:
+            is_dashboard = True
+        else:
+            is_dashboard = False
+        
+        # english_aliases = {
+        #     12: "abs_change_sales_money",
+        #     16: "price_per_package", 
+        #     17: "price_per_unit_volume",
+        #     20: "share_packages_pct",
+        #     21: "share_natural_sales_pct",
+        #     22: "share_money_pct",
+        #     33: "weighted_distribution",
+        #     34: "cumulative_weighted_distribution",
+        #     35: "numeric_distribution"
+        # }
+        # определяем выбранные факты в чарте
+        selected_metrics = query_obj.get("metrics", [])
+        selected_facts = []
+
+        # собираем id фактов из selected_metrics
+        #if is_dashboard:
+        if selected_metrics:
+            for fact in selected_metrics:
+                # получаем id факта из query_object
+                column_name = fact.get("column", {}).get("column_name") #fact
+                if column_name:
+                    fact_id = int(column_name.lstrip(FACT_ID_PREFIX))
+                    selected_facts.append(fact_id)
+                else:
+                    raise ValueError("Missing column_name in a column of a query_object in a Chart")
+        
+        for fact in selected_facts:
+            labels_expected.append(f"{FACT_ID_PREFIX}{fact}")
+            # if fact in english_aliases:
+            #     labels_expected.append(english_aliases[fact])
+        
+        return labels_expected
+    
+    def _generate_select_case_columns(self, columns_data, selected_products=None, selected_products_100=None, 
+                                period_list=None, comparison_period_list=None, 
+                                selected_markets=None, selected_markets_100=None):
+        """Generate select_case_columns dictionary with all condition combinations"""
+        
+        select_case_columns = {}
+        
+        for column in columns_data:
+            if column == PRODUCT_COLUMN.lower():
+                if selected_products:
+                    select_case_columns["products"] = f"{column} IN ({self._format_for_sql_in(selected_products)})"
+                if selected_products_100:
+                    select_case_columns["products_100"] = f"{column} IN ({self._format_for_sql_in(selected_products_100)})"
+                    
+            elif column == PERIOD_COLUMN_NAME.lower():
+                if period_list:
+                    select_case_columns["period"] = f"{column} IN ({self._format_for_sql_in(period_list)})"
+                if comparison_period_list:
+                    select_case_columns["comparison_period"] = f"{column} IN ({self._format_for_sql_in(comparison_period_list)})"
+                    
+            elif column == MARKET_COLUMN.lower():
+                if selected_markets:
+                    select_case_columns["markets"] = f"{column} IN ({self._format_for_sql_in(selected_markets)})"
+                if selected_markets_100:
+                    select_case_columns["markets_100"] = f"{column} IN ({self._format_for_sql_in(selected_markets_100)})"
+        
+        return select_case_columns
+
+    def _format_for_sql_in(self, value):
+        """Convert list or single value to SQL IN format string with proper quotes"""
+        if isinstance(value, list):
+            quoted_values = [f"'{str(item)}'" for item in value]
+            return ', '.join(quoted_values)
+        else:
+            return f"'{str(value)}'"
+    
+    def _generate_case_expressions(self, select_case_columns):
+        """Generate all SUM(CASE WHEN combinations for the given conditions"""
+
+        # условия для рынков или продуктов
+        base_conditions = []
+
+        if "products" in select_case_columns:
+            base_conditions.append(("products", select_case_columns["products"]))
+        if "products_100" in select_case_columns:
+            base_conditions.append(("products_100", select_case_columns["products_100"]))
+        if "markets" in select_case_columns:
+            base_conditions.append(("markets", select_case_columns["markets"]))
+        if "markets_100" in select_case_columns:
+            base_conditions.append(("markets_100", select_case_columns["markets_100"]))
+
+        # условия для периодов
+        period_conditions = []
+        if "period" in select_case_columns:
+            period_conditions.append(("period", select_case_columns["period"]))
+        if "comparison_period" in select_case_columns:
+            period_conditions.append(("comparison_period", select_case_columns["comparison_period"]))
+        
+        # общие условия для комбинация рынков/продуктов и периодов
+        case_when_conditions = {}
+
+        for base_name, base_condition in base_conditions:
+            # если только одно условие, то раскомментим
+            # case_when_conditions[base_name] = f"SUM(CASE WHEN {base_condition} THEN"
+            for period_name, period_condition in period_conditions:
+                combined_name = f"{base_name}_{period_name}"
+                combined_condition = f"{base_condition} AND {period_condition}"
+                case_when_conditions[combined_name] = f"SUM(CASE WHEN {combined_condition}"
+            
+        return case_when_conditions
+
+    def _get_datasource_for_selectors(self, selector: str):
+        """Get and validate datasource for selector operations"""
+        from superset.constants import SELECTOR_DATASOURCES, DATASOURCE_TYPE
+        from superset.daos.datasource import DatasourceDAO
+        from superset.utils.core import DatasourceType
+        
+        datasource_id = SELECTOR_DATASOURCES.get(selector)
+        if not datasource_id:
+            raise ValueError(f"Missing datasource_id for {selector} selector")
+        
+        datasource_type = DATASOURCE_TYPE
+        if not datasource_type:
+            raise ValueError(f"Missing datasource_type for {selector} selector")
+        
+        try:
+            datasource = DatasourceDAO.get_datasource(
+                DatasourceType(datasource_type), datasource_id
+            )
+            datasource.raise_for_access()
+            return datasource
+        except Exception as ex:
+            raise ValueError(f"Failed to get datasource for {selector}: {str(ex)}") from ex
+        
+    def _process_period_selector(self, selector, datasource, selector_filters):
+        """Process period selector - extracted from your generate_sql logic"""
+        from superset.constants import PERIOD_MAPPING_SELECTOR, PERIOD_COLUMN_NAME, NO_SELECTOR
+        
+        selected_period = selector.get("selected_period")
+        period_selector_type = selector.get("period_selector_type")
+        
+        if selected_period and selected_period != NO_SELECTOR:
+            if period_selector_type == 'Predefined':
+                if selected_period in PERIOD_MAPPING_SELECTOR:
+                    return datasource.get_periods_by_selected_value(
+                        selected_period=selected_period,
+                        period_column_name=PERIOD_COLUMN_NAME.upper(),
+                        selector_filters=selector_filters
+                    )
+            elif period_selector_type == 'Custom':
+                return datasource.get_custom_periods_by_selected_value(
+                    selected_period=selected_period,
+                    period_column_name=PERIOD_COLUMN_NAME.upper(),
+                    selector_filters=selector_filters
+                )
+            else:
+                raise ValueError(f"Unexpected period selector type: {period_selector_type}")
+        return []
+    
+    def _process_comparison_period_selector(self, selector, datasource, period_list, selector_filters):
+        """Process comparison period selector - extracted from your generate_sql logic"""
+        from superset.constants import COMPARISON_PERIOD_TYPES, PERIOD_COLUMN_NAME, NO_SELECTOR
+        
+        selected_comparison_period = selector.get("selected_comparison_period")
+        comparison_period_selector_type = selector.get("comparison_period_selector_type")
+        
+        if selected_comparison_period != NO_SELECTOR:
+            if comparison_period_selector_type == 'Predefined':
+                if selected_comparison_period == COMPARISON_PERIOD_TYPES['ANALOGOUS']['value']:
+                    return datasource.get_comparison_periods_year_analogous(
+                        selected_periods=period_list,
+                        period_column_name=PERIOD_COLUMN_NAME.upper(),
+                        selector_filters=selector_filters
+                    )
+                elif selected_comparison_period == COMPARISON_PERIOD_TYPES['PREVIOUS']['value']:
+                    return datasource.get_comparison_periods_previous(
+                        selected_periods=period_list,
+                        period_column_name=PERIOD_COLUMN_NAME.upper(),
+                        selector_filters=selector_filters
+                    )
+            elif comparison_period_selector_type == 'Custom':
+                return datasource.get_custom_periods_by_selected_value(
+                    selected_period=selected_comparison_period,
+                    period_column_name=PERIOD_COLUMN_NAME.upper(),
+                    selector_filters=selector_filters
+                )
+            else:
+                raise ValueError(f"Unexpected comparison period selector type: {comparison_period_selector_type}")
+        return []
+    
+    def _add_filter_to_query(self, column_name, values, where_conditions, column_mapping):
+        """Add filter to query - extracted from your generate_sql logic"""
+        from sqlalchemy import column, bindparam
+        
+        if values:
+            unique_values = list(set(values))
+            where_conditions.append(
+                column(column_mapping[column_name]).in_(bindparam(column_name.lower(), unique_values, expanding=True))
+            )
+    
+    @property
+    def is_json_dataset(self) -> bool:
+        """Check if the dataset is a JSON dataset"""
+        return self.sql and self.sql.strip().startswith(JSON_PREFIX)
+    
+    @property
+    def json_structure(self) -> dict[str, Any]:
+        """Extract JSON structure from the sql field"""
+        if not self.is_json_dataset:
+            return None
+        try:
+            json_str = self.sql.strip()[len(JSON_PREFIX):].strip()
+            return json.loads(json_str)
+        except:
+            None
 
 
 sa.event.listen(SqlaTable, "before_update", SqlaTable.before_update)

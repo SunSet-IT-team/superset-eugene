@@ -24,13 +24,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import {
-  Metric,
-  css,
-  getExtensionsRegistry,
-  styled,
-  t,
-} from '@superset-ui/core';
+import { css, getExtensionsRegistry, styled, t } from '@superset-ui/core';
 import { useUiConfig } from 'src/components/UiConfigContext';
 import { Tooltip } from 'src/components/Tooltip';
 import { useSelector } from 'react-redux';
@@ -43,7 +37,6 @@ import Icons from 'src/components/Icons';
 import { RootState } from 'src/dashboard/types';
 import { getSliceHeaderTooltip } from 'src/dashboard/util/getSliceHeaderTooltip';
 import { DashboardPageIdContext } from 'src/dashboard/containers/DashboardPage';
-import MetricsDescription from '../MetricsDescription';
 
 const extensionsRegistry = getExtensionsRegistry();
 
@@ -59,7 +52,6 @@ type SliceHeaderProps = SliceHeaderControlsProps & {
   formData: object;
   width: number;
   height: number;
-  metricsUsed: Metric[];
 };
 
 const annotationsLoading = t('Annotation layers are still loading.');
@@ -170,7 +162,6 @@ const SliceHeader: FC<SliceHeaderProps> = ({
   formData,
   width,
   height,
-  metricsUsed,
 }) => {
   const SliceHeaderExtension = extensionsRegistry.get('dashboard.slice.header');
   const uiConfig = useUiConfig();
@@ -269,9 +260,6 @@ const SliceHeader: FC<SliceHeaderProps> = ({
             )}
             {!uiConfig.hideChartControls && (
               <FiltersBadge chartId={slice.slice_id} />
-            )}
-            {!!metricsUsed.length && (
-              <MetricsDescription metrics={metricsUsed} />
             )}
             {!uiConfig.hideChartControls && (
               <SliceHeaderControls

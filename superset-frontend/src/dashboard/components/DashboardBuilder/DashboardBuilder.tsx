@@ -17,6 +17,18 @@
  * under the License.
  */
 /* eslint-env browser */
+import { Global } from '@emotion/react';
+import {
+  addAlpha,
+  css,
+  FeatureFlag,
+  isFeatureEnabled,
+  JsonObject,
+  styled,
+  t,
+  useElementOnScreen,
+  useTheme,
+} from '@superset-ui/core';
 import cx from 'classnames';
 import React, {
   FC,
@@ -26,67 +38,56 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import {
-  addAlpha,
-  css,
-  isFeatureEnabled,
-  FeatureFlag,
-  JsonObject,
-  styled,
-  t,
-  useTheme,
-  useElementOnScreen,
-} from '@superset-ui/core';
-import { Global } from '@emotion/react';
 import { useDispatch, useSelector } from 'react-redux';
+import { EmptyStateBig } from 'src/components/EmptyState';
 import ErrorBoundary from 'src/components/ErrorBoundary';
-import BuilderComponentPane from 'src/dashboard/components/BuilderComponentPane';
-import DashboardHeader from 'src/dashboard/containers/DashboardHeader';
+import BasicErrorAlert from 'src/components/ErrorMessage/BasicErrorAlert';
 import Icons from 'src/components/Icons';
+import Loading from 'src/components/Loading';
+import ResizableSidebar from 'src/components/ResizableSidebar';
+import { useUiConfig } from 'src/components/UiConfigContext';
+import { URL_PARAMS } from 'src/constants';
+import {
+  deleteTopLevelTabs,
+  handleComponentDrop,
+} from 'src/dashboard/actions/dashboardLayout';
+import {
+  setDirectPathToChild,
+  setEditMode,
+} from 'src/dashboard/actions/dashboardState';
+import BuilderComponentPane from 'src/dashboard/components/BuilderComponentPane';
 import IconButton from 'src/dashboard/components/IconButton';
 import { Droppable } from 'src/dashboard/components/dnd/DragDroppable';
-import DashboardComponent from 'src/dashboard/containers/DashboardComponent';
 import WithPopoverMenu from 'src/dashboard/components/menu/WithPopoverMenu';
-import getDirectPathToTabIndex from 'src/dashboard/util/getDirectPathToTabIndex';
-import { URL_PARAMS } from 'src/constants';
-import { getUrlParam } from 'src/utils/urlUtils';
+import FilterBar from 'src/dashboard/components/nativeFilters/FilterBar';
+import {
+  BUILDER_SIDEPANEL_WIDTH,
+  CLOSED_FILTER_BAR_WIDTH,
+  EMPTY_CONTAINER_Z_INDEX,
+  FILTER_BAR_HEADER_HEIGHT,
+  MAIN_HEADER_HEIGHT,
+  OPEN_FILTER_BAR_MAX_WIDTH,
+  OPEN_FILTER_BAR_WIDTH,
+} from 'src/dashboard/constants';
+import DashboardComponent from 'src/dashboard/containers/DashboardComponent';
+import DashboardHeader from 'src/dashboard/containers/DashboardHeader';
 import {
   DashboardLayout,
   FilterBarOrientation,
   RootState,
 } from 'src/dashboard/types';
 import {
-  setDirectPathToChild,
-  setEditMode,
-} from 'src/dashboard/actions/dashboardState';
-import {
-  deleteTopLevelTabs,
-  handleComponentDrop,
-} from 'src/dashboard/actions/dashboardLayout';
-import {
   DASHBOARD_GRID_ID,
   DASHBOARD_ROOT_DEPTH,
   DASHBOARD_ROOT_ID,
   DashboardStandaloneMode,
 } from 'src/dashboard/util/constants';
-import FilterBar from 'src/dashboard/components/nativeFilters/FilterBar';
-import Loading from 'src/components/Loading';
-import { EmptyStateBig } from 'src/components/EmptyState';
-import { useUiConfig } from 'src/components/UiConfigContext';
-import ResizableSidebar from 'src/components/ResizableSidebar';
-import {
-  BUILDER_SIDEPANEL_WIDTH,
-  CLOSED_FILTER_BAR_WIDTH,
-  FILTER_BAR_HEADER_HEIGHT,
-  MAIN_HEADER_HEIGHT,
-  OPEN_FILTER_BAR_MAX_WIDTH,
-  OPEN_FILTER_BAR_WIDTH,
-  EMPTY_CONTAINER_Z_INDEX,
-} from 'src/dashboard/constants';
-import { getRootLevelTabsComponent, shouldFocusTabs } from './utils';
+import getDirectPathToTabIndex from 'src/dashboard/util/getDirectPathToTabIndex';
+import { getUrlParam } from 'src/utils/urlUtils';
 import DashboardContainer from './DashboardContainer';
-import { useNativeFilters } from './state';
 import DashboardWrapper from './DashboardWrapper';
+import { useNativeFilters } from './state';
+import { getRootLevelTabsComponent, shouldFocusTabs } from './utils';
 
 type DashboardBuilderProps = {};
 
@@ -471,8 +472,15 @@ const DashboardBuilder: FC<DashboardBuilderProps> = () => {
     showDashboard,
     dashboardFiltersOpen,
     toggleDashboardFiltersOpen,
+    dashboardSelectorsOpen,
+    toggleDashboardSelectorsOpen,
+    dashboardCustomizerOpen,
+    toggleDashboardCustomizerOpen,
     nativeFiltersEnabled,
   } = useNativeFilters();
+
+  const isPanelOpened =
+    dashboardFiltersOpen || dashboardSelectorsOpen || dashboardCustomizerOpen;
 
   const [containerRef, isSticky] = useElementOnScreen<HTMLDivElement>({
     threshold: [1],
@@ -486,24 +494,19 @@ const DashboardBuilder: FC<DashboardBuilderProps> = () => {
     (isSticky || standaloneMode ? 0 : MAIN_HEADER_HEIGHT);
 
   const filterBarHeight = `calc(100vh - ${offset}px)`;
-  const filterBarOffset = dashboardFiltersOpen ? 0 : barTopOffset + 20;
+  const filterBarOffset = isPanelOpened ? 0 : barTopOffset + 20;
 
   const draggableStyle = useMemo(
     () => ({
       marginLeft:
-        dashboardFiltersOpen ||
+        isPanelOpened ||
         editMode ||
         !nativeFiltersEnabled ||
         filterBarOrientation === FilterBarOrientation.Horizontal
           ? 0
           : -32,
     }),
-    [
-      dashboardFiltersOpen,
-      editMode,
-      filterBarOrientation,
-      nativeFiltersEnabled,
-    ],
+    [isPanelOpened, editMode, filterBarOrientation, nativeFiltersEnabled],
   );
 
   // If a new tab was added, update the directPathToChild to reflect it
@@ -579,7 +582,7 @@ const DashboardBuilder: FC<DashboardBuilderProps> = () => {
   );
 
   const dashboardContentMarginLeft =
-    !dashboardFiltersOpen &&
+    !isPanelOpened &&
     !editMode &&
     nativeFiltersEnabled &&
     filterBarOrientation !== FilterBarOrientation.Horizontal
@@ -593,13 +596,13 @@ const DashboardBuilder: FC<DashboardBuilderProps> = () => {
           <>
             <ResizableSidebar
               id={`dashboard:${dashboardId}`}
-              enable={dashboardFiltersOpen}
+              enable={isPanelOpened}
               minWidth={OPEN_FILTER_BAR_WIDTH}
               maxWidth={OPEN_FILTER_BAR_MAX_WIDTH}
               initialWidth={OPEN_FILTER_BAR_WIDTH}
             >
               {adjustedWidth => {
-                const filterBarWidth = dashboardFiltersOpen
+                const filterBarWidth = isPanelOpened
                   ? adjustedWidth
                   : CLOSED_FILTER_BAR_WIDTH;
                 return (
@@ -614,7 +617,11 @@ const DashboardBuilder: FC<DashboardBuilderProps> = () => {
                           orientation={FilterBarOrientation.Vertical}
                           verticalConfig={{
                             filtersOpen: dashboardFiltersOpen,
+                            selectorsOpen: dashboardSelectorsOpen,
+                            customizerOpen: dashboardCustomizerOpen,
                             toggleFiltersBar: toggleDashboardFiltersOpen,
+                            toggleSelectorsBar: toggleDashboardSelectorsOpen,
+                            toggleCustomizerBar: toggleDashboardCustomizerOpen,
                             width: filterBarWidth,
                             height: filterBarHeight,
                             offset: filterBarOffset,

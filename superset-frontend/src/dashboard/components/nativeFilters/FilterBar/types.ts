@@ -17,17 +17,20 @@
  * under the License.
  */
 
-import { ReactNode } from 'react';
 import {
   DataMask,
   DataMaskStateWithId,
   Divider,
   Filter,
 } from '@superset-ui/core';
+import { ReactNode } from 'react';
 import { FilterBarOrientation } from 'src/dashboard/types';
+import { DataNode } from 'antd/es/tree';
 
 interface CommonFiltersBarProps {
-  actions: ReactNode;
+  filterActions: ReactNode;
+  selectorActions: ReactNode;
+  customizeActions: ReactNode;
   canEdit: boolean;
   dataMaskSelected: DataMaskStateWithId;
   filterValues: (Filter | Divider)[];
@@ -40,10 +43,16 @@ interface CommonFiltersBarProps {
 
 interface VerticalBarConfig {
   filtersOpen: boolean;
+  selectorsOpen: boolean;
+  customizerOpen: boolean;
   height: number | string;
   offset: number;
   toggleFiltersBar: any;
+  toggleSelectorsBar: any;
+  toggleCustomizerBar: any;
   width: number;
+  selectors: any;
+  updateSelected: () => void;
 }
 
 export interface FiltersBarProps {
@@ -59,3 +68,77 @@ export type HorizontalBarProps = CommonFiltersBarProps & {
 export type VerticalBarProps = Omit<FiltersBarProps, 'orientation'> &
   CommonFiltersBarProps &
   VerticalBarConfig;
+
+export type AvailableMarketsType = {
+  MKT_LEVEL: number;
+  MKT_NAME: string;
+  MKT_PARENT_TAG: string;
+  MKT_TAG: string;
+};
+
+export type AvailableProductsType = {
+  PROD_LEVEL: number;
+  PROD_LEVEL_NAME: string;
+  PROD_PARENT_TAG: string;
+  PROD_TAG: string;
+  PROD_NAME: string;
+};
+
+export type MarketHierarchyType = DataNode & {
+  children: Array<MarketHierarchyType>;
+};
+
+export type AvailablePeriodsType = {
+  available: boolean;
+  value: string;
+  label: string;
+};
+
+export type MarketType = AvailableMarketsType & {
+  value: string;
+  label: string;
+};
+
+type PeriodSelector = {
+  label_selector: string;
+  avaliable_periods?: AvailablePeriodsType[];
+  selected_period: string | null;
+  type_selector: 'Period';
+  selected?: boolean;
+};
+
+type MarketSelector = {
+  label_selector: string;
+  available_markets?: AvailableMarketsType[];
+  selected_markets?: AvailableMarketsType[];
+  type_selector: 'Market';
+  selected?: boolean;
+  max_selection?: number;
+};
+
+type ProductSelector = {
+  label_selector: string;
+  available_products?: AvailableProductsType[];
+  selected_products?: AvailableProductsType[];
+  type_selector: 'Product';
+  selected?: boolean;
+  max_selection: number;
+};
+
+type FactsSelector = {
+  label_selector: string;
+  selected_facts?: AvailableProductsType[];
+  type_selector: 'Facts';
+  selected?: boolean;
+  datasource_name: string;
+  datasource_type: string;
+  datasource_id: number | string;
+  column_name: string;
+};
+
+export type SelectorsApiType = (
+  | PeriodSelector
+  | MarketSelector
+  | ProductSelector
+  | FactsSelector
+)[];

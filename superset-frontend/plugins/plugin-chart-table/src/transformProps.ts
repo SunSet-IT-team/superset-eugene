@@ -16,19 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import memoizeOne from 'memoize-one';
 import {
   CurrencyFormatter,
   DataRecord,
   extractTimegrain,
+  findInCols,
   GenericDataType,
   getMetricLabel,
   getNumberFormatter,
   getTimeFormatter,
   getTimeFormatterForGranularity,
+  getXAxisCategoryFormatter,
   NumberFormats,
   QueryMode,
   smartDateFormatter,
+  sortByOrder,
   TimeFormats,
   TimeFormatter,
 } from '@superset-ui/core';
@@ -36,8 +38,6 @@ import {
   ColorFormatters,
   getColorFormatters,
 } from '@superset-ui/chart-controls';
-
-import isEqualColumns from './utils/isEqualColumns';
 import DateWithFormatter from './utils/DateWithFormatter';
 import {
   DataColumnMeta,
@@ -47,6 +47,10 @@ import {
 
 const { PERCENT_3_POINT } = NumberFormats;
 const { DATABASE_DATETIME } = TimeFormats;
+const PROD_NAME = 'fulldesc';
+// const PROD_NAME = 'prod_full_name';
+// const PROD_NAME = 'contact_first_name';
+const MKT_NAME = 'mkt_name';
 
 function isNumeric(key: string, data: DataRecord[] = []) {
   return data.every(
@@ -54,7 +58,7 @@ function isNumeric(key: string, data: DataRecord[] = []) {
   );
 }
 
-const processDataRecords = memoizeOne(function processDataRecords(
+const processDataRecords = function processDataRecords(
   data: DataRecord[] | undefined,
   columns: DataColumnMeta[],
 ) {
@@ -79,10 +83,11 @@ const processDataRecords = memoizeOne(function processDataRecords(
     });
   }
   return data;
-});
+};
 
-const processColumns = memoizeOne(function processColumns(
+const processColumns = function processColumns(
   props: TableChartProps,
+  chartLevel: any,
 ) {
   const {
     datasource: { columnFormats, currencyFormats, verboseMap },
@@ -152,7 +157,7 @@ const processColumns = memoizeOne(function processColumns(
             formatter = getTimeFormatter(DATABASE_DATETIME);
           } else {
             // if no column-specific format, print cell as is
-            formatter = String;
+            formatter = getXAxisCategoryFormatter(true, chartLevel);
           }
         } else if (timeFormat) {
           formatter = getTimeFormatter(timeFormat);
@@ -168,23 +173,27 @@ const processColumns = memoizeOne(function processColumns(
             })
           : getNumberFormatter(numberFormat);
       }
+
       return {
         key,
-        label,
+        label: getXAxisCategoryFormatter(true, chartLevel)
+          ? getXAxisCategoryFormatter(true, chartLevel)?.(label)
+          : label,
         dataType,
         isNumeric: dataType === GenericDataType.Numeric,
         isMetric,
         isPercentMetric,
-        formatter,
+        formatter: formatter || getXAxisCategoryFormatter(true, chartLevel),
         config,
       };
     });
-  return [metrics, percentMetrics, columns] as [
+  return [metrics, percentMetrics, columns, chartLevel] as [
     typeof metrics,
     typeof percentMetrics,
     typeof columns,
+    typeof chartLevel,
   ];
-}, isEqualColumns);
+};
 
 /**
  * Automatically set page size based on number of cells.
@@ -223,6 +232,9 @@ const transformProps = (
       onContextMenu,
     },
     emitCrossFilters,
+    selectedSelectors = {
+      genre: ['Misc|<--|some text', 'Action', 'Shooter', 'Sports', 'Racing'],
+    },
   } = chartProps;
 
   const {
@@ -238,10 +250,20 @@ const transformProps = (
     show_totals: showTotals,
     conditional_formatting: conditionalFormatting,
     allow_rearrange_columns: allowRearrangeColumns,
+    groupby = [],
+    all_columns: allColumns = [],
   } = formData;
+
+  const { chartLevel } = formData.customizeOptions?.lastNOptions || {
+    chartLevel: undefined,
+  };
+
   const timeGrain = extractTimegrain(formData);
 
-  const [metrics, percentMetrics, columns] = processColumns(chartProps);
+  const [metrics, percentMetrics, columns] = processColumns(
+    chartProps,
+    chartLevel,
+  );
 
   let baseQuery;
   let countQuery;
@@ -254,13 +276,20 @@ const transformProps = (
     [baseQuery, totalQuery] = queriesData;
     rowCount = baseQuery?.rowcount ?? 0;
   }
-  const data = processDataRecords(baseQuery?.data, columns);
+  let data = processDataRecords(baseQuery?.data, columns);
   const totals =
     showTotals && queryMode === QueryMode.Aggregate
       ? totalQuery?.data[0]
       : undefined;
   const columnColorFormatters =
     getColorFormatters(conditionalFormatting, data) ?? defaultColorFormatters;
+
+  data = formData.timeseries_limit_metric
+    ? data
+    : findInCols(data, selectedSelectors);
+  if (sortDesc) {
+    data = data.reverse();
+  }
 
   return {
     height,

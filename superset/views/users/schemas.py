@@ -14,7 +14,7 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-from marshmallow import Schema
+from marshmallow import Schema, fields
 from marshmallow.fields import Boolean, Integer, String
 
 
@@ -26,3 +26,4 @@ class UserResponseSchema(Schema):
     last_name = String()
     is_active = Boolean()
     is_anonymous = Boolean()
+    is_external = Boolean()

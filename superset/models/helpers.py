@@ -27,6 +27,7 @@ from collections.abc import Hashable
 from datetime import datetime, timedelta
 from json.decoder import JSONDecodeError
 from typing import Any, cast, NamedTuple, Optional, TYPE_CHECKING, Union
+from dateutil.relativedelta import relativedelta
 
 import dateutil.parser
 import humanize
@@ -43,11 +44,12 @@ from flask_appbuilder.models.mixins import AuditMixin
 from flask_appbuilder.security.sqla.models import User
 from flask_babel import lazy_gettext as _
 from jinja2.exceptions import TemplateError
-from sqlalchemy import and_, Column, or_, UniqueConstraint
+from sqlalchemy import and_, Column, or_, UniqueConstraint, column
 from sqlalchemy.exc import MultipleResultsFound
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Mapper, validates
-from sqlalchemy.sql.elements import ColumnElement, literal_column, TextClause
+from sqlalchemy.sql.elements import ColumnElement, literal_column, TextClause, \
+    ColumnClause
 from sqlalchemy.sql.expression import Label, Select, TextAsFrom
 from sqlalchemy.sql.selectable import Alias, TableClause
 from sqlalchemy_utils import UUIDType
@@ -56,7 +58,34 @@ from superset import app, db, is_feature_enabled, security_manager
 from superset.advanced_data_type.types import AdvancedDataTypeResponse
 from superset.common.db_query_status import QueryStatus
 from superset.common.utils.time_range_utils import get_since_until_from_time_range
-from superset.constants import EMPTY_STRING, NULL_STRING
+from superset.constants import (
+    EMPTY_STRING,
+    NULL_STRING,
+    PERIOD_DEFINITIONS,
+    NO_SELECTOR,
+    SELECTOR_COLUMNS,
+    PERIOD_MAPPING_SELECTOR,
+    COMPARISON_PERIOD_DEFINITIONS_M,
+    COMPARISON_PERIOD_DEFINITIONS_W,
+    COMPARISON_PERIOD_TYPES,
+    PERIOD_COLUMN_NAME,
+    MARKET_COLUMN,
+    PRODUCT_COLUMN,
+    SQL_RULE_COLUMN,
+    ID_COLUMN,
+    TARGET_COLUMN_FOR_RULE,
+    MKT_NAME_COLUMN,
+    PROD_NAME_COLUMN,
+    PROD_LEVEL_NAME_COLUMN,
+    MKT_DISPLAY_ORDER_COLUMN,
+    PROD_DISPLAY_ORDER_COLUMN,
+    ANALOGOUS_PERIOD_MONTHS,
+    ANALOGOUS_PERIOD_WEEKS,
+    PER_TAG_COLUMN,
+    MONTH_MAP,
+    FACTS_COLUMNS_MAPPING, TARGET_DATASOURCE_COLUMNS
+)
+from superset.utils.core import apply_max_row_limit, DatasourceType
 from superset.db_engine_specs.base import TimestampExpression
 from superset.errors import ErrorLevel, SupersetError, SupersetErrorType
 from superset.exceptions import (
@@ -87,17 +116,19 @@ from superset.utils import core as utils
 from superset.utils.core import (
     GenericDataType,
     get_column_name,
+    get_non_base_axis_columns,
     get_user_id,
     is_adhoc_column,
     MediumText,
     remove_duplicates,
+    flatten_and_unique,
 )
 from superset.utils.dates import datetime_to_epoch
 
 if TYPE_CHECKING:
     from superset.connectors.sqla.models import SqlMetric, TableColumn
     from superset.db_engine_specs import BaseEngineSpec
-    from superset.models.core import Database
+    from superset.models.core import Database, Engine
 
 
 config = app.config
@@ -1339,6 +1370,760 @@ class ExploreMixin:  # pylint: disable=too-many-public-methods
             )
         return and_(*l)
 
+    def process_period_data(
+            self,
+            period_data: list[str],
+            period_type: str
+    ) -> list[utils.SelectorOptions]:
+        """
+        Process a column containing period values and determine available periods.
+
+        :param period_column: The name of the column containing period values.
+        :param data: DataFrame containing the period column.
+        :param period_type: The type of period ('W' for weekly, 'R' for monthly).
+        :return: A list of SelectorOptions with available periods.
+        """
+        # Extract and sort unique periods
+        periods = sorted(set(filter(None, map(self.parse_timestamp, period_data))))
+
+        if not periods:
+            return []
+
+        # Determine the earliest and latest periods
+        earliest_period = min(periods)
+        latest_period = max(periods)
+
+        options = self.compute_period_availability(
+            earliest_period=earliest_period,
+            latest_period=latest_period,
+            period_type=period_type
+        )
+        return [utils.SelectorOptions(**opt) for opt in options]
+
+    def compute_period_availability(
+            self,
+            earliest_period: datetime,
+            latest_period: datetime,
+            period_type: str
+    ) -> list[dict]:
+        """
+        Compute available period options based on earliest and latest periods.
+
+        :param earliest_period: The earliest available period.
+        :param latest_period: The latest available period.
+        :param period_type: The type of period ('W' for weekly, 'R' for monthly).
+        :return: A list of dictionaries with period options and their availability.
+        :raises ValueError: If period_type is invalid.
+        """
+
+        if period_type not in ["W", "R"]:
+            raise ValueError(f"Invalid period_type: {period_type}. Must be 'W' or 'R'.")
+        
+        unit = "weeks" if period_type == "W" else "months" # единицы измерения периода
+        options = []
+        for key, definition in PERIOD_DEFINITIONS.items():
+
+            if definition["unit"] != unit:
+                continue # например, если period_type == "R", то пропускаем все, кроме unit = "months"
+
+            offset = definition["offset"] # сколько месяцев/недель отсчитывать от последнего периода
+            
+            if offset is not None:
+                cutoff_date = latest_period - relativedelta(**{unit: offset})
+            else:  # YTD
+                cutoff_date = datetime(latest_period.year, 1, 1)
+
+            available = earliest_period <= cutoff_date
+            options.append({
+                "value": key,
+                "label": definition["label"],
+                "available": available
+            })
+
+        return options
+
+    def convert_period(self, period: str) -> str:
+        """
+        Convert period from 'X YYYY MM' format to 'YYYYXMM' format
+        
+        Examples:
+        'M 2024 09' -> '2024M09'
+        'W 2024 02' -> '2024W02'
+        
+        Args:
+            period (str): Input period string
+        
+        Returns:
+            str: Converted period string
+        """
+        # Split the period string
+        parts = period.split()
+        
+        # Ensure the input is in the expected format
+        if len(parts) != 3:
+            raise ValueError(f"Invalid period format: '{period}'. Expected format: 'X YYYY WW' (e.g., 'W 2023 01')")
+        
+        # Rearrange to desired format
+        return f"{parts[1]}{parts[0]}{parts[2]}"
+    
+    def generate_period_selector(
+        self,
+        column_names: list[str],
+        limit: int = None,
+        denormalize_columns: bool = False,
+        rls_restriction: dict = None,
+    ) -> utils.Selector:
+        """
+        Generate a selector based on periods from a specified column.
+
+        :param period_column: The name of the column containing period values.
+        :param column_names: List of column names to fetch.
+        :param rls_restriction: Dictionary containing rls_restriction.
+        :return: A Selector object.
+        """
+        
+        df = self.data_for_columns_upper(
+            column_names=column_names,
+            limit=limit,
+            denormalize_columns=denormalize_columns,
+        )
+
+        if df is None or df.empty:
+            raise ValueError(f"No data returned for columns: {column_names}")
+
+        df_filtered = df
+        
+        # ограничение доступа к данным селекторов по order_id при наличии rls_restriction
+        if rls_restriction and isinstance(rls_restriction, dict):
+            try:
+                # Получаем значения для ограничения доступа к данным селекторов по order_id
+                rls_column = rls_restriction["column"]
+                rls_value = rls_restriction["value"]
+
+                if rls_column and rls_value:
+                    # Проверяем, есть ли колонка order_id в датасете
+                    if rls_column.upper() not in df.columns:
+                        raise ValueError(f"Column {rls_column.upper()} not found in dataset for Period selector")
+                    
+                    # есть ли значения order_id в списке ордеров датасета
+                    valid_values = df[rls_column.upper()].drop_duplicates().tolist()
+                    if rls_value not in valid_values:
+                        raise ValueError(f"Value '{rls_value}' not found in column {rls_column.upper()} of a Period dataset. Valid values are: {valid_values}")
+        
+                    # Фильтруем данные по order_id
+                    df_filtered = df[df[rls_column.upper()] == rls_value]
+
+            except (IndexError, KeyError, TypeError) as e:
+                raise ValueError(f"Invalid RLS configuration: {str(e)}")
+
+        # Получаем тип периода из первой строки
+        try:
+            period_type = df_filtered[PER_TAG_COLUMN].iloc[0][0]  # например, 'W' из 'W2020015'
+        except (IndexError, KeyError, TypeError) as e:
+            raise ValueError(f"Unable to determine period type from column {PER_TAG_COLUMN}: {e}")
+        
+        options = self.process_period_data(
+            df_filtered[PERIOD_COLUMN_NAME.upper()].to_list(),
+            period_type=period_type
+        )
+
+        selected_period = "last_week" if period_type == "W" else "last_month"
+
+        # sort periods by date in ascending order
+        df_filtered["parsed_date"] = df_filtered[PERIOD_COLUMN_NAME.upper()].apply(self.parse_timestamp)
+        df_filtered = df_filtered.sort_values(by="parsed_date")
+
+        periods = df_filtered[PERIOD_COLUMN_NAME.upper()].dropna().unique().tolist()
+
+        # приводим периоды к формату 'YYYYXMM'
+        converted_periods = [self.convert_period(period) for period in periods]
+
+        return utils.Selector(
+            type_selector="Period",
+            label_selector="Период",
+            selected_period=selected_period,
+            avaliable_periods=options or [],
+            period_type=period_type,
+            custom_periods=converted_periods,
+            rls_restriction=rls_restriction # на время, чтобы понимать, какой одер принимается из сессии
+        )
+
+    def data_for_columns_upper(
+        self,
+        column_names: list[str],
+        limit: int = None,
+        denormalize_columns: bool = False,
+        filters: dict = None,
+        order_by: str = None,            
+        order_ascending: bool = True,
+    ) -> pd.DataFrame:
+        """
+        Fetch values for multiple columns and return a DataFrame.
+
+        :param column_names: List of column names to fetch.
+        :param limit: Maximum number of rows to fetch.
+        :param denormalize_columns: Whether to denormalize column names.
+        :param filters: dict {column: value} — фильтры для выборки.
+        :param order_by: Имя столбца для сортировки.
+        :param order_ascending: True — сортировка по возрастанию, False — по убыванию.
+        :return: A DataFrame with values for the specified columns.
+        """
+        db_dialect = self.database.get_dialect()
+
+        # Denormalize column names if required
+        column_names_ = [
+            (
+                self.database.db_engine_spec.denormalize_name(db_dialect, col)
+                if denormalize_columns else col
+            ).upper()
+            for col in column_names
+        ]
+
+        # Build a map of available columns (uppercase for consistency)
+        cols = {col.column_name.upper(): col for col in self.columns}
+
+        # Validate and retrieve the target columns
+        target_cols = [cols[col_name] for col_name in column_names_ if col_name in cols]
+        if len(target_cols) != len(column_names):
+            missing = set(column_names) - set(cols.keys())
+            raise ValueError(f"Columns not found in dataset: {missing}")
+
+        tp = self.get_template_processor()
+        tbl, cte = self.get_from_clause(tp)
+
+        # Build the SQLAlchemy query
+        qry = (
+            sa.select([
+                target_col.get_sqla_col(template_processor=tp).label(col_name)
+                for target_col, col_name in zip(target_cols, column_names_)
+            ])
+            .select_from(tbl)
+        )
+        if filters:
+            for col, val in filters.items():
+                colname = column(col)
+                if isinstance(val, (list, tuple, set)):
+                    qry = qry.where(colname.in_(val))
+                else:
+                    qry = qry.where(colname == val)
+
+        if order_by:
+            colname = column(order_by)
+            if order_ascending:
+                qry = qry.order_by(colname.asc())
+            else:
+                qry = qry.order_by(colname.desc())
+
+        if limit:
+            qry = qry.limit(limit)
+
+        if self.fetch_values_predicate:
+            qry = qry.where(self.get_fetch_values_predicate(template_processor=tp))
+
+        with self.database.get_sqla_engine_with_context() as engine:
+            sql = str(qry.compile(engine, compile_kwargs={"literal_binds": True}))
+            sql = self._apply_cte(sql, cte)
+            sql = self.mutate_query_from_config(sql)
+            # print(sql)
+            # Handle dialect-specific SQL adjustments
+            if engine.dialect.identifier_preparer._double_percents:
+                sql = sql.replace("%%", "%")
+
+            # Execute the query and fetch the results
+            df = pd.read_sql_query(sql=sql, con=engine)
+
+            # Replace NaN with None to ensure JSON serializability
+            df = df.replace({np.nan: None})
+
+            return df
+
+    def generate_comparison_period_selector(
+        self,
+        column_names: list[str],
+        limit: int = None,
+        denormalize_columns: bool = False,
+        rls_restriction: dict = None,
+    ) -> utils.Selector:
+        """
+        Generate a selector based on market data from specified columns.
+
+        :param column_names: List of column names to fetch.
+        :param limit: Maximum number of rows to fetch.
+        :param denormalize_columns: Whether to denormalize column names.
+        :param rls_restriction: Dictionary containing rls_restriction.
+        :return: A Selector object.
+        """
+        df = self.data_for_columns_upper(
+            column_names=column_names,
+            limit=limit,
+            denormalize_columns=denormalize_columns
+        )
+
+        if df is None or df.empty: #comp_p change
+            raise ValueError(f"No data returned for columns: {column_names}")
+        
+        df_filtered = df
+
+        if rls_restriction and isinstance(rls_restriction, dict):
+            try:
+                # Получаем значения для ограничения доступа к данным селекторов по order_id
+                rls_column = rls_restriction.get("column")
+                rls_value = rls_restriction.get("value")
+
+                if rls_column and rls_value:
+                    # Проверяем, есть ли значение в списке уникальных значений
+                    # есть ли колонка order_id в датасете
+                    if rls_column.upper() not in df.columns:
+                        raise ValueError(f"Column {rls_column.upper()} not found in dataset for Comparison_period selector")
+                    
+                    # есть ли значения order_id в списке ордеров датасета
+                    valid_values = df[rls_column.upper()].drop_duplicates().tolist()
+                    
+                    if rls_value not in valid_values:
+                        raise ValueError(f"Value '{rls_value}' not found in column {rls_column.upper()} of a Comparison_period dataset. Valid values are: {valid_values}")
+
+                    # Фильтруем данные по order_id
+                    df_filtered = df[df[rls_column.upper()] == rls_value]
+
+            except (IndexError, KeyError, TypeError) as e:
+                raise ValueError(f"Invalid RLS configuration: {str(e)}")
+       
+        # Получаем тип периода из первой строки
+        try: #comp_p change
+            period_type = df_filtered[PER_TAG_COLUMN].iloc[0][0]  # например, 'W' из 'W2020015'
+        except (IndexError, KeyError, TypeError) as e:
+            raise ValueError(f"Unable to determine period type from column {PER_TAG_COLUMN}: {e}")
+        
+        if period_type == "W":
+            ANALOGOUS_PERIOD = ANALOGOUS_PERIOD_WEEKS
+            COMPARISON_PERIOD_DEFINITIONS = COMPARISON_PERIOD_DEFINITIONS_W
+            time_unit = "weeks"
+        else:
+            ANALOGOUS_PERIOD = ANALOGOUS_PERIOD_MONTHS
+            COMPARISON_PERIOD_DEFINITIONS = COMPARISON_PERIOD_DEFINITIONS_M
+            time_unit = "months"
+        
+        # список дат в формате: [Timestamp('2023-10-01 00:00:00'), Timestamp('2023-11-01 00:00:00')...]
+        periods = sorted(set(filter(None, map(self.parse_timestamp, df_filtered[PERIOD_COLUMN_NAME.upper()].to_list()))))
+
+        # минимальная и максимальная даты в списке
+        earliest_period = min(periods)
+        latest_period = max(periods)
+
+        # словарь с датами для проверки
+        date_checks = {}
+        for period_key, offset in COMPARISON_PERIOD_DEFINITIONS.items():
+            if period_key != "YTD":
+                # определяем аргументы отступа для расчета начала периода для relativedelta
+                kwargs_base = {time_unit: offset}
+                kwargs_previous = {time_unit: offset + (offset + 1)}
+                kwargs_analogous = {time_unit: offset + ANALOGOUS_PERIOD}
+
+                date_checks[offset] = {
+                    'base': latest_period - relativedelta(**kwargs_base), # начало периода
+                    'previous': latest_period - relativedelta(**kwargs_previous), # начало предыдущего периода
+                    'analogous': latest_period - relativedelta(**kwargs_analogous) # начало аналогичного периода
+                }
+            else:
+                # вычисляем начало года
+                ytd_start = datetime(latest_period.year, 1, 1)
+                
+                if period_type == "W":
+                    time_passed = (latest_period - ytd_start).days // 7 # сколько недель прошло в текущем году
+                    kwargs_previous = {"weeks": time_passed + 1} # начало предыдущего периода
+                    kwargs_analogous = {"weeks": ANALOGOUS_PERIOD} # начало аналогичного периода
+                else:
+                    time_passed = latest_period.month - ytd_start.month # сколько месяцев прошло в текущем году
+                    kwargs_previous = {"months": time_passed + 1} # начало предыдущего периода
+                    kwargs_analogous = {"months": ANALOGOUS_PERIOD} # начало аналогичного периода
+                
+                # вычисляем начало предыдущего периода
+                previous_start = ytd_start - relativedelta(**kwargs_previous)
+                
+                # записываем в словарь
+                date_checks["YTD"] = {
+                    'base': ytd_start, # начало текущего года
+                    'previous': previous_start, # начало предыдущего периода
+                    'analogous': ytd_start - relativedelta(**kwargs_analogous) # начало аналогичного периода
+                }
+                
+
+        avaliable_comparison_period = []
+        for key, offset in COMPARISON_PERIOD_DEFINITIONS.items():
+            if key != "YTD":
+                dates = date_checks[offset]
+            else:
+                dates = date_checks["YTD"]
+                
+                if period_type == "W":
+                    key = f'{key}_week'
+                else:
+                    key = f'{key}_month'
+                
+            # если "Период" больше или равен минимальной дате, то добавляем в список
+            if dates['base'] >= earliest_period:
+                avaliable_comparison_period.append({
+                    "period": key,
+                    "comparisons": [
+                        {
+                            **COMPARISON_PERIOD_TYPES['ANALOGOUS'],
+                            "available": earliest_period <= dates['analogous']
+                        },
+                        {
+                            **COMPARISON_PERIOD_TYPES['PREVIOUS'],
+                            "available": earliest_period <= dates['previous']
+                        }
+                    ]
+                })
+
+        return utils.Selector(
+            type_selector="Comparison_period",
+            label_selector="Период Сравнения",
+            selected_comparison_period = "analogous_period_last_year",
+            available_comparison_period=avaliable_comparison_period
+        )
+
+    def generate_market_selector(
+        self,
+        column_names: list[str],
+        limit: int = None,
+        denormalize_columns: bool = False,
+        rls_restriction: dict = None,
+    ) -> utils.Selector:
+        """
+        Generate a data for two market selectors based on market data from specified columns.
+
+        :param column_names: List of column names to fetch.
+        :param limit: Maximum number of rows to fetch.
+        :param denormalize_columns: Whether to denormalize column names.
+        :param rls_restriction: Dictionary containing rls_restriction.
+        :return: A Selector object.
+        """
+
+        # Получаем данные для заданных колонок и сортируем по display_order
+        df_market = self.data_for_columns_upper(
+            column_names=column_names,
+            limit=limit,
+            denormalize_columns=denormalize_columns,
+        )
+
+        df_market_filtered = df_market
+
+        if rls_restriction and isinstance(rls_restriction, dict):
+            try:
+                rls_column = rls_restriction.get("column")
+                rls_value = rls_restriction.get("value")
+
+                if rls_column and rls_value:
+                    # есть ли колонка order_id в датасете
+                    if rls_column.upper() not in df_market.columns:
+                        raise ValueError(f"Column {rls_column.upper()} not found in dataset for Market selector")
+                    
+                    # есть ли значения order_id в списке ордеров датасета
+                    valid_values = df_market[rls_column.upper()].drop_duplicates().tolist()
+                    
+                    if rls_value not in valid_values:
+                        raise ValueError(f"Value '{rls_value}' not found in column {rls_column.upper()} of a Market dataset. Valid values are: {valid_values}")
+
+                    # Фильтруем данные по order_id
+                    df_market_filtered = df_market[df_market[rls_column.upper()] == rls_value]
+
+            except (IndexError, KeyError, TypeError) as e:
+                raise ValueError(f"Invalid RLS configuration: {str(e)}")
+        
+        OUTPUT_COLUMNS = [col for col in df_market_filtered.columns if col != MKT_DISPLAY_ORDER_COLUMN and col != rls_column.upper()]
+
+        # Удаляем дубликаты по всем колонкам Рынка, кроме mkt_name
+        df_market_no_dupes = df_market_filtered.drop_duplicates(
+            subset=[col for col in df_market_filtered.columns if col != MKT_NAME_COLUMN and col != rls_column.upper()]
+        )
+
+        # Выбираем строки с 3 наименьшими display_order
+        nsmallest = df_market_no_dupes.nsmallest(3, MKT_DISPLAY_ORDER_COLUMN)
+
+        # Выбираем строку со вторым и третьим наименьшими display_order
+        selected_rows = nsmallest.iloc[1:3]
+
+        # Выбираем строку с наименьшим display_order
+        selected_row_100 = nsmallest.iloc[0]
+
+        # Преобразовываем в список словарей
+        selected_markets = selected_rows[OUTPUT_COLUMNS].to_dict(orient='records')
+
+        selected_markets_100 = selected_row_100[OUTPUT_COLUMNS].to_dict()
+        
+        available_markets = df_market_no_dupes[OUTPUT_COLUMNS].to_dict(orient='records')
+
+        # Формируем селекторы
+        market_selector = utils.Selector(
+            type_selector="Market",
+            label_selector="Рынок",
+            selected_markets=selected_markets,
+            available_markets=available_markets,
+        )
+        
+        market_100_selector = utils.Selector(
+            type_selector="100_Market",
+            label_selector="100% Рынок",
+            selected_markets_100=selected_markets_100,
+            available_markets_100=available_markets,
+        )
+
+        return market_selector, market_100_selector
+    
+    def generate_raiting_product(
+        self,
+        column_names: list[str],
+        count_product: int,
+        fact: str,                        # 'U' | 'E' | 'V' ('box' | 'money' | 'kgl')
+        indicator: str,                   # 'asc' | 'desc' ('best' | 'worst')
+        selected_market: str,
+        selected_period: list[str],
+        selected_product_hierarchy: str,
+        rls_restriction: dict = None,
+        denormalize_columns: bool = False,
+    ) -> list[dict]:
+        """
+        Generate product rating based on filters and sorting.
+
+        :param column_names: List of column names to fetch.
+        :param count_product: Number of products to return.
+        :param fact: Metric by which to sort ('U', 'E', 'V').
+        :param indicator: Sort order ('best'|'worst').
+        :param selected_market: mkt_tag value to filter.
+        :param selected_period: per_tag value to filter.
+        :param selected_product_hierarchy: prod_tag value to filter.
+        :param rls_restriction: Dictionary with RLS restriction.
+        :param denormalize_columns: Whether to denormalize column names.
+        :return: List of dicts for top products.
+        """
+
+        # Получение колонки факта
+        fact_col = FACTS_COLUMNS_MAPPING[fact]
+
+        # # Формирование колонк для результата
+        # column_names_new = ["PROD_TAG", "FULLDESC", fact_col]
+
+        # Фильтры
+        filters = {}
+        if rls_restriction and isinstance(rls_restriction, dict):
+            rls_column = rls_restriction.get("column")
+            rls_value = rls_restriction.get("value")
+            if rls_column and rls_value:
+                filters[rls_column] = rls_value
+        filters["per_tag"] = selected_period if selected_period else []
+        filters["mkt_tag"] = selected_market if selected_market else []
+        filters["prod_tag"] = selected_product_hierarchy \
+            if selected_product_hierarchy else []
+
+        # Сортировка
+        ascending = indicator == "worst"
+
+        tp = self.get_template_processor()
+        tbl, cte = self.get_from_clause(tp)
+        res_columns: list = [
+            column(col)
+            for col in TARGET_DATASOURCE_COLUMNS['TARGET']
+        ]
+        filter_columns: list  = [
+            column(col)
+            for col in TARGET_DATASOURCE_COLUMNS['FILTERS']
+        ]
+        agg_columns: list = [
+            column(col)
+            for col in TARGET_DATASOURCE_COLUMNS['RATED']
+            if col == fact_col
+        ]
+        if len(tbl.c) == 0:
+            tbl_schema = tbl.schema
+            tbl = sa.table(tbl.name, * res_columns + filter_columns + agg_columns)
+            tbl.schema = tbl_schema
+        qry = sa.select(* [ col.label(col.name.upper()) for col in res_columns]) \
+            .select_from(tbl)
+        # print(filters)
+        for col, val in filters.items():
+            if isinstance(val, (list, tuple, set)):
+                qry = qry.where(getattr(tbl.c, col).in_(val))
+            else:
+                qry = qry.where(getattr(tbl.c, col) == val)
+        final_order = sa.func.sum(agg_columns[0])
+        qry = qry \
+            .group_by(*res_columns) \
+            .order_by(final_order.asc() if ascending else final_order.desc()) \
+            .limit(count_product)
+
+        result = []
+        with self.database.get_sqla_engine_with_context() as engine, \
+            engine.connect() as conn:
+            # print(" SQL ", str(qry.compile(engine, compile_kwargs={"literal_binds": True})))
+            res = conn.execute(qry)
+            for row in res:
+                result.append({
+                    "prod_tag": row["PROD_TAG"],
+                    "prod_name": row["FULLDESC"]
+                })
+            # print(" RESULT ", result)
+
+        return result
+
+    def generate_product_selector(
+        self,
+        column_names: list[str],
+        limit: int = None,
+        denormalize_columns: bool = False,
+        rls_restriction: dict = None,
+    ) -> utils.Selector:
+        """
+        Generate two selectors based on product data from specified columns.
+
+        :param column_names: List of column names to fetch.
+        :param limit: Maximum number of rows to fetch.
+        :param denormalize_columns: Whether to denormalize column names.
+        :param rls_restriction: Dictionary containing rls_restriction.
+        :return: A Selector object.
+        """
+        # Получаем данные для заданных колонок
+        df_product = self.data_for_columns_upper(
+            column_names=column_names,
+            limit=limit,
+            denormalize_columns=denormalize_columns,
+        )
+
+        df_product_filtered = df_product
+
+        if rls_restriction and isinstance(rls_restriction, dict):
+            try:
+                rls_column = rls_restriction.get("column")
+                rls_value = rls_restriction.get("value")
+
+                if rls_column and rls_value:
+                    # есть ли колонка order_id в датасете
+                    if rls_column.upper() not in df_product.columns:
+                        raise ValueError(f"Column {rls_column.upper()} not found in dataset for Product selector")
+                    
+                    # есть ли значения order_id в списке ордеров датасета
+                    valid_values = df_product[rls_column.upper()].drop_duplicates().tolist()    
+
+                    if rls_value not in valid_values:
+                        raise ValueError(f"Value '{rls_value}' not found in column {rls_column.upper()} of a Product dataset. Valid values are: {valid_values}")
+                    
+                    # Фильтруем данные по order_id
+                    df_product_filtered = df_product[df_product[rls_column.upper()] == rls_value]
+
+            except (IndexError, KeyError, TypeError) as e:
+                raise ValueError(f"Invalid RLS configuration: {str(e)}")
+
+        # Определяем список колонок для селектора, которые передадутся на фронт
+        OUTPUT_COLUMNS = [col for col in df_product_filtered.columns if col != PROD_DISPLAY_ORDER_COLUMN and col != rls_column.upper()]
+
+        # Удаляем дубликаты по всем колонкам Продукта, кроме prod_name и prod_level_name
+        columns_to_exclude = [PROD_NAME_COLUMN, PROD_LEVEL_NAME_COLUMN, rls_column.upper()]
+
+        df_product_no_dupes = df_product_filtered.drop_duplicates(
+            subset=[col for col in df_product_filtered.columns if col not in columns_to_exclude]
+        )
+        # Выбираем строки с 3 наименьшими display_order
+        nsmallest = df_product_no_dupes.nsmallest(3, PROD_DISPLAY_ORDER_COLUMN)
+
+        # Выбираем строку со вторым и третьим наименьшими display_order
+        selected_rows = nsmallest.iloc[1:3]
+
+        # Выбираем строку с наименьшим display_order
+        selected_row_100 = nsmallest.iloc[0]
+        
+        # Преобразовываем в список словарей
+        selected_products = selected_rows[OUTPUT_COLUMNS].to_dict(orient='records')
+
+        selected_products_100 = selected_row_100[OUTPUT_COLUMNS].to_dict()
+
+        available_products = df_product_no_dupes[OUTPUT_COLUMNS].to_dict(orient='records')
+
+        # Формируем селекторы
+        product_selector = utils.Selector(
+            type_selector="Product",
+            label_selector="Продукт",
+            selected_products=selected_products, # Подставляем вторую и третью строки из БД
+            available_products=available_products,
+        )
+
+        product_100_selector = utils.Selector(
+            type_selector="100_Product",
+            label_selector="100% Продукт",
+            selected_products_100=selected_products_100, # Подставляем первую строку из БД
+            available_products_100=available_products,
+        )
+        
+        return product_selector, product_100_selector
+
+    def generate_product_raiting(
+        self,
+        column_names: list[str],
+        prod_level_names: list[str],
+        limit: int = None,
+        denormalize_columns: bool = False,
+        rls_restriction: dict = None,
+    ) -> utils.Selector:
+        """
+        Generate two selectors based on product data from specified columns.
+
+        :param column_names: List of column names to fetch.
+        :param limit: Maximum number of rows to fetch.
+        :param denormalize_columns: Whether to denormalize column names.
+        :param rls_restriction: Dictionary containing rls_restriction.
+        :return: A Selector object.
+        """
+        # Получаем данные для заданных колонок
+        df_product = self.data_for_columns_upper(
+            column_names=column_names,
+            limit=limit,
+            denormalize_columns=denormalize_columns,
+        )
+
+        df_product_filtered = df_product
+
+        if rls_restriction and isinstance(rls_restriction, dict):
+            try:
+                rls_column = rls_restriction.get("column")
+                rls_value = rls_restriction.get("value")
+
+                if rls_column and rls_value:
+                    # есть ли колонка order_id в датасете
+                    if rls_column.upper() not in df_product.columns:
+                        raise ValueError(f"Column {rls_column.upper()} not found in dataset for Product selector")
+                    
+                    # есть ли значения order_id в списке ордеров датасета
+                    valid_values = df_product[rls_column.upper()].drop_duplicates().tolist()    
+
+                    if rls_value not in valid_values:
+                        raise ValueError(f"Value '{rls_value}' not found in column {rls_column.upper()} of a Product dataset. Valid values are: {valid_values}")
+                    
+                    # Фильтруем данные по order_id
+                    df_product_filtered = df_product[df_product[rls_column.upper()] == rls_value]
+
+            except (IndexError, KeyError, TypeError) as e:
+                raise ValueError(f"Invalid RLS configuration: {str(e)}")
+
+        # Определяем список колонок для селектора, которые передадутся на фронт
+        OUTPUT_COLUMNS = [col for col in df_product_filtered.columns if col != PROD_DISPLAY_ORDER_COLUMN and col != rls_column.upper()]
+
+        # Удаляем дубликаты по всем колонкам Продукта, кроме prod_name и prod_level_name
+        columns_to_exclude = [PROD_NAME_COLUMN, PROD_LEVEL_NAME_COLUMN, rls_column.upper()]
+
+        df_product_no_dupes = df_product_filtered.drop_duplicates(
+            subset=[col for col in df_product_filtered.columns if col not in columns_to_exclude]
+        )
+
+        # Оставляем только строки с нужными prod_level_name
+        mask = df_product_no_dupes[PROD_LEVEL_NAME_COLUMN].isin(prod_level_names)
+        filtered = df_product_no_dupes[mask]
+
+        # Берём prod_tag из этих строк (уникальные, без NaN)
+        prod_tags = []
+        if 'PROD_TAG' in filtered.columns:
+            prod_tags = filtered['PROD_TAG'].dropna().unique().tolist()
+
+        return prod_tags
+
     def values_for_column(
         self,
         column_name: str,
@@ -1435,6 +2220,637 @@ class ExploreMixin:  # pylint: disable=too-many-public-methods
             col = sa.column(tbl_column.column_name, type_=type_)
         col = self.make_sqla_column_compatible(col, label)
         return col
+    
+    
+    def get_comparison_periods_year_analogous(
+        self,
+        selected_periods,
+        period_column_name: str,
+        selector_filters: Optional[list[dict]] = None,
+        column_to_return: Optional[str] = None
+    ) -> list[str]:
+        """
+        Получает периоды для аналогичного периода прошлого года, если они есть в датасете.
+
+        :param selected_periods: Список выбранных периодов (например, ['M 2024 08', 'M 2024 09']).
+        :param period_column_name: Название столбца с периодами в датасете.
+        :param selector_filters: Список фильтров для применения к данным.
+        :param column_to_return: название колонки которую нужно вернуть вместо period_column_name
+        :return: Список периодов за прошлый год, которые есть в датасете.
+        """
+
+        if not selected_periods:
+            return []
+        
+        comparison_dates = []
+    
+        for period in selected_periods:
+            parts = period.split()
+            date_identifier = parts[0]  # 'W' or 'M'
+            year = int(parts[1])
+            date_number = parts[2]
+            
+            previous_year = year - 1
+            comparison_dates.append(f"{date_identifier} {previous_year} {date_number}")
+        
+        columns = [period_column_name]
+
+        if column_to_return:
+            columns.append(column_to_return.upper())
+        
+        if selector_filters:
+            rls_column = selector_filters[0]["col"]
+            rls_value = selector_filters[0]["val"]
+            columns.append(rls_column.upper())
+
+        df = self.data_for_columns_upper(column_names=columns)
+
+        if df is None or df.empty:
+            raise ValueError(f"No data returned for columns: {period_column_name}")
+        
+        if selector_filters:
+            # Check if column exists and value is valid
+            try:
+                if rls_column.upper() not in df.columns:
+                    raise ValueError(f"Column {rls_column.upper()} not found in dataset for Period selector")
+                
+                valid_values = df[rls_column.upper()].drop_duplicates().tolist()
+                
+                if rls_value not in valid_values:
+                    raise ValueError(f"Value '{rls_value}' not found in column {rls_column.upper()} of a Period dataset. Valid values are: {valid_values}")
+                    
+            except (IndexError, KeyError, TypeError) as e:
+                raise ValueError(f"Invalid RLS configuration: {str(e)}")
+
+            # Filter by RLS value
+            df = df[df[rls_column.upper()] == rls_value]
+
+        available_dates = set(df[period_column_name])
+        valid_comparison_dates = [date for date in comparison_dates if date in available_dates]
+
+        if len(valid_comparison_dates) == 0:
+            raise ValueError(f"No analogous period dates for {selected_periods} in a dataset")
+        
+        df["parsed_date"] = df[period_column_name].apply(self.parse_timestamp)
+
+        filtered_df = df[
+            df[period_column_name].isin(valid_comparison_dates)
+        ]
+
+        # .sort_values(by="parsed_date")
+        if column_to_return:
+            filtered_df.sort_values(by="parsed_date")
+            return filtered_df[[period_column_name, column_to_return]]
+        else:
+            return filtered_df[period_column_name].sort_values().to_list()
+    
+
+    def get_comparison_periods_previous(
+        self, 
+        selected_periods, 
+        period_column_name: str,
+        selector_filters: Optional[list[dict]] = None,
+        column_to_return: Optional[str] = None
+    ):
+        """
+        Получает предыдущий аналогичный период относительно переданных дат.
+        
+        :param selected_periods: список периодов вида ['M 2024 08', 'M 2024 09']
+        :param period_column_name: название колонки с периодами в датасете
+        :param selector_filters: Список фильтров для применения к данным.
+        :param column_to_return: название колонки которую нужно вернуть вместо period_column_name
+        :return: список доступных периодов за предыдущий аналогичный интервал
+        """
+        
+        if not selected_periods:
+            return []
+        
+        granularity = selected_periods[0][0]
+
+        selected_dates = [self.parse_timestamp(p) for p in set(selected_periods)]
+
+        if len(selected_dates) == 1:
+            if granularity in ['M', 'R']:
+                start_prev_period = selected_dates[0] - pd.DateOffset(months=1)
+                end_prev_period = start_prev_period
+            elif granularity == 'W':
+                start_prev_period = None
+                end_prev_period = None
+            else:
+                raise ValueError(f"Unknown granularity: {granularity}")
+        
+        else:
+            min_selected_date = min(selected_dates)
+            max_selected_date = max(selected_dates)
+            time_delta = max_selected_date - min_selected_date
+            
+            if granularity in ['M', 'R']:
+                start_prev_period = min_selected_date - pd.DateOffset(months=(time_delta.days // 30 + 1))
+                end_prev_period = max_selected_date - pd.DateOffset(months=(time_delta.days // 30 + 1))
+            elif granularity == 'W':
+                start_prev_period = min_selected_date - pd.Timedelta(weeks=time_delta.days // 7 + 1)
+                end_prev_period = max_selected_date - pd.Timedelta(weeks=time_delta.days // 7 + 1)
+            else:
+                raise ValueError(f"Unknown granularity: {granularity}")
+
+        columns = [period_column_name]
+
+        if column_to_return:
+            columns.append(column_to_return)
+
+        if selector_filters:
+            rls_column = selector_filters[0]["col"]        
+            rls_value = selector_filters[0]["val"]
+            columns.append(rls_column.upper())
+
+        df = self.data_for_columns_upper(column_names=columns)
+
+        if df is None or df.empty:
+            raise ValueError(f"No data returned for columns: {period_column_name}")
+        
+        if selector_filters:
+            # Check if column exists and value is valid
+            try:
+                if rls_column.upper() not in df.columns:
+                    raise ValueError(f"Column {rls_column.upper()} not found in dataset for Period selector")
+                
+                valid_values = df[rls_column.upper()].drop_duplicates().tolist()
+                
+                if rls_value not in valid_values:
+                    raise ValueError(f"Value '{rls_value}' not found in column {rls_column.upper()} of a Period dataset. Valid values are: {valid_values}")
+                    
+            except (IndexError, KeyError, TypeError) as e:
+                raise ValueError(f"Invalid RLS configuration: {str(e)}")
+
+            # Filter by RLS value
+            df = df[df[rls_column.upper()] == rls_value]
+
+        df["parsed_date"] = df[period_column_name].apply(self.parse_timestamp)
+
+        if len(selected_periods) == 1 and granularity == 'W':
+            df_sorted = df.drop_duplicates(subset=period_column_name).sort_values(by="parsed_date")
+            
+            # находим индекс выбранного периода
+            periods_list = df_sorted[period_column_name].tolist()
+            current_idx = periods_list.index(selected_periods[0])
+            
+            if current_idx > 0:
+                return [periods_list[current_idx - 1]]
+            else:
+                return [] #raise ValueError(f"No previous period for {selected_periods[0]}")
+
+        else:
+            prev_periods_df = df[(df["parsed_date"] >= start_prev_period) & (df["parsed_date"] <= end_prev_period)]
+
+        # sort_values(by="parsed_date")
+        if column_to_return:
+            prev_periods_df.sort_values(by="parsed_date")
+            return prev_periods_df[[period_column_name, column_to_return]]
+        else:
+            return prev_periods_df[period_column_name].sort_values().tolist()
+
+
+    def get_period_tags_by_selected_value(
+        self,
+        selected_value: str,
+        order_id_filter: int
+    ) -> list[str]:
+        """
+        Returns list of period tags for selected value, using order_id as a filter
+        Using table structure like the table `period_order`
+        """
+
+        is_YTD: bool = False
+        if selected_value not in PERIOD_MAPPING_SELECTOR:
+            raise ValueError(f"Unsupported period value: {selected_value}")
+        if selected_value in ('YTD_week', 'YTD_month'):
+            period_type = 'week' if selected_value == 'YTD_week' else 'month'
+            period_count = 0
+            is_YTD = True
+        else:
+            period_params = PERIOD_MAPPING_SELECTOR.get(selected_value, {})
+            period_type = period_params.get("period_type")
+            period_count = period_params.get("period_count")
+
+        tp = self.get_template_processor()
+        tbl, cte = self.get_from_clause(tp)
+        table_columns: list = [column(col) \
+            for col in SELECTOR_COLUMNS['Period_order']] + \
+                [column('order_id')] + \
+                [column(col) for col in SELECTOR_COLUMNS['Period_order names']]
+        tbl1 = sa.table(tbl.name, *table_columns)
+        tbl1.schema = tbl.schema
+        group_and_sel_cols: list[ColumnClause] = [
+            getattr(tbl1.c, SELECTOR_COLUMNS['Period_order'][0])
+        ]
+        start_period_letter: str = 'W' if period_type == 'week' else 'R'
+        qry = sa.select(group_and_sel_cols) \
+            .select_from(tbl1) \
+            .where(tbl1.c.order_id == order_id_filter) \
+            .group_by(*group_and_sel_cols) \
+            .order_by(*[g.desc() for g in group_and_sel_cols])
+        if is_YTD:
+            subq = sa.select(sa.func.left(tbl1.c.per_tag, 5)) \
+                .select_from(tbl1) \
+                .where(tbl1.c.order_id == order_id_filter) \
+                .where(sa.func.left(tbl1.c.per_tag, 1) == start_period_letter) \
+                .order_by(tbl1.c.per_tag.desc()) \
+                .limit(1) \
+                .scalar_subquery()
+            qry = qry.where(sa.func.left(tbl1.c.per_tag, 5) == subq)
+        else:
+            qry = qry.where(sa.func.left(tbl1.c.per_tag, 1) == start_period_letter) \
+                .limit(period_count)
+
+        engine: Engine
+        res_tags: list[str] = []
+        with self.database.get_sqla_engine_with_context() as engine, \
+                engine.connect() as conn:
+            # print(' PERIOD SQL ', str(qry.compile(engine, compile_kwargs={"literal_binds": True})))
+            res = conn.execute(qry)
+            for row in res:
+                res_tags.append(row[SELECTOR_COLUMNS['Period_order'][0]])
+            # print(' PERIODS ', res_tags)
+        return res_tags
+
+
+    def get_periods_by_selected_value(
+        self,
+        selected_period: str,
+        period_column_name: str,
+        selector_filters: Optional[list[dict]] = None,
+        column_to_return: Optional[str] = None
+    ) -> list:
+        """
+        Returns periods based on predefined period selections.
+        
+        :param selected_period: Key from PERIOD_MAPPING_SELECTOR (e.g. 'last_4_weeks')
+        :param period_column_name: Column with period identifiers
+        :param selector_filters: List of filters to apply to the data
+        :param column_to_return: Column name to return instead of period_column_name
+        :return: List of periods matching the selected criteria
+        """
+
+        period_params = PERIOD_MAPPING_SELECTOR.get(selected_period, {})
+        period_type = period_params.get("period_type")
+        period_count = period_params.get("period_count")
+
+        columns = [period_column_name]
+
+        if column_to_return:
+            columns.append(column_to_return.upper())
+
+        if selector_filters:
+            rls_column = selector_filters[0]["col"]        
+            rls_value = selector_filters[0]["val"]
+            columns.append(rls_column.upper())
+
+        df = self.data_for_columns_upper(column_names=columns)
+        #for r in df:
+        #    print(r)
+        if selector_filters:
+            # Проверяем, есть ли значение в списке уникальных значений
+            try:
+                # есть ли колонка order_id в датасете
+                if rls_column.upper() not in df.columns:
+                    raise ValueError(f"Column {rls_column.upper()} not found in dataset for Period selector")
+                
+                # есть ли значения order_id в списке ордеров датасета
+                valid_values = df[rls_column.upper()].drop_duplicates().tolist()
+                
+                if rls_value not in valid_values:
+                    raise ValueError(f"Value '{rls_value}' not found in column {rls_column.upper()} of a Period dataset. Valid values are: {valid_values}")
+                
+            except (IndexError, KeyError, TypeError) as e:
+                raise ValueError(f"Invalid RLS configuration: {str(e)}")
+
+            # Фильтруем данные по order_id
+            df = df[df[rls_column.upper()] == rls_value]
+
+        df["parsed_date"] = df[period_column_name].apply(self.parse_timestamp)
+
+        filtered_sorted_df = self.filter_period(df, period_type, period_count)
+
+        if column_to_return:
+            return filtered_sorted_df[[period_column_name, column_to_return]]
+        else:
+            return filtered_sorted_df[period_column_name].to_list()
+
+
+    def get_custom_periods_by_selected_value(
+        self,
+        selected_period: str,
+        period_column_name: str,
+        selector_filters: Optional[list[dict]] = None,
+        column_to_return: Optional[str] = None
+    ) -> list:
+        """
+        Returns periods within specified date range.
+        
+        :param selected_period: Period range (e.g. 'M 2024 01:M 2024 12')
+        :param period_column_name: Column with period identifiers
+        :param selector_filters: List of filters to apply to the data
+        :param column_to_return: Column name to return instead of period_column_name
+        :return: List of periods within selected range
+        """
+        min_per_name, max_per_name = self.parse_period_name(selected_period)
+
+        columns = [period_column_name]
+
+        if column_to_return:
+            columns.append(column_to_return.upper())
+
+        if selector_filters:
+            rls_column = selector_filters[0]["col"]        
+            rls_value = selector_filters[0]["val"]
+            columns.append(rls_column.upper())
+
+        df = self.data_for_columns_upper(column_names=columns)
+
+        if selector_filters:
+            # Проверяем, есть ли значение в списке уникальных значений
+            try:
+                # есть ли колонка order_id в датасете
+                if rls_column.upper() not in df.columns:
+                    raise ValueError(f"Column {rls_column.upper()} not found in dataset for Period selector")
+                
+                # есть ли значения order_id в списке ордеров датасета
+                valid_values = df[rls_column.upper()].drop_duplicates().tolist()
+                
+                if rls_value not in valid_values:
+                    raise ValueError(f"Value '{rls_value}' not found in column {rls_column.upper()} of a Period dataset. Valid values are: {valid_values}")
+                
+            except (IndexError, KeyError, TypeError) as e:
+                raise ValueError(f"Invalid RLS configuration: {str(e)}")
+            
+            # Фильтруем данные по order_id
+            df = df[df[rls_column.upper()] == rls_value]
+        
+        df["parsed_date"] = df[period_column_name].apply(self.parse_timestamp)
+
+        min_date, max_date = self.parse_timestamp(min_per_name), self.parse_timestamp(max_per_name)
+
+        filtered_df = df[(df["parsed_date"] >= min_date) & (df["parsed_date"] <= max_date)]
+
+        if column_to_return:
+            filtered_df.sort_values(by="parsed_date")
+            return filtered_df[[period_column_name, column_to_return]]
+        else:
+            return filtered_df[period_column_name].to_list()
+        
+ 
+    def parse_timestamp(
+        self,
+        timestamp
+    ) -> pd.Timestamp:
+        """Parses a timestamp string into a pandas Timestamp object."""
+        if timestamp is None:
+            raise ValueError(f"None timestamp received: '{timestamp}', type: {type(timestamp)}")
+        
+        if not timestamp:
+            raise ValueError(f"Invalid timestamp received: {timestamp}")
+
+        granularity = timestamp[0]
+        
+        year = int(timestamp[2:6])
+        value = int(timestamp[7:])
+        
+        if granularity == 'W':
+            return pd.to_datetime(f'{year}-W{value}-1', format='%G-W%V-%u')
+        elif granularity in {'M', 'R'}:
+            return pd.Timestamp(year=year, month=value, day=1)
+        else:
+            raise ValueError(f"Unknown granularity: {granularity}")
+            
+
+    def parse_period_name(self, selected_value: str) -> tuple[str, str]:
+        """
+        Converts human-readable period names to standardized format.
+        
+        :param selected_value: Period range string in format 'M 2024 01:M 2024 12' or 'W 2024 01:W 2024 52'
+        :return: Tuple of formatted start and end periods in a per_name column format
+        """
+        try:
+            # Split the input into start and end periods
+            min_per_name, max_per_name = selected_value.split(':')
+            return min_per_name, max_per_name
+        except ValueError:
+            raise ValueError(f"Invalid period format: '{selected_value}'. Expected format: 'M 2024 01:M 2024 12'")
+
+
+    def filter_period(
+        self, 
+        df: pd.DataFrame, 
+        period_type: str, 
+        period_count: int
+    ) -> pd.DataFrame:
+        """
+        Filters the DataFrame based on the given period type and count.
+        
+        :param df: Input DataFrame
+        :param period_type: Type of period ('week', 'month', 'YTD')
+        :param period_count: Number of periods to filter
+        :return: Filtered DataFrame
+        """
+        last_date = df["parsed_date"].max()
+
+        if period_type == 'week':
+            threshold = last_date - pd.Timedelta(weeks=period_count)
+        elif period_type == 'month':
+            threshold = last_date - pd.DateOffset(months=period_count)
+        elif period_type == 'YTD':
+            start_of_year = pd.Timestamp(year=last_date.year, month=1, day=1)
+            return df[
+                (df["parsed_date"] >= start_of_year) & 
+                (df["parsed_date"] <= last_date)
+            ].sort_values(by="parsed_date")
+        else:
+            raise ValueError(f"Invalid period type: '{period_type}', {df.head()}. Use 'week', 'month', or 'YTD'.")
+
+        # should work because YTD returns earlier and here we have only week and month period_type
+        return df[
+            (df["parsed_date"] > threshold)
+        ].sort_values(by="parsed_date")
+
+
+    def get_period_values(
+            self,
+            selector: utils.Selector,
+            period_column_name: str,
+            from_table: TableClause
+    ) -> list[str]:
+        """
+        Processes the `selector` parameters and adds the appropriate conditions to the SQL query.
+
+        :param selector: dict with selector configuration.
+        :param period_column_name: Name of the column in the table.
+        :param from_table: Table object for SQL query.
+        :return: List of unique filtered period values.
+        """
+
+        selected_value = selector.get("selected_period")
+        options = selector.get("avaliable_periods", [])
+        period_selector_type = selector.get("period_selector_type")
+
+        # Validate selected value
+        if not any(option["value"] == selected_value and option["available"] for option in options):
+            logger.info(f"Invalid selection in '{selector['label_selector']}': '{selected_value}' is not available.")
+
+        period_params = PERIOD_MAPPING_SELECTOR.get(selected_value, {})
+
+        # Extract filter parameters
+        if period_selector_type == 'Custom':
+            period_type = period_selector_type 
+        else: 
+            period_type = period_params.get("period_type")
+
+        # Generate SQL query and fetch data
+        selector_query = sa.select(Column(period_column_name)).select_from(from_table)
+        compiled_query = self.database.compile_sqla_query(selector_query)
+
+        df = self.database.get_df(compiled_query)
+
+        # Parse and filter data
+        if df is None or df.empty:
+            raise ValueError(f"No data returned for dataset with Period selector. Empty query result: {compiled_query}")
+        
+        if period_column_name not in df.columns:
+            raise ValueError(f"Column '{period_column_name}' not found in DataFrame")
+
+        df["parsed_date"] = df[period_column_name].apply(self.parse_timestamp)
+
+        # Обработка кастомных периодов
+        if period_type == 'Custom':
+            try:
+                min_per_name, max_per_name = self.parse_period_name(selected_value)
+                min_date = self.parse_timestamp(min_per_name)
+                max_date = self.parse_timestamp(max_per_name)
+                
+                filtered_df = df[
+                    (df["parsed_date"] >= min_date) &
+                    (df["parsed_date"] <= max_date)
+                ].sort_values(by="parsed_date", ascending=True)
+            except Exception as e:
+                raise ValueError(f"Error processing custom period '{selected_value}': {str(e)}")
+        else: # обработка не кастомных периодов 
+            period_count = period_params.get("period_count")
+            filtered_df = self.filter_period(df, period_type, period_count)
+
+        # Return unique period values
+        unique_values = filtered_df[period_column_name].unique().tolist()
+
+        return unique_values
+
+
+    def get_fact_from_datasource(
+            self,
+            datasource_id: int,
+            datasource_type: str,
+            row_id: int,
+            column: str
+    ):
+        from superset.daos.datasource import DatasourceDAO
+        from superset.daos.exceptions import DatasourceNotFound, DatasourceTypeNotSupportedError
+        try:
+            datasource = DatasourceDAO.get_datasource(
+                DatasourceType(datasource_type), datasource_id
+            )
+            datasource.raise_for_access()
+        except ValueError:
+            raise ValueError(f"Invalid datasource type: {datasource_type}")
+        except DatasourceTypeNotSupportedError as ex:
+            raise DatasourceTypeNotSupportedError(ex.message)
+        except DatasourceNotFound as ex:
+            raise DatasourceNotFound(ex.message)
+        except SupersetSecurityException as ex:
+            raise SupersetSecurityException(ex.message)
+
+        denormalize_columns = not datasource.normalize_columns
+        columns_to_extract = [
+                    ID_COLUMN,
+                    TARGET_COLUMN_FOR_RULE,
+                    SQL_RULE_COLUMN,
+                    column
+                    ]
+
+        def get_fact_df(
+                datasource: DatasourceDAO,
+                columns_to_extract: list[str],
+                denormalize_columns: bool = False,
+        ):
+            columns_upper = [col.upper() for col in columns_to_extract]
+            db_dialect = datasource.database.get_dialect()
+
+            # Denormalize column names if required
+            column_names_ = [
+                datasource.database.db_engine_spec.denormalize_name(db_dialect, col)
+                if denormalize_columns else col
+                for col in columns_upper
+            ]
+
+            # Build a map of available columns (uppercase for consistency)
+            cols = {col.column_name.upper(): col for col in datasource.columns}
+
+            # Validate and retrieve the target columns
+            target_cols = [cols[col_name] for col_name in column_names_ if col_name in cols]
+            if len(target_cols) != len(columns_upper):
+                missing = set(columns_upper) - set(cols.keys())
+                raise ValueError(f"Columns not found in dataset: {missing}")
+
+            tp = datasource.get_template_processor()
+            tbl, cte = datasource.get_from_clause(tp)
+
+            # Build the SQLAlchemy query
+            qry = (
+                sa.select([
+                    target_col.get_sqla_col(template_processor=tp).label(col_name)
+                    for target_col, col_name in zip(target_cols, columns_to_extract)
+                ])
+                .select_from(tbl)
+            )
+
+            if datasource.fetch_values_predicate:
+                qry = qry.where(datasource.get_fetch_values_predicate(template_processor=tp))
+
+            with datasource.database.get_sqla_engine_with_context() as engine:
+                sql = str(qry.compile(engine, compile_kwargs={"literal_binds": True}))
+                sql = datasource._apply_cte(sql, cte)
+                sql = datasource.mutate_query_from_config(sql)
+
+                # Handle dialect-specific SQL adjustments
+                if engine.dialect.identifier_preparer._double_percents:
+                    sql = sql.replace("%%", "%")
+
+                # Execute the query and fetch the results
+                df = pd.read_sql_query(sql=sql, con=engine)
+
+                # Replace NaN with None to ensure JSON serializability
+                df = df.replace({np.nan: None})
+
+                return df
+
+        def escape_columns_in_formula(formula):
+            try:
+                def replacer(match):
+                    return match.group(1) + '\"' + match.group(2) + '\"' + match.group(3)
+                pattern = r'(\b\w+\()([A-Za-z0-9_]+)(\))'
+                return re.sub(pattern, replacer, formula)
+            except:
+                raise ValueError(f"Incorrect value in SQL RULE COLUMN for FACT selector")
+
+        df_fact = get_fact_df(
+            datasource=datasource,
+            columns_to_extract=columns_to_extract,
+            denormalize_columns=denormalize_columns
+        )
+
+        sql_expression_col = df_fact.loc[df_fact[ID_COLUMN] == row_id, SQL_RULE_COLUMN].iloc[0]
+        sql_expression = escape_columns_in_formula(sql_expression_col)
+
+        label = df_fact.loc[df_fact[ID_COLUMN] == row_id, column].iloc[0]
+
+        return sql_expression, label
+
 
     def get_sqla_query(  # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
         self,
@@ -1444,6 +2860,11 @@ class ExploreMixin:  # pylint: disable=too-many-public-methods
         filter: Optional[  # pylint: disable=redefined-builtin
             list[utils.QueryObjectFilterClause]
         ] = None,
+        selectors: Optional[
+            list[utils.Selector]
+        ] = None,
+        korus_export_info: Optional[utils.KorusExportInfo] = None,
+        rls_restriction: Optional[list[dict]] = None,
         from_dttm: Optional[datetime] = None,
         granularity: Optional[str] = None,
         groupby: Optional[list[Column]] = None,
@@ -1533,6 +2954,48 @@ class ExploreMixin:  # pylint: disable=too-many-public-methods
             )
         if not metrics and not columns and not groupby:
             raise QueryObjectValidationError(_("Empty query?"))
+
+        for selector in selectors:
+            if selector['type_selector'] == "Fact":
+                selected_fact = selector.get("selected_fact", None)
+                if not selected_fact or selected_fact == NO_SELECTOR:
+                    continue
+                sql_expression, label = self.get_fact_from_datasource(
+                    datasource_id=selected_fact['datasource_id'],
+                    datasource_type=selected_fact['datasource_type'],
+                    row_id=selected_fact['row_id'],
+                    column=selected_fact['column']
+                )
+                if metrics:
+                    metrics = []
+                    metrics.append(
+                        AdhocMetric(
+                            aggregate=None,
+                            column=None,
+                            expressionType="SQL",
+                            hasCustomLabel=True,
+                            label=label,
+                            sqlExpression=sql_expression
+                        )
+                    )
+                    orderby = []
+                    orderby.append(
+                        tuple(
+                            [
+                                AdhocMetric(
+                                    aggregate=None,
+                                    column=None,
+                                    expressionType="SQL",
+                                    hasCustomLabel=True,
+                                    label=label,
+                                    sqlExpression=sql_expression
+                                ),
+                                False
+                            ]
+                        )
+                    )
+                else:
+                    raise ValueError(f"impossible to apply a fact selector, because the original chart has more or less one FACT")
 
         metrics_exprs: list[ColumnElement] = []
         for metric in metrics:
@@ -1920,6 +3383,97 @@ class ExploreMixin:  # pylint: disable=too-many-public-methods
                             _("Invalid filter operation type: %(op)s", op=op)
                         )
         where_clause_and += self.get_sqla_row_level_filters(template_processor)
+
+        #TODO: figure out GenericDataType.STRING
+        for selector in selectors:
+            if selector['type_selector'] == "Period":
+                selected_period = selector.get("selected_period", None)
+                if not selected_period or selected_period == NO_SELECTOR:
+                    continue
+                if PERIOD_COLUMN_NAME in columns_by_name:
+                    period_col_obj = columns_by_name.get(cast(str, PERIOD_COLUMN_NAME))
+                    period_col_type = period_col_obj.type if period_col_obj else None
+                    period_col = self.convert_tbl_column_to_sqla_col(
+                        tbl_column=period_col_obj, template_processor=template_processor
+                    )
+                    period_op = utils.FilterOperator.IN.value
+                    period_target_generic_type = GenericDataType.STRING
+                    period_is_list_target = period_op in (
+                        utils.FilterOperator.IN.value,
+                        utils.FilterOperator.NOT_IN.value,
+                    )
+                    period_values = self.get_period_values(
+                        selector=selector,
+                        period_column_name=PERIOD_COLUMN_NAME,
+                        from_table=tbl,
+                    )
+                    temp_eq = self.filter_values_handler(
+                        values=period_values,
+                        operator=period_op,
+                        target_generic_type=period_target_generic_type,
+                        target_native_type=period_col_type,
+                        is_list_target=period_is_list_target,
+                        db_engine_spec=db_engine_spec,
+                    )
+                    where_clause_and.append(period_col.in_(temp_eq))
+                # попробуем не выводить ошибку, если нужного столбца для селектора нет (мы же юзаем джинджу)
+                #else:
+                #    raise QueryObjectValidationError(
+                #            _(f'Invalid selector option: period column "{PERIOD_COLUMN_NAME}" does not exsist in selected datasource')
+                #        )
+            if selector['type_selector'] == "Market":
+                selected_markets = selector.get("selected_markets", [])
+                if not selected_markets or selected_markets[0] == NO_SELECTOR:
+                    continue
+                market_col_obj = columns_by_name.get(cast(str, MARKET_COLUMN))
+                market_col_type = market_col_obj.type if market_col_obj else None
+                market_col = self.convert_tbl_column_to_sqla_col(
+                        tbl_column=market_col_obj, template_processor=template_processor
+                )
+                market_op = utils.FilterOperator.IN.value
+                market_target_generic_type = GenericDataType.STRING
+                market_is_list_target = market_op in (
+                    utils.FilterOperator.IN.value,
+                    utils.FilterOperator.NOT_IN.value,
+                )
+                temp_eq = self.filter_values_handler(
+                    values=selected_markets,
+                    operator=market_op,
+                    target_generic_type=market_target_generic_type,
+                    target_native_type=market_col_type,
+                    is_list_target=market_is_list_target,
+                    db_engine_spec=db_engine_spec,
+                )
+                where_clause_and.append(market_col.in_(temp_eq))
+
+            if selector['type_selector'] == "Product":
+                selected_products = selector.get("selected_products", [])
+                if not selected_products or selected_products[0] == NO_SELECTOR:
+                    continue
+                # process list of lists in selected_products
+                selected_products = flatten_and_unique(selected_products)
+                
+                product_col_obj = columns_by_name.get(cast(str, PRODUCT_COLUMN))
+                product_col_type = product_col_obj.type if product_col_obj else None
+                product_col = self.convert_tbl_column_to_sqla_col(
+                        tbl_column=product_col_obj, template_processor=template_processor
+                )
+                product_op = utils.FilterOperator.IN.value
+                product_target_generic_type = GenericDataType.STRING
+                product_is_list_target = product_op in (
+                    utils.FilterOperator.IN.value,
+                    utils.FilterOperator.NOT_IN.value,
+                )
+                temp_eq = self.filter_values_handler(
+                    values=selected_products,
+                    operator=product_op,
+                    target_generic_type=product_target_generic_type,
+                    target_native_type=product_col_type,
+                    is_list_target=product_is_list_target,
+                    db_engine_spec=db_engine_spec,
+                )
+                where_clause_and.append(product_col.in_(temp_eq))
+
         if extras:
             where = extras.get("where")
             if where:
@@ -2070,7 +3624,7 @@ class ExploreMixin:  # pylint: disable=too-many-public-methods
                     "filter": filter,
                     "orderby": orderby,
                     "extras": extras,
-                    "columns": columns,
+                    "columns": get_non_base_axis_columns(columns),
                     "order_desc": True,
                 }
 

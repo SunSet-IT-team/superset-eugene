@@ -59,7 +59,6 @@ export function getInitialDataMask(
     extraFormData: {},
     filterState: {},
     ownState: {},
-    extraChartControls: {},
     ...moreProps,
   } as DataMaskWithId;
 }

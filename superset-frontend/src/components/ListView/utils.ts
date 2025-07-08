@@ -43,6 +43,7 @@ import {
   SortColumn,
   ViewModeType,
 } from './types';
+import { OrdersInfo } from '../../types/Orders';
 
 // Define custom RisonParam for proper encoding/decoding; note that
 // %, &, +, and # must be encoded to avoid breaking the url
@@ -192,6 +193,7 @@ interface UseListViewConfig {
   };
   renderCard?: boolean;
   defaultViewMode?: ViewModeType;
+  ordersInfo?: OrdersInfo;
 }
 
 export function useListViewState({
@@ -206,6 +208,7 @@ export function useListViewState({
   bulkSelectColumnConfig,
   renderCard = false,
   defaultViewMode = 'card',
+  ordersInfo,
 }: UseListViewConfig) {
   const [query, setQuery] = useQueryParams({
     filters: RisonParam,
@@ -299,42 +302,50 @@ export function useListViewState({
   }, [initialFilters]);
 
   useEffect(() => {
-    // From internalFilters, produce a simplified obj
-    const filterObj = {};
+    if (!ordersInfo || ordersInfo?.isOrdersLoaded) {
+      // From internalFilters, produce a simplified obj
+      const filterObj = {};
 
-    internalFilters.forEach(filter => {
-      if (
-        filter.value !== undefined &&
-        (typeof filter.value !== 'string' || filter.value.length > 0)
-      ) {
-        const currentFilterId = filter.urlDisplay || filter.id;
-        filterObj[currentFilterId] = filter.value;
+      internalFilters.forEach(filter => {
+        if (
+          filter.value !== undefined &&
+          (typeof filter.value !== 'string' || filter.value.length > 0)
+        ) {
+          const currentFilterId = filter.urlDisplay || filter.id;
+          filterObj[currentFilterId] = filter.value;
+        }
+      });
+
+      const queryParams: any = {
+        filters: Object.keys(filterObj).length ? filterObj : undefined,
+        pageIndex,
+      };
+      if (sortBy[0]) {
+        queryParams.sortColumn = sortBy[0].id;
+        queryParams.sortOrder = sortBy[0].desc ? 'desc' : 'asc';
       }
-    });
 
-    const queryParams: any = {
-      filters: Object.keys(filterObj).length ? filterObj : undefined,
-      pageIndex,
-    };
-    if (sortBy[0]) {
-      queryParams.sortColumn = sortBy[0].id;
-      queryParams.sortOrder = sortBy[0].desc ? 'desc' : 'asc';
+      if (renderCard) {
+        queryParams.viewMode = viewMode;
+      }
+
+      const method =
+        typeof query.pageIndex !== 'undefined' &&
+        queryParams.pageIndex !== query.pageIndex
+          ? 'push'
+          : 'replace';
+
+      setQuery(queryParams, method);
+
+      fetchData({
+        pageIndex,
+        pageSize,
+        sortBy,
+        filters,
+        orderId: ordersInfo?.selectedOrderId,
+      });
     }
-
-    if (renderCard) {
-      queryParams.viewMode = viewMode;
-    }
-
-    const method =
-      typeof query.pageIndex !== 'undefined' &&
-      queryParams.pageIndex !== query.pageIndex
-        ? 'push'
-        : 'replace';
-
-    setQuery(queryParams, method);
-
-    fetchData({ pageIndex, pageSize, sortBy, filters });
-  }, [fetchData, pageIndex, pageSize, sortBy, filters]);
+  }, [fetchData, pageIndex, pageSize, sortBy, filters, ordersInfo]);
 
   useEffect(() => {
     if (!isEqual(initialState.pageIndex, pageIndex)) {

@@ -21,7 +21,13 @@ import React, { useEffect, useState } from 'react';
 import { styled } from '@superset-ui/core';
 import Filter, { FilterProps } from './Filter';
 
-const NativeFilterViewDiv = styled.div``;
+const NativeFilterViewDiv = styled.div`
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-row-gap: 0.5em;
+  grid-column-gap: 1em;
+`;
 
 // TODO: POC only component can be removed after PR approved
 
@@ -29,17 +35,15 @@ const NativeFilterView = ({ dashboardData }: { dashboardData: any }) => {
   const { nativeFilters, dataMask } = dashboardData;
 
   const filters: FilterProps[] = [];
-  Object.keys(nativeFilters?.filters).forEach((value, index) => {
+  Object.keys(nativeFilters?.filters).forEach(key => {
     filters.push({
-      id: value,
-      name: nativeFilters?.filters[value].name,
+      id: key,
+      name: nativeFilters?.filters[key].name,
       label:
-        nativeFilters?.filters[value]?.filterType !== 'filter_time'
-          ? dataMask[value]?.filterState?.label
-          : dataMask[value]?.filterState?.value,
-      type: nativeFilters?.filters[value].filterType,
-      first: /*index === 0*/ true,
-      show: nativeFilters?.filters[value]?.showViewFilterControl ,
+        nativeFilters?.filters[key]?.filterType !== 'filter_time'
+          ? dataMask[key]?.filterState?.label
+          : dataMask[key]?.filterState?.value,
+      type: nativeFilters?.filters[key].filterType,
     });
   });
 
@@ -47,7 +51,7 @@ const NativeFilterView = ({ dashboardData }: { dashboardData: any }) => {
 
   useEffect(() => {
     const listFilter = filters
-      .filter(filter => filter?.label && filter?.show)
+      .filter(filter => filter?.label)
       .map(filter => (
         <Filter
           id={filter.id}
@@ -55,7 +59,6 @@ const NativeFilterView = ({ dashboardData }: { dashboardData: any }) => {
           key={filter.id}
           label={filter.label}
           type={filter.type}
-          first={filter.first}
         />
       ));
 

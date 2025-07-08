@@ -196,6 +196,69 @@ class QueryObjectFilterClause(TypedDict, total=False):
     grain: str | None
     isExtra: bool | None
 
+class FactConfig(TypedDict):
+    datasource_id: int
+    datasource_type: str
+    row_id: int
+
+
+class SelectorOptions(TypedDict):
+    value: str
+    label: str
+    available: bool
+
+
+class Selector(TypedDict):
+    type_selector: str
+    label_selector: str
+    selected_period: str | None
+    avaliable_periods: list[SelectorOptions] | None
+    available_markets: list[dict] | None
+    available_products: list[dict] | None
+    available_markets_100: list[dict] | None
+    available_products_100: list[dict] | None
+    available_comparison_period: list[dict] | None
+    selected_markets: list[str] | None
+    selected_markets_100: list[str] | None
+    selected_products: list[str] | None
+    selected_products_100: list[str] | None
+    selected_comparison_period: str | None
+    selected_fact: FactConfig | str | None
+    period_type: str | None
+    custom_periods: list[str] | None
+    rls_restriction: dict | None
+
+
+class KorusExportInfoSelectorDictItem(TypedDict):
+    key: str
+    label: str
+
+
+class KorusExportInfoSelectorDict(TypedDict):
+    items: list[KorusExportInfoSelectorDictItem] | None
+
+
+class KorusExportInfoSelector(TypedDict):
+    products: KorusExportInfoSelectorDict
+    products_100: KorusExportInfoSelectorDict
+    markets: KorusExportInfoSelectorDict
+    markets_100: KorusExportInfoSelectorDict
+
+
+class KorusExportInfoItem(TypedDict):
+    title: str
+
+
+class KorusExportInfo(TypedDict):
+    dashbord: KorusExportInfoItem
+    chart: KorusExportInfoItem
+    company: KorusExportInfoItem
+    order: KorusExportInfoItem
+    selected_selectors: KorusExportInfoSelector
+
+
+class SelectorRaiting(TypedDict):
+    product_rating: list[str] | None
 
 class ExtraFiltersTimeColumnType(StrEnum):
     TIME_COL = "__time_col"
@@ -1177,16 +1240,23 @@ def is_adhoc_column(column: Column) -> TypeGuard[AdhocColumn]:
     )
 
 
+def is_base_axis(column: Column) -> bool:
+    return is_adhoc_column(column) and column.get("columnType") == "BASE_AXIS"
+
+
+def get_base_axis_columns(columns: list[Column] | None) -> list[Column]:
+    return [column for column in columns or [] if is_base_axis(column)]
+
+
+def get_non_base_axis_columns(columns: list[Column] | None) -> list[Column]:
+    return [column for column in columns or [] if not is_base_axis(column)]
+
+
 def get_base_axis_labels(columns: list[Column] | None) -> tuple[str, ...]:
-    axis_cols = [
-        col
-        for col in columns or []
-        if is_adhoc_column(col) and col.get("columnType") == "BASE_AXIS"
-    ]
-    return tuple(get_column_name(col) for col in axis_cols)
+    return tuple(get_column_name(column) for column in get_base_axis_columns(columns))
 
 
-def get_xaxis_label(columns: list[Column] | None) -> str | None:
+def get_x_axis_label(columns: list[Column] | None) -> str | None:
     labels = get_base_axis_labels(columns)
     return labels[0] if labels else None
 
@@ -1726,6 +1796,18 @@ def remove_duplicates(
             result.append(item)
     return result
 
+def flatten_and_unique( # если появится вложенность > 2, то переписать в рекурсию
+    nested_list
+) -> list:
+    "Flatten nested lists and remove duplicates"
+    flattened = []
+    for item in nested_list:
+        if isinstance(item, list):
+            flattened.extend(item)
+        else:
+            flattened.append(item)
+
+    return list(set(flattened))
 
 @dataclass
 class DateColumn:

@@ -5,7 +5,7 @@
       "22": [""],
       "": {
         "domain": "superset",
-        "plural_forms": "nplurals=1; plural=0;",
+        "plural_forms": "nplurals=1; plural=0",
         "lang": "ko"
       },
       "\n                This filter was inherited from the dashboard's context.\n                It won't be saved when saving the chart.\n              ": [
@@ -51,13 +51,11 @@
       "%s Selected (Virtual)": [""],
       "%s aggregates(s)": [""],
       "%s column(s)": [""],
-      "%s ineligible item(s) are hidden": [""],
       "%s items could not be tagged because you don’t have edit permissions to all selected objects.": [
         ""
       ],
       "%s operator(s)": [""],
       "%s option(s)": [""],
-      "%s recipients": [""],
       "%s saved metric(s)": [""],
       "%s updated": [""],
       "%s%s": [""],
@@ -134,8 +132,7 @@
       "A comma-separated list of schemas that files are allowed to upload to.": [
         ""
       ],
-      "A database port is required when connecting via SSH Tunnel.": [""],
-      "A dictionary with column names and their data types if you need to change the defaults. Example: {\"user_id\":\"int\"}. Check Python's Pandas library for supported data types.": [
+      "A dictionary with column names and their data types if you need to change the defaults. Example: {\"user_id\":\"integer\"}": [
         ""
       ],
       "A full URL pointing to the location of the built plugin (could be hosted on a CDN for example)": [
@@ -229,6 +226,7 @@
       "Add metrics to dataset in \"Edit datasource\" modal": [""],
       "Add new color formatter": [""],
       "Add new formatter": [""],
+      "Add notification method": [""],
       "Add required control values to preview chart": [""],
       "Add required control values to save chart": [""],
       "Add tag to entities": [""],
@@ -245,7 +243,6 @@
       "Advanced analytics": [""],
       "Advanced analytics Query A": [""],
       "Advanced analytics Query B": [""],
-      "Advanced analytics post processing": [""],
       "Advanced data type": [""],
       "Advanced-Analytics": [""],
       "Aesthetic": [""],
@@ -263,6 +260,7 @@
       "Aggregation function": [""],
       "Alert Triggered, In Grace Period": [""],
       "Alert condition": [""],
+      "Alert condition schedule": [""],
       "Alert ended grace period.": [""],
       "Alert failed": ["테이블 명"],
       "Alert fired during grace period.": [""],
@@ -900,7 +898,6 @@
       "Customize chart metrics or columns with currency symbols as prefixes or suffixes. Choose a symbol from dropdown or type your own.": [
         ""
       ],
-      "Customize data source, filters, and layout.": [""],
       "Cyclic dependency detected": [""],
       "D3 Format": ["D3 포멧"],
       "D3 format": [""],
@@ -1055,10 +1052,6 @@
         ""
       ],
       "Define contour layers. Isolines represent a collection of line segments that serparate the area above and below a given threshold. Isobands represent a collection of polygons that fill the are containing values in a given threshold range.": [
-        ""
-      ],
-      "Define delivery schedule, timezone, and frequency settings.": [""],
-      "Define the database, SQL query, and triggering conditions for alert.": [
         ""
       ],
       "Defines a rolling window function to apply, works along with the [Periods] text box": [
@@ -1591,7 +1584,6 @@
       ],
       "Include Series": [""],
       "Include a description that will be sent with your report": [""],
-      "Include description to be sent with %s": [""],
       "Include series name as an axis": [""],
       "Index Column": [""],
       "Info": ["정보"],
@@ -1725,6 +1717,7 @@
       "Light mode": [""],
       "Like": [""],
       "Like (case insensitive)": [""],
+      "Limit reached": [""],
       "Limiting rows may result in incomplete data and misleading charts. Consider filtering or grouping source/target names instead.": [
         ""
       ],
@@ -1736,6 +1729,7 @@
       "Limits the number of the rows that are computed in the query that is the source of the data used for this chart.": [
         ""
       ],
+      "Time-series Line Chart (legacy)": [""],
       "Line Style": [""],
       "Line chart is used to visualize measurements taken over a given category. Line chart is a type of chart which displays information as a series of data points connected by straight line segments. It is a basic type of chart common in many fields.": [
         ""
@@ -1981,9 +1975,6 @@
       "Normalize Across": [""],
       "Normalized": [""],
       "Not Time Series": [""],
-      "Not all required fields are complete. Please provide the following:": [
-        ""
-      ],
       "Not available": [""],
       "Not equal to (≠)": [""],
       "Not null": [""],
@@ -2151,7 +2142,6 @@
       "Paste the shareable Google Sheet URL here": [""],
       "Pattern": [""],
       "Percent of total": [""],
-      "Percentage difference between the time periods": [""],
       "Percentage threshold": [""],
       "Percentages": [""],
       "Performance": [""],
@@ -2315,7 +2305,6 @@
       "Recommended tags": [""],
       "Record Count": ["레코드 수"],
       "Rectangle": [""],
-      "Recurring (every)": [""],
       "Redirects to this endpoint when clicking on the table from the table list": [
         ""
       ],
@@ -2362,6 +2351,7 @@
       "Report Schedule state not found": [""],
       "Report failed": [""],
       "Report name": ["차트 유형"],
+      "Report schedule": [""],
       "Report schedule client error": [""],
       "Report schedule system error": [""],
       "Report schedule unexpected error": [""],
@@ -2376,7 +2366,7 @@
       "Required": [""],
       "Required control values have been removed": [""],
       "Resample": [""],
-      "Resample method should be in ": [""],
+      "Resample method should in ": [""],
       "Resample operation requires DatetimeIndex": [""],
       "Reset": [""],
       "Reset state": [""],
@@ -2502,6 +2492,7 @@
       ],
       "Schedule": [""],
       "Schedule query": ["Query 공유"],
+      "Schedule settings": ["Query 공유"],
       "Schedule the query periodically": [""],
       "Scheduled": [""],
       "Scheduled at (UTC)": [""],
@@ -2601,10 +2592,6 @@
       "Service Account": [""],
       "Set auto-refresh interval": ["새로고침 간격"],
       "Set filter mapping": [""],
-      "Set the time range that will be used for the comparison metrics. For example, \"Year\" will compare to the same dates one year earlier. Use \"Inherit range from time filters\" to shift the comparison time rangeby the same length as your time range and use \"Custom\" to set a custom comparison range.": [
-        ""
-      ],
-      "Set up basic details, such as name and description.": [""],
       "Sets the hierarchy levels of the chart. Each level is\n        represented by one ring with the innermost circle as the top of the hierarchy.": [
         ""
       ],
@@ -2633,6 +2620,7 @@
       "Show Column": ["컬럼 보기"],
       "Show Dashboard": ["대시보드 보기"],
       "Show Database": ["데이터베이스 보기"],
+      "Show Less...": [""],
       "Show Log": ["컬럼 보기"],
       "Show Markers": [""],
       "Show Metric": ["메트릭 보기"],
@@ -3048,17 +3036,12 @@
         ""
       ],
       "The report has been created": [""],
-      "The result of this query must be a value capable of numeric interpretation e.g. 1, 1.0, or \"1\" (compatible with Python's float() function).": [
-        ""
-      ],
+      "The result of this query should be a numeric-esque value": [""],
       "The results backend no longer has the data from the query.": [""],
       "The results stored in the backend were stored in a different format, and no longer can be deserialized.": [
         ""
       ],
       "The rich tooltip shows a list of all series for that point in time": [
-        ""
-      ],
-      "The row limit set for the chart was reached. The chart may show partial data.": [
         ""
       ],
       "The schema \"%(schema)s\" does not exist. A valid schema must be used to run this query.": [
@@ -3489,7 +3472,6 @@
       "Value Format": [""],
       "Value bounds": [""],
       "Value cannot exceed %s": [""],
-      "Value difference between the time periods": [""],
       "Value format": [""],
       "Value must be greater than 0": ["값은 0보다 커야합니다"],
       "Values are dependent on other filters": [""],
@@ -3874,9 +3856,7 @@
       ],
       "`operation` property of post processing object undefined": [""],
       "`prophet` package not installed": [""],
-      "`rename_columns` must have the same length as `columns` + `time_shift_columns`.": [
-        ""
-      ],
+      "`rename_columns` must have the same length as `columns`.": [""],
       "`row_limit` must be greater than or equal to 0": [""],
       "`row_offset` must be greater than or equal to 0": [""],
       "`width` must be greater or equal to 0": [""],
@@ -3886,6 +3866,7 @@
       "all": [""],
       "also copy (duplicate) charts": [""],
       "ancestor": [""],
+      "and": [""],
       "annotation": ["주석"],
       "annotation_layer": ["주석 레이어"],
       "asfreq": [""],
@@ -4018,7 +3999,6 @@
       "reboot": [""],
       "recent": [""],
       "recents": [""],
-      "recipients": [""],
       "report": [""],
       "reports": [""],
       "restore zoom": [""],
@@ -4054,7 +4034,6 @@
       "week": ["주"],
       "week ending Saturday": [""],
       "week starting Sunday": [""],
-      "working timeout": [""],
       "x": [""],
       "x: values are normalized within each column": [""],
       "y": [""],

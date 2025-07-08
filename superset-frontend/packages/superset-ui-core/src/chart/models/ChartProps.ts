@@ -31,7 +31,6 @@ import {
   JsonObject,
 } from '../..';
 import {
-  ExtraChartControls,
   HandlerFunction,
   LegendState,
   PlainObject,
@@ -154,9 +153,12 @@ export default class ChartProps<FormData extends RawFormData = RawFormData> {
 
   emitCrossFilters?: boolean;
 
-  extraChartControls?: ExtraChartControls;
-
   theme: SupersetTheme;
+
+  selectedSelectors?: {
+    selectedMarkets?: string[];
+    selectedProducts?: string[];
+  };
 
   constructor(config: ChartPropsConfig & { formData?: FormData } = {}) {
     const {
@@ -178,8 +180,8 @@ export default class ChartProps<FormData extends RawFormData = RawFormData> {
       inputRef,
       inContextMenu = false,
       emitCrossFilters = false,
-      extraChartControls = {},
       theme,
+      selectedSelectors,
     } = config;
     this.width = width;
     this.height = height;
@@ -201,8 +203,8 @@ export default class ChartProps<FormData extends RawFormData = RawFormData> {
     this.inputRef = inputRef;
     this.inContextMenu = inContextMenu;
     this.emitCrossFilters = emitCrossFilters;
-    this.extraChartControls = extraChartControls;
     this.theme = theme;
+    this.selectedSelectors = selectedSelectors;
   }
 }
 
@@ -227,8 +229,8 @@ ChartProps.createSelector = function create(): ChartPropsSelector {
     input => input.inputRef,
     input => input.inContextMenu,
     input => input.emitCrossFilters,
-    input => input.extraChartControls,
     input => input.theme,
+    input => input.selectedSelectors,
     (
       annotationData,
       datasource,
@@ -248,8 +250,8 @@ ChartProps.createSelector = function create(): ChartPropsSelector {
       inputRef,
       inContextMenu,
       emitCrossFilters,
-      extraChartControls,
       theme,
+      selectedSelectors,
     ) =>
       new ChartProps({
         annotationData,
@@ -270,8 +272,8 @@ ChartProps.createSelector = function create(): ChartPropsSelector {
         inputRef,
         inContextMenu,
         emitCrossFilters,
-        extraChartControls,
         theme,
+        selectedSelectors,
       }),
   );
 };

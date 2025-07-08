@@ -20,9 +20,11 @@ import {
   ChartProps,
   DataRecord,
   extractTimegrain,
+  findInCols,
   GenericDataType,
   getTimeFormatter,
   getTimeFormatterForGranularity,
+  getXAxisCategoryFormatter,
   QueryFormData,
   smartDateFormatter,
   TimeFormats,
@@ -81,6 +83,9 @@ export default function transformProps(chartProps: ChartProps<QueryFormData>) {
     filterState,
     datasource: { verboseMap = {}, columnFormats = {}, currencyFormats = {} },
     emitCrossFilters,
+    selectedSelectors = {
+      f: ['Misc|<--|some text', 'Action', 'Adventure', 'Sports', 'Simulation'],
+    },
   } = chartProps;
   const { data, colnames, coltypes } = queriesData[0];
   const {
@@ -105,20 +110,35 @@ export default function transformProps(chartProps: ChartProps<QueryFormData>) {
     conditionalFormatting,
     timeGrainSqla,
     currencyFormat,
+    orderDesc,
   } = formData;
   const { selectedFilters } = filterState;
   const granularity = extractTimegrain(rawFormData);
 
+  const { chartLevel } = formData.customizeOptions?.lastNOptions || {
+    chartLevel: undefined,
+  };
+
   const dateFormatters = colnames
-    .filter(
-      (colname: string, index: number) =>
-        coltypes[index] === GenericDataType.Temporal,
-    )
+    // .filter(
+    //   (colname: string, index: number) =>
+    //     coltypes[index] === GenericDataType.Temporal,
+    // )
     .reduce(
       (
         acc: Record<string, DateFormatter | undefined>,
         temporalColname: string,
       ) => {
+        if (
+          coltypes[colnames.indexOf(temporalColname)] !==
+          GenericDataType.Temporal
+        ) {
+          acc[temporalColname] = (v: string) => {
+            return getXAxisCategoryFormatter(true, chartLevel)(v);
+          };
+          return acc;
+        }
+
         let formatter: DateFormatter | undefined;
         if (dateFormat === smartDateFormatter.id) {
           if (granularity) {
@@ -142,10 +162,15 @@ export default function transformProps(chartProps: ChartProps<QueryFormData>) {
     );
   const metricColorFormatters = getColorFormatters(conditionalFormatting, data);
 
+  let newData = findInCols(data, selectedSelectors);
+  if (orderDesc) {
+    newData = data.reverse();
+  }
+
   return {
     width,
     height,
-    data,
+    data: formData.seriesLimitMetric ? data : newData,
     groupbyRows,
     groupbyColumns,
     metrics,
@@ -174,5 +199,7 @@ export default function transformProps(chartProps: ChartProps<QueryFormData>) {
     dateFormatters,
     onContextMenu,
     timeGrainSqla,
+    selectedSelectors,
+    orderDesc,
   };
 }

@@ -126,15 +126,18 @@ const createFetchResourceMethod =
   };
 
 export const PAGE_SIZE = 5;
-const getParams = (filters?: Filter[]) => {
+const getParams = (filters?: Filter[], orderId?: number) => {
   const params = {
     order_column: 'changed_on_delta_humanized',
     order_direction: 'desc',
     page: 0,
     page_size: PAGE_SIZE,
     filters,
+    order_id: orderId,
   };
   if (!filters) delete params.filters;
+  if (!orderId && orderId !== 0) delete params.order_id;
+
   return rison.encode(params);
 };
 
@@ -170,6 +173,7 @@ export const getEditedObjects = (userId: string | number) => {
 export const getUserOwnedObjects = (
   userId: string | number,
   resource: string,
+  orderId?: number,
   filters: Filter[] = [
     {
       col: 'owners',
@@ -179,7 +183,7 @@ export const getUserOwnedObjects = (
   ],
 ) =>
   SupersetClient.get({
-    endpoint: `/api/v1/${resource}/?q=${getParams(filters)}`,
+    endpoint: `/api/v1/${resource}/?q=${getParams(filters, orderId)}`,
   }).then(res => res.json?.result);
 
 export const getRecentActivityObjs = (
@@ -187,6 +191,7 @@ export const getRecentActivityObjs = (
   recent: string,
   addDangerToast: (arg1: string, arg2: any) => any,
   filters: Filter[],
+  orderId?: number,
 ) =>
   SupersetClient.get({ endpoint: recent }).then(recentsRes => {
     const res: any = {};
@@ -195,7 +200,7 @@ export const getRecentActivityObjs = (
         endpoint: `/api/v1/chart/?q=${getParams(filters)}`,
       }),
       SupersetClient.get({
-        endpoint: `/api/v1/dashboard/?q=${getParams(filters)}`,
+        endpoint: `/api/v1/dashboard/?q=${getParams(filters, orderId)}`,
       }),
     ];
     return Promise.all(newBatch)

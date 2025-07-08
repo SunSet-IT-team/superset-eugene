@@ -50,7 +50,7 @@ from superset.commands.exceptions import CommandException
 from superset.commands.importers.exceptions import NoValidFilesFoundError
 from superset.commands.importers.v1.utils import get_contents_from_bundle
 from superset.connectors.sqla.models import SqlaTable
-from superset.constants import MODEL_API_RW_METHOD_PERMISSION_MAP, RouteMethod
+from superset.constants import MODEL_API_RW_METHOD_PERMISSION_MAP, RouteMethod, BASE_FACTS, FACT_ID_PREFIX
 from superset.daos.dataset import DatasetDAO
 from superset.databases.filters import DatabaseFilter
 from superset.datasets.filters import DatasetCertifiedFilter, DatasetIsNullOrEmptyFilter
@@ -75,7 +75,11 @@ from superset.views.base_api import (
     requires_json,
     statsd_metrics,
 )
+from superset.utils.database import get_example_database
+from superset.extensions import db
 from superset.views.filters import BaseFilterRelatedUsers, FilterRelatedOwners
+from superset.connectors.sqla.models import SqlaTable, TableColumn, SqlMetric
+from sqlalchemy.exc import IntegrityError
 
 logger = logging.getLogger(__name__)
 
@@ -99,6 +103,7 @@ class DatasetRestApi(BaseSupersetModelRestApi):
         "duplicate",
         "get_or_create_dataset",
         "warm_up_cache",
+        "create_json_dataset",
     }
     list_columns = [
         "id",
@@ -1048,3 +1053,181 @@ class DatasetRestApi(BaseSupersetModelRestApi):
             return self.response(200, result=result)
         except CommandException as ex:
             return self.response(ex.status, message=ex.message)
+        
+    @expose("/create_json_dataset", methods=("POST",))
+    @safe
+    def create_json_dataset(self) -> Response:
+        """
+        post:
+          summary: Create a virtual JSON-based dataset
+          requestBody:
+            required: true
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    table_name:
+                      type: string
+                    json_payload:
+                      type: object
+        """
+        try:
+            json_body = request.get_json(silent=True)
+            if json_body is None:
+                return self.response(400, message="Invalid JSON payload")
+
+            table_name = json_body.get("table_name")
+            json_payload = json_body.get("json_payload")
+
+            if not table_name or not json_payload:
+                return self.response(400, message="Missing 'table_name' or 'json_payload'")
+            
+            allowed_keys = {"Rows", "Columns", "Facts"}
+            filtered_payload = {
+                key: json_payload.get(key, []) 
+                for key in allowed_keys
+            }
+
+            table = SqlaTable(
+                table_name=table_name,
+                schema="korus_superset_test_schema",
+                database_id=2, # ClickHouse common
+                sql=f"json:{json.dumps(filtered_payload)}" #,kind = "json"
+            )
+            # при вызове SqlaTable не происходит вызов get_rendered_sql
+            # нужно отдельно прописать логику создания датасета здесь, чтобы создались правильные columns и metrics
+            # отдельно убедиться, когда вызывается get_rendered_sql и для чего. Возможно, текущая рализация его не верна(
+
+            db.session.add(table)
+            db.session.flush()
+
+            type_mapping = {
+                "U": "FLOAT64",
+                "V": "FLOAT64",
+                "E": "FLOAT64",
+                "SGV_UNIV": "FLOAT64",
+                "SGV_CUM": "FLOAT64",
+                "iddb": "INT64",
+                "order_id": "INT64",
+                "com_id": "INT64",
+            }
+
+            english_aliases = {
+              12: "abs_change_sales_money",
+              16: "price_per_package", 
+              17: "price_per_unit_volume",
+              20: "share_packages_pct",
+              21: "share_natural_sales_pct",
+              22: "share_money_pct",
+              33: "weighted_distribution",
+              34: "cumulative_weighted_distribution",
+              35: "numeric_distribution"
+            }
+
+            fact_names = {1: "U", 2: "E", 3: "V", 12: "V_CHG_ABS", 16: "PU", 17: "PE", 20: "SH_U", 21: "SH_E", 22: "SH_V", 33: "WD", 34: "CWD", 35: "ND"}
+
+            all_columns = (
+                json_payload.get("Rows", []) +
+                json_payload.get("Columns", []) #+ json_payload.get("Facts", [])
+            )
+            facts = json_payload.get("Facts", [])
+
+            all_columns.extend(BASE_FACTS)
+            
+            for fact in facts:
+                # if fact_names[fact] in BASE_FACTS: 
+                #     pass
+                all_columns.append(f"{FACT_ID_PREFIX}{fact}")
+
+            created_columns = {}
+
+            for col_name in all_columns:
+                col_type = type_mapping.get(col_name, "STRING")
+                column = TableColumn(
+                    column_name=col_name,
+                    type=col_type,
+                    table_id=table.id,
+                    is_dttm=False,
+                    filterable=True,
+                    groupby=True,
+                    is_active=True,
+                )
+                db.session.add(column)
+                created_columns[col_name] = col_type
+
+            # for fact in facts:
+            #     fact_formula = fact_formulas.get(fact)
+            #     fact_name = english_aliases.get(fact)
+
+            fact_formulas = {
+                12 : "",
+                16 : "SUM(U) / NULLIF(SUM(V), 0)", 
+                17 : "SUM(E) / NULLIF(SUM(V), 0)",
+                20 : "",
+                21 : "",
+                22 : "",
+                33 : "SUM(SGV) / NULLIF(SUM(SGV_UNIV), 0) * 100",
+                34 : "SUM(SGV_CUM) / NULLIF(SUM(SGV_UNIV), 0) * 100",
+                35 : "SUM(STORES) / NULLIF(SUM(STORES_UNIV), 0) * 100",
+                }
+            
+            # fact_names = {
+            #     12 : "Sales Value Abs. Change",
+            #     16 :  "Price per Unit", 
+            #     17 : "Price per Volume",
+            #     20 : "Units Share",
+            #     21 : "Volume Share",
+            #     22 : "Value Share",
+            #     33 : "Weighted distribution", #Взвешенная дистрибуция
+            #     34 : "Cumulative weighted distribution", #Кумулятивная взвешенная дистрибуция
+            #     35 : "Numeric Distribution" #Числовая дистрибуция
+            #     }
+            
+            
+            # process facts
+
+            # нужен пример правильного расчета формул из шага 3
+            # for fact_id in facts:
+            #   metric = SqlMetric(
+            #       metric_name=f"fact_{fact_id}",
+            #       expression=f"fact_{fact_id}", 
+            #       metric_type="custom", 
+            #       table_id=table.id
+            #   )
+            #   db.session.add(metric)
+
+            # for fact in facts:
+            #     fact_formula = fact_formulas.get(fact)
+            #     fact_name = english_aliases.get(fact)
+
+            #     metric = SqlMetric(
+            #         metric_name=fact_name,
+            #         expression=fact_formula,
+            #         table_id=table.id,
+            #         metric_type="custom", 
+            #     )
+            #     db.session.add(metric)
+
+            # metric = SqlMetric(
+            #     metric_name="abs_change_sales_money",
+            #     expression="",
+            #     table_id=table.id,
+            #     metric_type="custom", 
+            # )
+            # db.session.add(metric)
+
+            db.session.commit()
+
+            return self.response(200, result={
+                "table_id": table.id,
+                "table_name": table_name,
+                "columns_created": created_columns
+            })
+        except IntegrityError:
+            db.session.rollback()
+            return self.response(409, message="Dataset already exists")
+        except Exception as e:
+            db.session.rollback()
+            return self.response(500, message=f"Internal error: {str(e)}")
+

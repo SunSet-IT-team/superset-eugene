@@ -38,6 +38,7 @@ import {
 } from './types';
 import { ListViewError, useListViewState } from './utils';
 import { EmptyStateBig, EmptyStateProps } from '../EmptyState';
+import { OrdersInfo } from '../../types/Orders';
 
 const ListViewStyles = styled.div`
   text-align: center;
@@ -188,6 +189,7 @@ const ViewModeToggle = ({
     >
       <Icons.CardView />
     </div>
+
     <div
       role="button"
       tabIndex={0}
@@ -233,6 +235,7 @@ export interface ListViewProps<T extends object = any> {
   columnsForWrapText?: string[];
   enableBulkTag?: boolean;
   bulkTagResourceName?: string;
+  ordersInfo?: OrdersInfo;
 }
 
 function ListView<T extends object = any>({
@@ -261,6 +264,7 @@ function ListView<T extends object = any>({
   bulkTagResourceName,
   addSuccessToast,
   addDangerToast,
+  ordersInfo,
 }: ListViewProps<T>) {
   const {
     getTableProps,
@@ -289,6 +293,7 @@ function ListView<T extends object = any>({
     initialFilters: filters,
     renderCard: Boolean(renderCard),
     defaultViewMode,
+    ordersInfo,
   });
   const allowBulkTagActions = bulkTagResourceName && enableBulkTag;
   const filterable = Boolean(filters.length);

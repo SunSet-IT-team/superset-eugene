@@ -31,6 +31,12 @@ export const selectAllOption = {
   label: String(SELECT_ALL_VALUE),
 };
 
+export const SELECT_FIRST_N_VALUE: RawValue = 'Select First';
+export const selectFirstNOption = {
+  value: SELECT_FIRST_N_VALUE,
+  label: String(SELECT_FIRST_N_VALUE),
+};
+
 export function isObject(value: unknown): value is Record<string, unknown> {
   return (
     value !== null &&

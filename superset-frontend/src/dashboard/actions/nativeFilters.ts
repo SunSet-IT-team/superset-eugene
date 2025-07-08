@@ -16,16 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import { FilterConfiguration, Filters, makeApi } from '@superset-ui/core';
-import { Dispatch } from 'redux';
-import { cloneDeep } from 'lodash';
-import {
-  SET_DATA_MASK_FOR_FILTER_CONFIG_FAIL,
-  setDataMaskForFilterConfigComplete,
-} from 'src/dataMask/actions';
-import { HYDRATE_DASHBOARD } from './hydrate';
-import { dashboardInfoChanged } from './dashboardInfo';
-import { DashboardInfo } from '../types';
+import {FilterConfiguration, Filters, makeApi, SelectorsConfiguration,} from '@superset-ui/core';
+import {Dispatch} from 'redux';
+import {cloneDeep} from 'lodash';
+import {SET_DATA_MASK_FOR_FILTER_CONFIG_FAIL, setDataMaskForFilterConfigComplete,} from 'src/dataMask/actions';
+import {HYDRATE_DASHBOARD} from './hydrate';
+import {dashboardInfoChanged} from './dashboardInfo';
+import {DashboardInfo} from '../types';
 
 export const SET_FILTER_CONFIG_BEGIN = 'SET_FILTER_CONFIG_BEGIN';
 export interface SetFilterConfigBegin {
@@ -147,6 +144,39 @@ export const setInScopeStatusOfFilters =
     );
   };
 
+export const setSelectorsConfiguration = async (
+  selectorsConfig: SelectorsConfiguration,
+  dashboardInfo: DashboardInfo,
+  dispatch: Dispatch,
+) => {
+  const { id, metadata } = dashboardInfo;
+  
+  // TODO extract this out when makeApi supports url parameters
+  const updateDashboard = makeApi<
+    Partial<DashboardInfo>,
+    { result: DashboardInfo }
+  >({
+    method: 'PUT',
+    endpoint: `/api/v1/dashboard/${id}`,
+  });
+  
+  try {
+    const response = await updateDashboard({
+      json_metadata: JSON.stringify({
+        ...metadata,
+        selector_configuration: selectorsConfig,
+      }),
+    });
+    dispatch(
+      dashboardInfoChanged({
+        metadata: JSON.parse(response.result.json_metadata),
+      }),
+    );
+  } catch (err) {
+    console.log(err);
+  }
+};
+  
 type BootstrapData = {
   nativeFilters: {
     filters: Filters;

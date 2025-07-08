@@ -128,6 +128,7 @@ export function useListViewResource<D extends object = any>(
       pageSize,
       sortBy,
       filters: filterValues,
+      orderId,
     }: FetchDataConfig) => {
       // set loading state, cache the last config for refreshing data.
       updateState({
@@ -136,6 +137,7 @@ export function useListViewResource<D extends object = any>(
           pageIndex,
           pageSize,
           sortBy,
+          orderId,
         },
         loading: true,
       });
@@ -151,16 +153,19 @@ export function useListViewResource<D extends object = any>(
               : value,
         }));
 
-      const queryParams = rison.encode_uri({
+      const queryParams = {
         order_column: sortBy[0].id,
         order_direction: sortBy[0].desc ? 'desc' : 'asc',
         page: pageIndex,
         page_size: pageSize,
+        order_id: orderId,
         ...(filterExps.length ? { filters: filterExps } : {}),
-      });
+      };
+
+      if (!orderId && orderId !== 0) delete queryParams.order_id;
 
       return SupersetClient.get({
-        endpoint: `/api/v1/${resource}/?q=${queryParams}`,
+        endpoint: `/api/v1/${resource}/?q=${rison.encode_uri(queryParams)}`,
       })
         .then(
           ({ json = {} }) => {

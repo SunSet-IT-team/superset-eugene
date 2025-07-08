@@ -16,27 +16,29 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { ResizeCallback, ResizeStartCallback } from 're-resizable';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import {ResizeCallback, ResizeStartCallback} from 're-resizable';
 import cx from 'classnames';
-import { useSelector } from 'react-redux';
-import { css } from '@superset-ui/core';
-import { LayoutItem, RootState } from 'src/dashboard/types';
+import {useSelector} from 'react-redux';
+import {css} from '@superset-ui/core';
+import {LayoutItem, RootState} from 'src/dashboard/types';
 import AnchorLink from 'src/dashboard/components/AnchorLink';
 import Chart from 'src/dashboard/containers/Chart';
 import DeleteComponentButton from 'src/dashboard/components/DeleteComponentButton';
-import { Draggable } from 'src/dashboard/components/dnd/DragDroppable';
+import {Draggable} from 'src/dashboard/components/dnd/DragDroppable';
 import HoverMenu from 'src/dashboard/components/menu/HoverMenu';
 import ResizableContainer from 'src/dashboard/components/resizable/ResizableContainer';
 import getChartAndLabelComponentIdFromPath from 'src/dashboard/util/getChartAndLabelComponentIdFromPath';
 import useFilterFocusHighlightStyles from 'src/dashboard/util/useFilterFocusHighlightStyles';
-import { COLUMN_TYPE, ROW_TYPE } from 'src/dashboard/util/componentTypes';
+import {COLUMN_TYPE, ROW_TYPE} from 'src/dashboard/util/componentTypes';
 import {
   GRID_BASE_UNIT,
   GRID_GUTTER_SIZE,
   GRID_MIN_COLUMN_COUNT,
   GRID_MIN_ROW_UNITS,
 } from 'src/dashboard/util/constants';
+import {periodValueType} from '../nativeFilters/constants';
+import {formatFulldesc} from "../nativeFilters/FilterBar/utils";
 
 export const CHART_MARGIN = 32;
 
@@ -242,6 +244,235 @@ const ChartHolder: React.FC<ChartHolderProps> = ({
     }));
   }, []);
 
+  const { selectors, selectorsInfoLoaded } = useSelector(
+    state => state.selectors,
+  );
+  const customizeOptions = useSelector(
+    (state: RootState) => state.customizeOptions,
+  );
+
+  const {
+    orders: { selectedValue: selectedOrder },
+    companies: { selectedValue: selectedCompany },
+  } = useSelector((state: RootState) => state.orders);
+
+  const { dashboard_title: dashboardTitle } = useSelector(
+    (state: RootState) => state.dashboardInfo,
+  );
+
+  const isPeriodSelectorActive = selectors.period.isActive;
+  const periodSelectorValue = isPeriodSelectorActive
+    ? selectors.period.selectedOptions?.value || 'last_month'
+    : 'No selector';
+  const periodType = selectors.period.isValueCustom
+    ? periodValueType.custom
+    : periodValueType.predefined;
+  const selectedPeriod = {
+    value: periodSelectorValue,
+    type: periodType,
+  };
+
+  const isMarketSelectorActive = selectors.market.isActive;
+  const marketSelectorValue = isMarketSelectorActive
+    ? Array.isArray(selectors.market.selectedOptions)
+      ? selectors.market.selectedOptions.map(opt => opt.value)
+      : selectors.market.selectedOptions?.value || 'No selector'
+    : 'No selector';
+  const selectedMarket = !Array.isArray(marketSelectorValue)
+    ? [marketSelectorValue]
+    : marketSelectorValue;
+
+  const isProductSelectorActive = selectors.product.isActive;
+  const productSelectedOptions = isProductSelectorActive
+    ? selectors.product.selectedOptions
+    : null;
+  const selectedProducts = Array.isArray(productSelectedOptions)
+    ? productSelectedOptions?.map(option =>
+      option.hierarchyMode === 'basic' ? option.ids : option.value,
+    )
+    : productSelectedOptions
+      ? [
+        productSelectedOptions.hierarchyMode === 'basic'
+          ? productSelectedOptions.ids
+          : productSelectedOptions.value,
+      ]
+      : ['No selector'];
+
+  const isComparisonPeriodSelectorActive = selectors.comparisonPeriod.isActive;
+  const comparisonPeriodSelectorValue = isComparisonPeriodSelectorActive
+    ? selectors.comparisonPeriod.selectedOptions?.value || ''
+    : 'No selector';
+  const comparisonPeriodType = selectors.comparisonPeriod.isValueCustom
+    ? periodValueType.custom
+    : periodValueType.predefined;
+  const selectedComparisonPeriod = {
+    value: comparisonPeriodSelectorValue,
+    type: comparisonPeriodType,
+  };
+
+  const isMarket100SelectorActive = selectors.marketAll.isActive;
+  const market100SelectorValue = isMarket100SelectorActive
+    ? Array.isArray(selectors.marketAll.selectedOptions)
+      ? selectors.marketAll.selectedOptions.map(opt => opt.value)
+      : selectors.marketAll.selectedOptions?.value || 'No selector'
+    : 'No selector';
+  const selected100Markets = !Array.isArray(market100SelectorValue)
+    ? [market100SelectorValue]
+    : market100SelectorValue;
+
+  const isProduct100SelectorActive = selectors.productAll.isActive;
+  const product100SelectedOptions = isProduct100SelectorActive
+    ? selectors.productAll.selectedOptions
+    : null;
+  const selected100Products = Array.isArray(product100SelectedOptions)
+    ? product100SelectedOptions?.map(option =>
+      option.hierarchyMode === 'basic' ? option.ids : option.value,
+    )
+    : product100SelectedOptions
+      ? [
+        product100SelectedOptions.hierarchyMode === 'basic'
+          ? product100SelectedOptions.ids
+          : product100SelectedOptions.value,
+      ]
+      : ['No selector'];
+
+  const isFactSelectorActive = selectors.facts.isActive;
+
+  const { datasource_type, datasource_id, row_id, column } =
+    selectors.facts.selectedDict;
+  const selectedFact = isFactSelectorActive
+    ? {
+        datasource_type: datasource_type || 'table',
+        datasource_id: datasource_id || 18,
+        row_id: row_id || 1,
+        column: column || 'sdesc_ru',
+      }
+    : 'No selector';
+
+  const selectedMarketsLabels = selectors.market.options
+    .filter((el: any) => selectedMarket.includes(el.value))
+    .map((el: any) => el.label);
+
+  const selectedProductsLabels = selectors.product.options
+    .filter((el: any) => selectedProducts.includes(el.value || el.ids))
+    .map((el: any) => el.title || el.label);
+
+  const selectedSelectorsForSorting = {
+    selectedMarkets: selectedMarketsLabels,
+    selectedProducts: selectedProductsLabels,
+  };
+
+  const activeSelectors = Object.values(selectors).filter(
+    selector => selector.isActive,
+  );
+  const allActiveSelectorsHaveValues = activeSelectors.every(selector =>
+    Array.isArray(selector.selectedOptions)
+      ? selector.selectedOptions
+      .map(opt => opt.value)
+      .filter(val => val !== undefined).length > 0
+      : selector.selectedOptions?.value !== null &&
+      selector.selectedOptions?.value !== '',
+  );
+  const selectorsDataLoaded =
+    selectorsInfoLoaded &&
+    (activeSelectors.length === 0 ||
+      (activeSelectors.length > 0 && allActiveSelectorsHaveValues));
+
+  const rlsRestrictions = { column: 'order_id', value: selectedOrder?.value };
+
+  const fullSelectedMarkets = isMarketSelectorActive
+    ? Array.isArray(selectors.market.selectedOptions)
+      ? selectors.market.selectedOptions.map(opt => ({
+        key: opt.value,
+        label: formatFulldesc(opt.label, { type: 'full' }),
+      }))
+      : [
+        {
+          key: selectors.market.selectedOptions?.value,
+          label: formatFulldesc(selectors.market.selectedOptions?.label, {
+            type: 'full',
+          }),
+        },
+      ]
+    : [];
+
+  const fullSelectedProducts = Array.isArray(productSelectedOptions)
+    ? productSelectedOptions?.map(opt => ({
+      key: opt.value,
+      label: formatFulldesc(opt.title, { type: 'full' }),
+    }))
+    : productSelectedOptions
+      ? [
+        {
+          key: productSelectedOptions.value,
+          label: formatFulldesc(productSelectedOptions.title, {
+            type: 'full',
+          }),
+        },
+      ]
+      : [];
+
+  const fullSelected100Markets = isMarket100SelectorActive
+    ? Array.isArray(selectors.marketAll.selectedOptions)
+      ? selectors.marketAll.selectedOptions.map(opt => ({
+        key: opt.value,
+        label: formatFulldesc(opt.label, { type: 'full' }),
+      }))
+      : [
+        {
+          key: selectors.marketAll.selectedOptions?.value,
+          label: formatFulldesc(selectors.marketAll.selectedOptions?.label, {
+            type: 'full',
+          }),
+        },
+      ]
+    : [];
+
+  const fullSelected100Products = Array.isArray(product100SelectedOptions)
+    ? product100SelectedOptions?.map(opt => ({
+      key: opt.value,
+      label: formatFulldesc(opt.title, { type: 'full' }),
+    }))
+    : product100SelectedOptions
+      ? [
+        {
+          key: product100SelectedOptions.value,
+          label: formatFulldesc(product100SelectedOptions.title, {
+            type: 'full',
+          }),
+        },
+      ]
+      : [];
+
+  const korusExportInfo = {
+    dashboard: {
+      title: dashboardTitle || '',
+    },
+    chart: {
+      title: component.meta.sliceName || '',
+    },
+    company: {
+      title: selectedCompany?.label || '',
+    },
+    order: {
+      title: selectedOrder?.label || '',
+    },
+    selected_selectors: {
+      products: {
+        items: fullSelectedProducts,
+      },
+      products_100: {
+        items: fullSelected100Products,
+      },
+      markets: {
+        items: fullSelectedMarkets,
+      },
+      markets_100: {
+        items: fullSelected100Markets,
+      },
+    },
+  };
+
   return (
     <Draggable
       component={component}
@@ -315,6 +546,18 @@ const ChartHolder: React.FC<ChartHolderProps> = ({
               setControlValue={handleExtraControl}
               extraControls={extraControls}
               isInView={isInView}
+              selectedPeriod={selectedPeriod}
+              selectedMarket={selectedMarket}
+              selected100Markets={selected100Markets}
+              selectedComparisonPeriod={selectedComparisonPeriod}
+              selectedProducts={selectedProducts}
+              selected100Products={selected100Products}
+              selectedFact={selectedFact}
+              customizeOptions={customizeOptions}
+              selectedSelectorsForSorting={selectedSelectorsForSorting}
+              selectorsDataLoaded={selectorsDataLoaded}
+              rlsRestrictions={rlsRestrictions}
+              korusExportInfo={korusExportInfo}
             />
             {editMode && (
               <HoverMenu position="top">

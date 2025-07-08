@@ -52,6 +52,7 @@ from superset.extensions import (
     stats_logger_manager,
     talisman,
 )
+
 from superset.security import SupersetSecurityManager
 from superset.superset_typing import FlaskResponse
 from superset.tags.core import register_sqla_event_listeners
@@ -191,6 +192,7 @@ class SupersetAppInitializer:  # pylint: disable=too-many-public-methods
         from superset.views.sqllab import SqllabView
         from superset.views.tags import TagModelView, TagView
         from superset.views.users.api import CurrentUserRestApi
+        from superset.korus_plugin.api import KorusCurrentUserRestApi
 
         #
         # Setup API views
@@ -225,6 +227,7 @@ class SupersetAppInitializer:  # pylint: disable=too-many-public-methods
         appbuilder.add_api(SavedQueryRestApi)
         appbuilder.add_api(TagRestApi)
         appbuilder.add_api(SqlLabRestApi)
+        appbuilder.add_api(KorusCurrentUserRestApi)
         #
         # Setup regular views
         #

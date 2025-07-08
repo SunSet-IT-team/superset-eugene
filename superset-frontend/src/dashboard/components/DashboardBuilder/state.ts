@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import { useSelector } from 'react-redux';
 import { useCallback, useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { URL_PARAMS } from 'src/constants';
-import { getUrlParam } from 'src/utils/urlUtils';
 import { RootState } from 'src/dashboard/types';
+import { getUrlParam } from 'src/utils/urlUtils';
 import {
   useFilters,
   useNativeFiltersDataMask,
@@ -36,8 +36,11 @@ export const useNativeFilters = () => {
   const filters = useFilters();
   const filterValues = Object.values(filters);
   const expandFilters = getUrlParam(URL_PARAMS.expandFilters);
+
+  const [dashboardSelectorsOpen, setDashboardSelectorsOpen] = useState(true);
+  const [dashboardCustomizerOpen, setDashboardCustomizerOpen] = useState(false);
   const [dashboardFiltersOpen, setDashboardFiltersOpen] = useState(
-    expandFilters ?? !!filterValues.length,
+    (expandFilters && !dashboardSelectorsOpen) ?? !!filterValues.length,
   );
 
   const nativeFiltersEnabled =
@@ -47,16 +50,14 @@ export const useNativeFilters = () => {
     filter => filter.requiredFirst,
   );
   const dataMask = useNativeFiltersDataMask();
+
+  const missingInitialFilters = requiredFirstFilter
+    .filter(({ id }) => dataMask[id]?.filterState?.value === undefined)
+    .map(({ name }) => name);
   const showDashboard =
     isInitialized ||
     !nativeFiltersEnabled ||
-    !(
-      nativeFiltersEnabled &&
-      requiredFirstFilter.length &&
-      requiredFirstFilter.find(
-        ({ id }) => dataMask[id]?.filterState?.value === undefined,
-      )
-    );
+    missingInitialFilters.length === 0;
 
   const toggleDashboardFiltersOpen = useCallback(
     (visible?: boolean) => {
@@ -65,12 +66,27 @@ export const useNativeFilters = () => {
     [dashboardFiltersOpen],
   );
 
+  const toggleDashboardSelectorsOpen = useCallback(
+    (visible?: boolean) => {
+      setDashboardSelectorsOpen(visible ?? !dashboardSelectorsOpen);
+    },
+    [dashboardSelectorsOpen],
+  );
+  const toggleDashboardCustomizerOpen = useCallback(
+    (visible?: boolean) => {
+      setDashboardCustomizerOpen(visible ?? !dashboardCustomizerOpen);
+    },
+    [dashboardCustomizerOpen],
+  );
+
   useEffect(() => {
     if (
       expandFilters === false ||
+      dashboardSelectorsOpen === true ||
       (filterValues.length === 0 && nativeFiltersEnabled)
     ) {
       toggleDashboardFiltersOpen(false);
+      // toggleDashboardSelectorsOpen(false);
     } else {
       toggleDashboardFiltersOpen(true);
     }
@@ -84,8 +100,13 @@ export const useNativeFilters = () => {
 
   return {
     showDashboard,
+    missingInitialFilters,
     dashboardFiltersOpen,
+    dashboardSelectorsOpen,
+    dashboardCustomizerOpen,
     toggleDashboardFiltersOpen,
+    toggleDashboardSelectorsOpen,
+    toggleDashboardCustomizerOpen,
     nativeFiltersEnabled,
   };
 };

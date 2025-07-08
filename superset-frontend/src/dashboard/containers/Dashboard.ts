@@ -16,24 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import { bindActionCreators, Dispatch } from 'redux';
-import { connect } from 'react-redux';
-import { RootState } from 'src/dashboard/types';
+import {bindActionCreators, Dispatch} from 'redux';
+import {connect} from 'react-redux';
+import {RootState} from 'src/dashboard/types';
 import Dashboard from 'src/dashboard/components/Dashboard';
-import {
-  addSliceToDashboard,
-  removeSliceFromDashboard,
-} from 'src/dashboard/actions/dashboardState';
-import { setDatasources } from 'src/dashboard/actions/datasources';
+import {addSliceToDashboard, removeSliceFromDashboard,} from 'src/dashboard/actions/dashboardState';
+import {setDatasources} from 'src/dashboard/actions/datasources';
 
-import { triggerQuery } from 'src/components/Chart/chartAction';
-import { logEvent } from 'src/logger/actions';
-import { getActiveFilters } from 'src/dashboard/util/activeDashboardFilters';
-import {
-  getAllActiveFilters,
-  getRelevantDataMask,
-} from 'src/dashboard/util/activeAllDashboardFilters';
-import { clearDataMaskState } from '../../dataMask/actions';
+import {triggerQuery} from 'src/components/Chart/chartAction';
+import {logEvent} from 'src/logger/actions';
+import {getActiveFilters} from 'src/dashboard/util/activeDashboardFilters';
+import {getAllActiveFilters, getRelevantDataMask,} from 'src/dashboard/util/activeAllDashboardFilters';
+import {clearDataMaskState} from '../../dataMask/actions';
 
 function mapStateToProps(state: RootState) {
   const {
@@ -47,12 +41,29 @@ function mapStateToProps(state: RootState) {
     nativeFilters,
   } = state;
 
+  const { selectors, selectorsInfoLoaded } = state.selectors;
+
+  const activeSelectors = Object.values(selectors).filter(
+    selector => selector.isActive,
+  );
+  const allActiveSelectorsHaveValues = activeSelectors.every(selector =>
+    Array.isArray(selector.value)
+      ? selector.value.length > 0
+      : selector.value !== null && selector.value !== '',
+  );
+
+  const selectorsDataLoaded =
+    selectorsInfoLoaded &&
+    (activeSelectors.length === 0 ||
+      (activeSelectors.length > 0 && allActiveSelectorsHaveValues));
+
   return {
     timeout: dashboardInfo.common?.conf?.SUPERSET_WEBSERVER_TIMEOUT,
     userId: dashboardInfo.userId,
     dashboardInfo,
     dashboardState,
     datasources,
+    selectorsDataLoaded,
     // filters prop: a map structure for all the active filter's values and scope in this dashboard,
     // for each filter field. map key is [chartId_column]
     // When dashboard is first loaded into browser,

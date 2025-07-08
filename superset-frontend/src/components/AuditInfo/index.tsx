@@ -16,12 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 import React from 'react';
 
-import Owner from 'src/types/Owner';
-import { Tooltip } from 'src/components/Tooltip';
-import getOwnerName from 'src/utils/getOwnerName';
 import { t } from '@superset-ui/core';
+import { Tooltip } from 'src/components/Tooltip';
+import Owner from 'src/types/Owner';
+import getOwnerName from 'src/utils/getOwnerName';
+import { getDateTranslation } from "../../utils/dateTranslation";
 
 export type ModifiedInfoProps = {
   user?: Owner;
@@ -31,7 +33,7 @@ export type ModifiedInfoProps = {
 export const ModifiedInfo = ({ user, date }: ModifiedInfoProps) => {
   const dateSpan = (
     <span className="no-wrap" data-test="audit-info-date">
-      {date}
+      {getDateTranslation(date)}
     </span>
   );
 

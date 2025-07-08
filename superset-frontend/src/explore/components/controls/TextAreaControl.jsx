@@ -63,7 +63,7 @@ const defaultProps = {
   height: 250,
   minLines: 3,
   maxLines: 10,
-  offerEditInModal: true,
+  offerEditInModal: false,
   readOnly: false,
   resize: null,
   textAreaStyles: {},

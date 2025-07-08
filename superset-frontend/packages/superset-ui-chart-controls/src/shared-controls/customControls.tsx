@@ -156,6 +156,7 @@ export const xAxisSortAscControl = {
     visibility: ({ controls }: { controls: ControlStateMapping }) =>
       controls?.x_axis_sort?.value !== undefined &&
       xAxisSortVisibility({ controls }),
+    shouldMapStateToProps: () => true,
   },
 };
 

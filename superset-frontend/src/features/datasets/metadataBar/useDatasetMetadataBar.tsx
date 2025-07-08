@@ -27,6 +27,7 @@ import {
 } from 'src/components/MetadataBar/ContentType';
 import { ResourceStatus } from 'src/hooks/apiResources/apiResources';
 import { cachedSupersetGet } from 'src/utils/cachedSupersetGet';
+import {getDateTranslation} from "../../../utils/dateTranslation";
 
 export type UseDatasetMetadataBarProps =
   | { datasetId?: undefined; dataset: Dataset }
@@ -87,14 +88,14 @@ export const useDatasetMetadataBar = ({
       });
       items.push({
         type: MetadataType.LastModified,
-        value: changed_on_humanized,
+        value: getDateTranslation(changed_on_humanized),
         modifiedBy,
       });
       items.push({
         type: MetadataType.Owner,
         createdBy,
         owners: formattedOwners,
-        createdOn: created_on_humanized,
+        createdOn: getDateTranslation(created_on_humanized),
       });
       if (description) {
         items.push({

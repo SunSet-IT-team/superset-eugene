@@ -5,7 +5,7 @@
       "22": ["22"],
       "": {
         "domain": "superset",
-        "plural_forms": "nplurals=2; plural=(n != 1);",
+        "plural_forms": "nplurals=2; plural=(n != 1)",
         "lang": "de"
       },
       "\n                This filter was inherited from the dashboard's context.\n                It won't be saved when saving the chart.\n              ": [
@@ -85,7 +85,6 @@
       "%s Selected (Virtual)": ["%s ausgewählt (virtuell)"],
       "%s aggregates(s)": ["%s Aggregate"],
       "%s column(s)": ["%s Spalte(n)"],
-      "%s ineligible item(s) are hidden": [""],
       "%s items could not be tagged because you don’t have edit permissions to all selected objects.": [
         ""
       ],
@@ -202,11 +201,10 @@
       "A comma-separated list of schemas that files are allowed to upload to.": [
         "Eine durch Kommas getrennte Liste von Schemata, in die Dateien hochgeladen werden dürfen."
       ],
-      "A database port is required when connecting via SSH Tunnel.": [""],
       "A database with the same name already exists.": [
         "Eine Datenbank mit dem gleichen Namen existiert bereits."
       ],
-      "A dictionary with column names and their data types if you need to change the defaults. Example: {\"user_id\":\"int\"}. Check Python's Pandas library for supported data types.": [
+      "A dictionary with column names and their data types if you need to change the defaults. Example: {\"user_id\":\"integer\"}": [
         ""
       ],
       "A full URL pointing to the location of the built plugin (could be hosted on a CDN for example)": [
@@ -345,6 +343,7 @@
       ],
       "Add new color formatter": ["Neuen Farbformatierer hinzufügen"],
       "Add new formatter": ["Neuen Formatierer hinzufügen"],
+      "Add notification method": ["Benachrichtigungsmethode hinzufügen"],
       "Add required control values to preview chart": [
         "Erforderliche Steuerelementwerte zur Diagramm-Vorschau hinzufügen"
       ],
@@ -403,6 +402,7 @@
       "Alert": ["Alarm"],
       "Alert Triggered, In Grace Period": ["Alarm ausgelöst, in Kulanzzeit"],
       "Alert condition": ["Alarmierungsbedingung"],
+      "Alert condition schedule": ["Alarmierung-Zeitplan"],
       "Alert ended grace period.": ["Alarm beendet Karenzzeit."],
       "Alert failed": ["Alarm fehlgeschlagen"],
       "Alert fired during grace period.": [
@@ -775,6 +775,7 @@
         "Möchten Sie die Änderungen wirklich speichern und anwenden?"
       ],
       "Area Chart": ["Flächendiagramm"],
+      "Time-series Area Chart (legacy)": ["Flächendiagramm (Legacy)"],
       "Area chart": ["Flächendiagramm"],
       "Area chart opacity": ["Deckkraft des Flächendiagramms"],
       "Area charts are similar to line charts in that they represent variables with the same scale, but area charts stack the metrics on top of each other.": [
@@ -1460,7 +1461,6 @@
         ""
       ],
       "Customize columns": ["Spalten anpassen"],
-      "Customize data source, filters, and layout.": [""],
       "Cyclic dependency detected": ["Zyklische Abhängigkeit erkannt"],
       "D3 Format": ["D3-Format"],
       "D3 format": ["D3 Format"],
@@ -1515,6 +1515,7 @@
       "Dashboard title": ["Dashboard Titel"],
       "Dashboard usage": ["Dashboard-Nutzung"],
       "Dashboards": ["Dashboards"],
+      "Dashboards added to": ["Dashboards hinzugefügt zu"],
       "Dashboards do not exist": ["Dashboards existieren nicht"],
       "Dashed": ["Gestrichelt"],
       "Data": ["Daten"],
@@ -1694,10 +1695,6 @@
         "Definieren Sie eine JavaScript-Funktion, die das in der Visualisierung verwendete Daten-Array empfängt und eine geänderte Version dieses Arrays zurückgibt. Dies kann verwendet werden, um Eigenschaften der Daten zu ändern, zu filtern oder das Array anzureichern."
       ],
       "Define contour layers. Isolines represent a collection of line segments that serparate the area above and below a given threshold. Isobands represent a collection of polygons that fill the are containing values in a given threshold range.": [
-        ""
-      ],
-      "Define delivery schedule, timezone, and frequency settings.": [""],
-      "Define the database, SQL query, and triggering conditions for alert.": [
         ""
       ],
       "Defines a rolling window function to apply, works along with the [Periods] text box": [
@@ -2668,6 +2665,7 @@
       "Like (case insensitive)": [
         "Like (Groß-/Kleinschreibung wird nicht beachtet)"
       ],
+      "Limit reached": ["Limit erreicht"],
       "Limit type": ["Typ einschränken"],
       "Limiting rows may result in incomplete data and misleading charts. Consider filtering or grouping source/target names instead.": [
         "Das Einschränken von Zeilen kann zu unvollständigen Daten und irreführenden Diagrammen führen. Erwägen Sie stattdessen, Quell-/Zielnamen zu filtern oder zu gruppieren."
@@ -2686,6 +2684,7 @@
       ],
       "Line": ["Linie"],
       "Line Chart": ["Liniendiagramm"],
+      "Time-series Line Chart (legacy)": ["Liniendiagramm (Legacy)"],
       "Line Style": ["Linien Stil"],
       "Line chart is used to visualize measurements taken over a given category. Line chart is a type of chart which displays information as a series of data points connected by straight line segments. It is a basic type of chart common in many fields.": [
         "Liniendiagramm wird verwendet, um Messungen zu visualisieren, die über eine bestimmte Kategorie durchgeführt wurden. Liniendiagramm ist eine Art Diagramm, das Informationen als eine Reihe von Datenpunkten anzeigt, die durch gerade Liniensegmente verbunden sind. Es ist ein grundlegender Diagrammtyp, der in vielen Bereichen üblich ist."
@@ -3070,9 +3069,6 @@
       "Normalized": ["Normalisiert"],
       "Not Time Series": ["Keine Zeitreihen"],
       "Not added to any dashboard": ["Zu keinem Dashboard hinzugefügt"],
-      "Not all required fields are complete. Please provide the following:": [
-        ""
-      ],
       "Not available": ["Nicht verfügbar"],
       "Not equal to (≠)": ["Ist nicht gleich (≠)"],
       "Not in": ["Nicht in"],
@@ -3328,7 +3324,6 @@
       "Percent Change": ["Prozentuale Veränderung"],
       "Percentage": ["Prozentsatz"],
       "Percentage change": ["Prozentuale Veränderung"],
-      "Percentage difference between the time periods": [""],
       "Percentage metrics": ["Prozentuale Metriken"],
       "Percentage threshold": ["Prozentualer Schwellenwert"],
       "Percentages": ["Prozentwerte"],
@@ -3593,7 +3588,6 @@
       "Recommended tags": ["Empfohlene Tags"],
       "Record Count": ["Anzahl Datensätze"],
       "Rectangle": ["Rechteck"],
-      "Recurring (every)": [""],
       "Redirects to this endpoint when clicking on the table from the table list": [
         "Leitet zu diesem Endpunkt um, wenn Sie in der Tabellenliste auf die Tabelle klicken"
       ],
@@ -3674,6 +3668,7 @@
       "Report a bug": ["Fehler melden"],
       "Report failed": ["Report fehlgeschlagen"],
       "Report name": ["Name des Reports"],
+      "Report schedule": ["Report-Zeitplan"],
       "Report schedule client error": ["Clientfehler beim Berichts-Zeitplan"],
       "Report schedule system error": ["Systemfehler beim Berichts-Zeitplan"],
       "Report schedule unexpected error": [
@@ -3694,6 +3689,9 @@
         "Erforderliche Steuerwerte wurden entfernt"
       ],
       "Resample": ["Resample"],
+      "Resample method should in ": [
+        "Pandas Methode zur Stichprobenwiederholung (resample)"
+      ],
       "Resample operation requires DatetimeIndex": [
         "Für den Stichprobenwiederholung ist ein Datetime-Index erforderlich."
       ],
@@ -3887,6 +3885,7 @@
       "Schedule a new email report": ["Planen eines neuen E-Mail-Berichts"],
       "Schedule email report": ["Planen von E-Mail-Reports"],
       "Schedule query": ["Abfrage einplanen"],
+      "Schedule settings": ["Zeitplan-Einstellungen"],
       "Schedule the query periodically": [
         "Abfrage in regelmäßigen Abständen einplanen"
       ],
@@ -4058,11 +4057,7 @@
       "Service Account": ["Dienstkonto"],
       "Set auto-refresh interval": ["Auto-Aktualisieren-Interval setzen"],
       "Set filter mapping": ["Festlegen der Filterzuordnung"],
-      "Set the time range that will be used for the comparison metrics. For example, \"Year\" will compare to the same dates one year earlier. Use \"Inherit range from time filters\" to shift the comparison time rangeby the same length as your time range and use \"Custom\" to set a custom comparison range.": [
-        ""
-      ],
       "Set up an email report": ["E-Mail-Report einrichten"],
-      "Set up basic details, such as name and description.": [""],
       "Sets the hierarchy levels of the chart. Each level is\n        represented by one ring with the innermost circle as the top of the hierarchy.": [
         "Legt die Hierarchieebenen des Diagramms fest. Jede Ebene ist\n        dargestellt durch einen Ring mit dem innersten Kreis als Spitze der Hierarchie."
       ],
@@ -4098,6 +4093,7 @@
       "Show Dashboard": ["Dashboard anzeigen"],
       "Show Database": ["Datenbank anzeigen"],
       "Show Labels": ["Beschriftung anzeigen"],
+      "Show Less...": ["Weniger anzeigen..."],
       "Show Log": ["Protokoll anzeigen"],
       "Show Markers": ["Markierungen anzeigen"],
       "Show Metric": ["Metrik anzeigen"],
@@ -4719,9 +4715,7 @@
         "Der Radius einzelner Punkte (die sich nicht in einem Cluster befinden). Entweder eine numerische Spalte oder \"Auto\", die den Punkt basierend auf dem größten Cluster skaliert"
       ],
       "The report has been created": ["Der Report wurde erstellt"],
-      "The result of this query must be a value capable of numeric interpretation e.g. 1, 1.0, or \"1\" (compatible with Python's float() function).": [
-        ""
-      ],
+      "The result of this query should be a numeric-esque value": [""],
       "The results backend no longer has the data from the query.": [
         "Das Ergebnis-Backend verfügt nicht mehr über die Daten aus der Abfrage."
       ],
@@ -4730,9 +4724,6 @@
       ],
       "The rich tooltip shows a list of all series for that point in time": [
         "Der umfangreiche Tooltip zeigt eine Liste aller Zeitreihen für diesen Zeitpunkt"
-      ],
-      "The row limit set for the chart was reached. The chart may show partial data.": [
-        ""
       ],
       "The schema \"%(schema)s\" does not exist. A valid schema must be used to run this query.": [
         "Das Schema \"%(schema)s\" existiert nicht. Zum Ausführen dieser Abfrage muss ein gültiges Schema verwendet werden."
@@ -5144,7 +5135,6 @@
       "Time string is ambiguous. Please specify [%(human_readable)s ago] or [%(human_readable)s later].": [
         "Die Zeitzeichenfolge ist mehrdeutig. Bitte geben Sie [%(human_readable)s ago] oder [%(human_readable)s later] an."
       ],
-      "Time-series Area Chart (legacy)": ["Flächendiagramm (Legacy)"],
       "Time-series Bar Chart (legacy)": ["Zeitreihen-Balkendiagramm (Legacy)"],
       "Time-series Percent Change": ["Zeitreihen - Prozentuale Veränderung"],
       "Time-series Period Pivot": ["Zeitreihen - Perioden-Pivot"],
@@ -5414,7 +5404,6 @@
       "Value Format": ["Wertformat"],
       "Value bounds": ["Wertgrenzen"],
       "Value cannot exceed %s": [""],
-      "Value difference between the time periods": [""],
       "Value format": ["Wertformat"],
       "Value is required": ["Wert ist erforderlich"],
       "Value must be greater than 0": ["Der Wert muss größer als 0 sein"],
@@ -5977,6 +5966,9 @@
         "'operation'-Eigenschaft des Nachbearbeitungsobjekts undefiniert"
       ],
       "`prophet` package not installed": ["Paket 'prophet' nicht installiert"],
+      "`rename_columns` must have the same length as `columns`.": [
+        "\"rename_columns\" muss die gleiche Länge wie „columns“ haben."
+      ],
       "`row_limit` must be greater than or equal to 0": [
         "\"row_limit\" muss größer oder gleich 0 sein"
       ],
@@ -5992,6 +5984,7 @@
       "all": ["alle"],
       "also copy (duplicate) charts": ["auch (doppelte) Diagramme kopieren"],
       "ancestor": ["Vorfahr"],
+      "and": ["und"],
       "annotation": ["Anmerkungen"],
       "annotation_layer": ["Anmerkungsebene"],
       "asfreq": ["asfreq"],

@@ -501,6 +501,12 @@ export enum SortSeriesType {
   Avg = 'avg',
 }
 
+export enum MetricsSeriesType {
+  // Product = 'prod_full_name',
+  Product = 'fulldesc',
+  Market = 'mkt_name',
+}
+
 export type SortSeriesData = {
   sort_series_type: SortSeriesType;
   sort_series_ascending: boolean;

@@ -16,24 +16,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import React, { useState, useEffect } from 'react';
-import { styled, css, useTheme, SupersetTheme } from '@superset-ui/core';
-import { debounce } from 'lodash';
 import { Global } from '@emotion/react';
-import { getUrlParam } from 'src/utils/urlUtils';
-import { Row, Col, Grid } from 'src/components';
-import { MainNav as DropdownMenu, MenuMode } from 'src/components/Menu';
-import { Tooltip } from 'src/components/Tooltip';
+import { css, styled, SupersetTheme, t, useTheme } from '@superset-ui/core';
+import { debounce } from 'lodash';
+import React, { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import { Col, Grid, Row } from 'src/components';
 import { GenericLink } from 'src/components/GenericLink/GenericLink';
 import Icons from 'src/components/Icons';
+import { MainNav as DropdownMenu, MenuMode } from 'src/components/Menu';
+import { Tooltip } from 'src/components/Tooltip';
 import { useUiConfig } from 'src/components/UiConfigContext';
 import { URL_PARAMS } from 'src/constants';
 import {
+  MenuData,
   MenuObjectChildProps,
   MenuObjectProps,
-  MenuData,
 } from 'src/types/bootstrapTypes';
+import { getUrlParam } from 'src/utils/urlUtils';
 import RightMenu from './RightMenu';
 
 interface MenuProps {
@@ -59,8 +59,8 @@ const StyledHeader = styled.header`
         justify-content: center;
         /* must be exactly the height of the Antd navbar */
         min-height: 50px;
-        padding: ${theme.gridUnit}px
-          ${theme.gridUnit * 2}px
+        padding: ${theme.gridUnit * 0.5}px
+          ${theme.gridUnit * 4}px
           ${theme.gridUnit}px
           ${theme.gridUnit * 4}px;
         max-width: ${theme.gridUnit * theme.brandIconMaxWidth}px;
@@ -250,7 +250,7 @@ export function Menu({
       return (
         <DropdownMenu.Item key={label} role="presentation">
           <NavLink role="button" to={url} activeClassName="is-active">
-            {label}
+            {t(label)}
           </NavLink>
         </DropdownMenu.Item>
       );
@@ -258,7 +258,7 @@ export function Menu({
     if (url) {
       return (
         <DropdownMenu.Item key={label}>
-          <a href={url}>{label}</a>
+          <a href={url}>{t(label)}</a>
         </DropdownMenu.Item>
       );
     }
@@ -281,10 +281,10 @@ export function Menu({
                     exact
                     activeClassName="is-active"
                   >
-                    {child.label}
+                    {t(child.label)}
                   </NavLink>
                 ) : (
-                  <a href={child.url}>{child.label}</a>
+                  <a href={child.url}>{t(child.label)}</a>
                 )}
               </DropdownMenu.Item>
             );
@@ -398,6 +398,9 @@ export default function MenuWrapper({ data, ...rest }: MenuProps) {
 
       newItem.childs = children;
     }
+
+    // TODO: убрать, когда реализуем целевое решение по главной странице
+    if (item.name === 'Dashboards') return;
 
     if (!settingsMenus.hasOwnProperty(item.name)) {
       cleanedMenu.push(newItem);

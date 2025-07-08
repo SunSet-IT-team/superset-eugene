@@ -16,26 +16,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+import { css, styled, SupersetTheme, t } from '@superset-ui/core';
 import React, { useEffect, useState } from 'react';
-import { styled, t, css, SupersetTheme } from '@superset-ui/core';
-import { NumberParam, useQueryParam } from 'use-query-params';
+import Button from 'src/components/Button';
+import Loading from 'src/components/Loading';
+import withToasts, { useToasts } from 'src/components/MessageToasts/withToasts';
+import MetadataBar, {
+  Description,
+  LastModified,
+  MetadataType,
+  Owner,
+} from 'src/components/MetadataBar';
+import { PageHeaderWithActions } from 'src/components/PageHeaderWithActions';
 import AllEntitiesTable, {
   TaggedObjects,
 } from 'src/features/allEntities/AllEntitiesTable';
-import Button from 'src/components/Button';
-import MetadataBar, {
-  MetadataType,
-  Description,
-  Owner,
-  LastModified,
-} from 'src/components/MetadataBar';
-import { PageHeaderWithActions } from 'src/components/PageHeaderWithActions';
-import { Tag } from 'src/views/CRUD/types';
 import TagModal from 'src/features/tags/TagModal';
-import withToasts, { useToasts } from 'src/components/MessageToasts/withToasts';
 import { fetchObjectsByTagIds, fetchSingleTag } from 'src/features/tags/tags';
-import Loading from 'src/components/Loading';
 import getOwnerName from 'src/utils/getOwnerName';
+import { Tag } from 'src/views/CRUD/types';
+import { NumberParam, useQueryParam } from 'use-query-params';
+import { getDateTranslation } from "../../utils/dateTranslation";
 
 interface TaggedObject {
   id: number;
@@ -134,13 +135,13 @@ function AllEntities() {
   const owner: Owner = {
     type: MetadataType.Owner,
     createdBy: getOwnerName(tag?.created_by),
-    createdOn: tag?.created_on_delta_humanized || '',
+    createdOn: getDateTranslation(tag?.created_on_delta_humanized || ''),
   };
   items.push(owner);
 
   const lastModified: LastModified = {
     type: MetadataType.LastModified,
-    value: tag?.changed_on_delta_humanized || '',
+    value: getDateTranslation(tag?.changed_on_delta_humanized || ''),
     modifiedBy: getOwnerName(tag?.changed_by),
   };
   items.push(lastModified);
