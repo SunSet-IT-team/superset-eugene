@@ -185,7 +185,7 @@ export const CustomizeControlsBody = memo(
           <SelectorTip>{t('Choose number format for charts')}</SelectorTip>
           <SuperChart
             height={40}
-            width={300}
+            width={0}
             chartType="filter_numberformat"
             formData={numberFormatFormData}
             queriesData={[{ data: [{}] }]} // Mock data чтобы обойти проблему с datasource

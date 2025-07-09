@@ -148,7 +148,10 @@ export default function transformProps(
 
   const dataTypes = getColtypesMapping(queryData);
   const annotationData = getAnnotationData(chartProps);
-  const { number_format } = extraChartControls ?? {};
+  const { chartLevel, numberFormat } = formData.customizeOptions?.lastNOptions || {
+    chartLevel: undefined,
+  };
+
 
   const {
     area,
@@ -207,7 +210,7 @@ export default function transformProps(
   }: EchartsTimeseriesFormData = {
     ...DEFAULT_FORM_DATA,
     ...formData,
-    ...{ yAxisFormat: number_format || formData.yAxisFormat },
+    ...{ yAxisFormat: numberFormat || formData.yAxisFormat },
   };
   const refs: Refs = {};
   const groupBy = ensureIsArray(groupby);
@@ -484,10 +487,6 @@ export default function transformProps(
   ) {
     yAxisMin = calculateLowerLogTick(minPositiveValue);
   }
-
-  const { chartLevel } = formData.customizeOptions?.lastNOptions || {
-    chartLevel: undefined,
-  };
 
   const tooltipFormatter =
     xAxisDataType === GenericDataType.Temporal

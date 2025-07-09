@@ -17,10 +17,10 @@
  * under the License.
  */
 import {
-DataMaskStateWithId,
-DataRecordFilters,
-ExtraChartControls,
-PartialFilters,
+    DataMaskStateWithId,
+    DataRecordFilters,
+    ExtraChartControls,
+    PartialFilters,
 } from '@superset-ui/core';
 import { ChartConfiguration, ChartQueryPayload } from 'src/dashboard/types';
 import { getExtraChartControls } from 'src/dashboard/components/nativeFilters/utils';
@@ -33,61 +33,61 @@ const cachedFiltersByChart = {};
 const cachedExtraChartControlsByChart = {};
 
 export interface GetFormDataWithExtraFiltersArguments {
-chartConfiguration: ChartConfiguration;
-chart: ChartQueryPayload;
-filters: DataRecordFilters;
-colorScheme?: string;
-colorNamespace?: string;
-sliceId: number;
-dataMask: DataMaskStateWithId;
-nativeFilters: PartialFilters;
-extraControls: Record<string, string | boolean | null>;
-labelColors?: Record<string, string>;
-sharedLabelColors?: Record<string, string>;
-allSliceIds: number[];
+    chartConfiguration: ChartConfiguration;
+    chart: ChartQueryPayload;
+    filters: DataRecordFilters;
+    colorScheme?: string;
+    colorNamespace?: string;
+    sliceId: number;
+    dataMask: DataMaskStateWithId;
+    nativeFilters: PartialFilters;
+    extraControls: Record<string, string | boolean | null>;
+    labelColors?: Record<string, string>;
+    sharedLabelColors?: Record<string, string>;
+    allSliceIds: number[];
 }
 
 // this function merge chart's formData with dashboard filters value,
 // and generate a new formData which will be used in the new query.
 // filters param only contains those applicable to this chart.
 export default function getExtraChartControlsWithExtraFilters({
-chart,
-filters,
-nativeFilters,
-chartConfiguration,
-sliceId,
-dataMask,
-allSliceIds,
-}: GetFormDataWithExtraFiltersArguments) {
-// if dashboard metadata + filters have not changed, use cache if possible
-const cachedExtraChartControls = cachedExtraChartControlsByChart[sliceId];
-if (
-    cachedFiltersByChart[sliceId] === filters &&
-    areObjectsEqual(cachedExtraChartControls?.dataMask, dataMask, {
-    ignoreUndefined: true,
-    })
-) {
-    return cachedExtraChartControls?.extraChartControls;
-}
-let extraChartControls: ExtraChartControls = {};
-const activeFilters = getAllActiveFilters({
-    chartConfiguration,
-    dataMask,
+    chart,
+    filters,
     nativeFilters,
-    allSliceIds,
-});
-const filterIdsAppliedOnChart = Object.entries(activeFilters)
-    .filter(([, { scope }]) => scope.includes(chart.id))
-    .map(([filterId]) => filterId);
-if (filterIdsAppliedOnChart.length) {
-    extraChartControls = getExtraChartControls(
+    chartConfiguration,
+    sliceId,
     dataMask,
-    filterIdsAppliedOnChart,
-    );
-}
+    allSliceIds,
+}: GetFormDataWithExtraFiltersArguments) {
+    // if dashboard metadata + filters have not changed, use cache if possible
+    const cachedExtraChartControls = cachedExtraChartControlsByChart[sliceId];
+    if (
+        cachedFiltersByChart[sliceId] === filters &&
+        areObjectsEqual(cachedExtraChartControls?.dataMask, dataMask, {
+            ignoreUndefined: true,
+        })
+    ) {
+        return cachedExtraChartControls?.extraChartControls;
+    }
+    let extraChartControls: ExtraChartControls = {};
+    const activeFilters = getAllActiveFilters({
+        chartConfiguration,
+        dataMask,
+        nativeFilters,
+        allSliceIds,
+    });
+    const filterIdsAppliedOnChart = Object.entries(activeFilters)
+        .filter(([, { scope }]) => scope.includes(chart.id))
+        .map(([filterId]) => filterId);
+    if (filterIdsAppliedOnChart.length) {
+        extraChartControls = getExtraChartControls(
+            dataMask,
+            filterIdsAppliedOnChart,
+        );
+    }
 
-cachedFiltersByChart[sliceId] = filters;
-cachedExtraChartControlsByChart[sliceId] = { extraChartControls, dataMask };
+    cachedFiltersByChart[sliceId] = filters;
+    cachedExtraChartControlsByChart[sliceId] = { extraChartControls, dataMask };
 
-return extraChartControls;
+    return extraChartControls;
 }

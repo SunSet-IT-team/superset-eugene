@@ -50,7 +50,6 @@ export default function PluginFilterNumberFormat(
     inputRef,
   } = props;
   const { defaultValue } = formData;
-  console.log(props);
 
   const [value, setValue] = useState<string[]>(defaultValue ?? []);
 
@@ -85,10 +84,15 @@ export default function PluginFilterNumberFormat(
     handleChange(filterState.value ?? []);
   }, [JSON.stringify(filterState.value)]);
 
+  const options = D3_FORMAT_OPTIONS.map(option => ({
+    label: option[1],
+    value: option[0],
+  }));
+
   const placeholderText =
     (data || []).length === 0
       ? t('No data')
-      : tn('%s option', '%s options', data.length, data.length);
+      : tn('%s option', '%s options', options.length, options.length);
 
   const formItemData: FormItemProps = {};
   if (filterState.validateMessage) {
@@ -99,10 +103,7 @@ export default function PluginFilterNumberFormat(
     );
   }
 
-  const options = D3_FORMAT_OPTIONS.map(option => ({
-    label: option[1],
-    value: option[0],
-  }));
+
 
   return (
     <FilterPluginStyle height={height} width={width}>

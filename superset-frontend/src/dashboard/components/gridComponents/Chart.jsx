@@ -408,7 +408,6 @@ class Chart extends React.Component {
       emitCrossFilters,
       extraChartControls,
       logEvent,
-
       selectedSelectors,
       selectorsDataLoaded,
     } = this.props;
