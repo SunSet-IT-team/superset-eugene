@@ -120,7 +120,6 @@ export default function transformProps(
     theme,
     inContextMenu,
     emitCrossFilters,
-    extraChartControls,
     selectedSelectors = {
       f: ['Misc|<--|some text', 'Shooter', 'Adventure'],
       a: ['Ubisoft|<--|fuck', 'Electronic Arts', 'Activision'],

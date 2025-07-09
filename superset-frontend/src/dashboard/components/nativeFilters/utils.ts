@@ -29,7 +29,6 @@ import {
   getChartMetadataRegistry,
   QueryFormData,
   t,
-  ExtraChartControls,
 } from '@superset-ui/core';
 import { DashboardLayout } from 'src/dashboard/types';
 import extractUrlParams from 'src/dashboard/util/extractUrlParams';
@@ -147,18 +146,6 @@ export function getExtraFormData(
     );
   });
   return extraFormData;
-}
-
-export function getExtraChartControls(
-  dataMask: DataMaskStateWithId,
-  filterIdsAppliedOnChart: string[],
-): ExtraChartControls {
-  let extraChartControls: ExtraChartControls = {};
-  filterIdsAppliedOnChart.forEach(key => {
-    extraChartControls =
-      dataMask[key]?.extraChartControls ?? extraChartControls;
-  });
-  return extraChartControls;
 }
 
 export function nativeFilterGate(behaviors: Behavior[]): boolean {

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import { ensureIsArray, ExtraChartControls, t, tn } from '@superset-ui/core';
+import { ensureIsArray, t, tn } from '@superset-ui/core';
 import React, { useEffect, useState } from 'react';
 import { Select } from 'src/components';
 import { FormItemProps } from 'antd/lib/form';
@@ -60,13 +60,8 @@ export default function PluginFilterNumberFormat(
       ? DEFAULT_FORMATS_MAP[numberFormat]
       : numberFormat;
 
-    const extraChartControls = {} as ExtraChartControls;
-    if (numberFormat) {
-      extraChartControls.number_format = numberFormat;
-    }
     setValue(resultFormats);
     setDataMask({
-      extraChartControls,
       filterState: {
         label,
         value: resultFormats.length ? resultFormats : null,

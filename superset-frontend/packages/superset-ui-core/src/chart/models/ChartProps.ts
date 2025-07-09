@@ -31,7 +31,6 @@ import {
   JsonObject,
 } from '../..';
 import {
-  ExtraChartControls,
   HandlerFunction,
   LegendState,
   PlainObject,
@@ -154,8 +153,6 @@ export default class ChartProps<FormData extends RawFormData = RawFormData> {
 
   emitCrossFilters?: boolean;
   
-  extraChartControls?: ExtraChartControls;
-
   theme: SupersetTheme;
 
   selectedSelectors?: {
@@ -183,7 +180,6 @@ export default class ChartProps<FormData extends RawFormData = RawFormData> {
       inputRef,
       inContextMenu = false,
       emitCrossFilters = false,
-      extraChartControls = {},
       theme,
       selectedSelectors,
     } = config;
@@ -207,7 +203,6 @@ export default class ChartProps<FormData extends RawFormData = RawFormData> {
     this.inputRef = inputRef;
     this.inContextMenu = inContextMenu;
     this.emitCrossFilters = emitCrossFilters;
-    this.extraChartControls = extraChartControls;
     this.theme = theme;
     this.selectedSelectors = selectedSelectors;
   }
@@ -234,7 +229,6 @@ ChartProps.createSelector = function create(): ChartPropsSelector {
     input => input.inputRef,
     input => input.inContextMenu,
     input => input.emitCrossFilters,
-    input => input.extraChartControls,
     input => input.theme,
     input => input.selectedSelectors,
     (
@@ -256,7 +250,6 @@ ChartProps.createSelector = function create(): ChartPropsSelector {
       inputRef,
       inContextMenu,
       emitCrossFilters,
-      extraChartControls,
       theme,
       selectedSelectors,
     ) =>
@@ -279,7 +272,6 @@ ChartProps.createSelector = function create(): ChartPropsSelector {
         inputRef,
         inContextMenu,
         emitCrossFilters,
-        extraChartControls,
         theme,
         selectedSelectors,
       }),

@@ -58,7 +58,6 @@ export function getInitialDataMask(
     ...otherProps,
     extraFormData: {},
     filterState: {},
-    extraChartControls: {},
     ownState: {},
     ...moreProps,
   } as DataMaskWithId;
@@ -103,7 +102,7 @@ function fillNativeFilters(
 
 const dataMaskReducer = produce(
   (draft: DataMaskStateWithId, action: AnyDataMaskAction) => {
-    const cleanState = {};
+    const cleanState = {} as any;
     switch (action.type) {
       case CLEAR_DATA_MASK_STATE:
         return cleanState;

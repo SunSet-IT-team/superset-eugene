@@ -57,10 +57,8 @@ export enum AppSection {
 
 export type FilterState = { value?: any; [key: string]: any };
 
-export type ExtraChartControls = { number_format?: string };
 export type DataMask = {
   extraFormData?: ExtraFormData;
-  extraChartControls?: ExtraChartControls;
   filterState?: FilterState;
   ownState?: JsonObject;
 };
@@ -70,7 +68,6 @@ export type SetDataMaskHook = {
     filterState,
     extraFormData,
     ownState,
-    extraChartControls,
   }: DataMask): void;
 };
 

@@ -32,7 +32,7 @@ import {
 } from './types';
 import { LevelOption } from 'src/dashboard/reducers/customizeSlice';
 
-export const getOnlyExtraFormDataAndExtraChartControls = (
+export const getOnlyExtraFormDataAnd = (
   data: DataMaskStateWithId,
 ) =>
   Object.values(data).reduce(
@@ -40,7 +40,6 @@ export const getOnlyExtraFormDataAndExtraChartControls = (
       ...prev,
       [next.id]: {
         extraFormData: next.extraFormData,
-        ExtraChartControls: next.extraChartControls,
       },
     }),
     {},
@@ -67,8 +66,8 @@ export const checkIsApplyDisabled = (
   const dataAppliedValues = Object.values(dataMaskApplied);
   return (
     areObjectsEqual(
-      getOnlyExtraFormDataAndExtraChartControls(dataMaskSelected),
-      getOnlyExtraFormDataAndExtraChartControls(dataMaskApplied),
+      getOnlyExtraFormDataAnd(dataMaskSelected),
+      getOnlyExtraFormDataAnd(dataMaskApplied),
       { ignoreUndefined: true },
     ) ||
     dataSelectedValues.length !== dataAppliedValues.length ||
