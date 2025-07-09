@@ -136,9 +136,7 @@ export const CustomizeControlsBody = memo(
 
     const handleNumberFormatChange = (dataMask: any) => {
       const numberFormat = dataMask?.filterState?.value?.[0];
-      if (numberFormat) {
-        dispatch(setNumberFormat(numberFormat));
-      }
+      dispatch(setNumberFormat(numberFormat));
     };
 
     return (
