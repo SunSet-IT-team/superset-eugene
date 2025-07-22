@@ -304,6 +304,7 @@ export function extractSeries(
     xAxisSort?: string;
     xAxisSortSeries?: SortSeriesType;
     xAxisSortSeriesAscending?: boolean;
+    minBarPercent?: number;
   } = {},
   selectedSelectors: any,
 ): [SeriesOption[], number[], number | undefined] {

@@ -166,6 +166,7 @@ export function transformSeries(
     isHorizontal?: boolean;
     lineStyle?: LineStyleOption;
     queryIndex?: number;
+    minBarPercent?: number;
   },
 ): SeriesOption | undefined {
   const { name } = series;
@@ -192,7 +193,17 @@ export function transformSeries(
     sliceId,
     isHorizontal = false,
     queryIndex = 0,
+    minBarPercent = 0,
   } = opts;
+
+  let seriesTotal = 0;
+  if (minBarPercent > 0 && series.data) {
+    seriesTotal = (series.data as any[]).reduce((sum, point) => {
+      const value = isHorizontal ? point[0] : point[1];
+      return sum + (typeof value === 'number' ? Math.abs(value) : 0);
+    }, 0);
+  }
+
   const contexts = seriesContexts[name || ''] || [];
   const hasForecast =
     contexts.includes(ForecastSeriesEnum.ForecastTrend) ||
@@ -320,6 +331,18 @@ export function transformSeries(
         if (!formatter) {
           return numericValue;
         }
+
+        if (
+          minBarPercent > 0 &&
+          seriesTotal > 0 &&
+          typeof numericValue === 'number'
+        ) {
+          const barPercentage = (Math.abs(numericValue) / seriesTotal) * 100;
+          if (barPercentage < minBarPercent) {
+            return '';
+          }
+        }
+
         if (!stack && isSelectedLegend) {
           return formatter(numericValue);
         }

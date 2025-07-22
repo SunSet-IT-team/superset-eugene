@@ -342,6 +342,25 @@ const config: ControlPanelConfig = {
         ],
         ['color_scheme'],
         ...showValueSection,
+        [
+          {
+            name: 'minBarPercent',
+            config: {
+              type: 'SliderControl',
+              label: t('Minimum bar threshold (%)'),
+              renderTrigger: true,
+              min: 0,
+              max: 100,
+              step: 0.1,
+              default: 0,
+              description: t(
+                'Hide value labels on bars that are less than this percentage of their series total',
+              ),
+              visibility: ({ controls }: ControlPanelsContainerProps) =>
+                Boolean(controls?.show_value?.value),
+            },
+          },
+        ],
         [minorTicks],
         [
           {

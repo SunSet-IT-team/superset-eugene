@@ -147,10 +147,10 @@ export default function transformProps(
 
   const dataTypes = getColtypesMapping(queryData);
   const annotationData = getAnnotationData(chartProps);
-  const { chartLevel, numberFormat } = formData.customizeOptions?.lastNOptions || {
+  const { chartLevel, numberFormat } = formData.customizeOptions
+    ?.lastNOptions || {
     chartLevel: undefined,
   };
-
 
   const {
     area,
@@ -206,6 +206,7 @@ export default function transformProps(
     yAxisTitleMargin,
     yAxisTitlePosition,
     zoomable,
+    minBarPercent,
   }: EchartsTimeseriesFormData = {
     ...DEFAULT_FORM_DATA,
     ...formData,
@@ -297,6 +298,7 @@ export default function transformProps(
       xAxisSortSeriesAscending: isMultiSeries
         ? xAxisSortSeriesAscending
         : undefined,
+      minBarPercent,
     },
     selectedSelectors,
   );
@@ -384,6 +386,7 @@ export default function transformProps(
         sliceId,
         isHorizontal,
         lineStyle,
+        minBarPercent,
       },
     );
 
