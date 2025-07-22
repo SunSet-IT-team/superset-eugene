@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import { smartDateFormatter, t } from '@superset-ui/core';
+import { smartDateFormatter, t, GenericDataType } from '@superset-ui/core';
 import {
   ControlPanelConfig,
   ControlSubSectionHeader,
@@ -24,6 +24,7 @@ import {
   D3_TIME_FORMAT_OPTIONS,
   getStandardizedControls,
   temporalColumnMixin,
+  Dataset,
 } from '@superset-ui/chart-controls';
 import React from 'react';
 import { headerFontSize, subheaderFontSize } from '../sharedControls';
@@ -135,6 +136,47 @@ const config: ControlPanelConfig = {
         [subheaderFontSize],
         ['y_axis_format'],
         ['currency_format'],
+        [
+          {
+            name: 'conditional_formatting',
+            config: {
+              type: 'ConditionalFormattingControl',
+              renderTrigger: true,
+              label: t('Conditional Formatting'),
+              description: t(
+                'Apply conditional color formatting to the background based on the metric value',
+              ),
+              shouldMapStateToProps() {
+                return true;
+              },
+              mapStateToProps(explore, _, chart) {
+                const verboseMap = explore?.datasource?.hasOwnProperty(
+                  'verbose_map',
+                )
+                  ? (explore?.datasource as Dataset)?.verbose_map
+                  : explore?.datasource?.columns ?? {};
+                const { colnames, coltypes } =
+                  chart?.queriesResponse?.[0] ?? {};
+                const numericColumns =
+                  Array.isArray(colnames) && Array.isArray(coltypes)
+                    ? colnames
+                        .filter(
+                          (colname: string, index: number) =>
+                            coltypes[index] === GenericDataType.Numeric,
+                        )
+                        .map(colname => ({
+                          value: colname,
+                          label: (verboseMap as any)[colname] ?? colname,
+                        }))
+                    : [];
+                return {
+                  columnOptions: numericColumns,
+                  verboseMap,
+                };
+              },
+            },
+          },
+        ],
         [
           {
             name: 'time_format',

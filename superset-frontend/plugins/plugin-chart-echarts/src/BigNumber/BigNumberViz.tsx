@@ -66,6 +66,24 @@ class BigNumberVis extends React.PureComponent<BigNumberVizProps> {
     return `${names} no-trendline`;
   }
 
+  getBackgroundColor() {
+    const { bigNumber, colorThresholdFormatters } = this.props;
+
+    if (
+      !colorThresholdFormatters ||
+      colorThresholdFormatters.length === 0 ||
+      bigNumber === null
+    ) {
+      return undefined;
+    }
+
+    const color = colorThresholdFormatters
+      .map(formatter => formatter.getColorFromValue(bigNumber as number))
+      .find(color => color);
+
+    return color;
+  }
+
   createTemporaryContainer() {
     const container = document.createElement('div');
     container.className = this.getClassName();
@@ -138,7 +156,11 @@ class BigNumberVis extends React.PureComponent<BigNumberVizProps> {
       colorThresholdFormatters.length > 0;
 
     let numberColor;
-    if (hasThresholdColorFormatter) {
+    const backgroundColor = this.getBackgroundColor();
+
+    if (backgroundColor) {
+      numberColor = 'black';
+    } else if (hasThresholdColorFormatter) {
       colorThresholdFormatters!.forEach(formatter => {
         const formatterResult = bigNumber
           ? formatter.getColorFromValue(bigNumber as number)
@@ -148,7 +170,7 @@ class BigNumberVis extends React.PureComponent<BigNumberVizProps> {
         }
       });
     } else {
-      numberColor = 'black';
+      numberColor = 'inherit';
     }
 
     const container = this.createTemporaryContainer();
@@ -280,13 +302,14 @@ class BigNumberVis extends React.PureComponent<BigNumberVizProps> {
       subheaderFontSize,
     } = this.props;
     const className = this.getClassName();
+    const backgroundColor = this.getBackgroundColor();
 
     if (showTrendLine) {
       const chartHeight = Math.floor(PROPORTION.TRENDLINE * height);
       const allTextHeight = height - chartHeight;
 
       return (
-        <div className={className}>
+        <div className={className} style={{ backgroundColor }}>
           <div className="text-container" style={{ height: allTextHeight }}>
             {this.renderFallbackWarning()}
             {this.renderKicker(
@@ -309,7 +332,7 @@ class BigNumberVis extends React.PureComponent<BigNumberVizProps> {
     }
 
     return (
-      <div className={className} style={{ height }}>
+      <div className={className} style={{ height, backgroundColor }}>
         {this.renderFallbackWarning()}
         {this.renderKicker((kickerFontSize || 0) * height)}
         {this.renderHeader(Math.ceil(headerFontSize * height))}

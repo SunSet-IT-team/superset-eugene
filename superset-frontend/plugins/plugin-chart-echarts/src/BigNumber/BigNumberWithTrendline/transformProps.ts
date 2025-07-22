@@ -30,6 +30,10 @@ import {
   ValueFormatter,
   getValueFormatter,
 } from '@superset-ui/core';
+import {
+  ColorFormatters,
+  getColorFormatters,
+} from '@superset-ui/chart-controls';
 import { EChartsCoreOption, graphic } from 'echarts';
 import {
   BigNumberVizProps,
@@ -93,6 +97,7 @@ export default function transformProps(
     yAxisFormat,
     currencyFormat,
     timeRangeFixed,
+    conditionalFormatting,
   } = formData;
   const granularity = extractTimegrain(rawFormData);
   const {
@@ -262,6 +267,11 @@ export default function transformProps(
 
   const { onContextMenu } = hooks;
 
+  const defaultColorFormatters = [] as ColorFormatters;
+  const colorThresholdFormatters =
+    getColorFormatters(conditionalFormatting, data, false) ??
+    defaultColorFormatters;
+
   return {
     width,
     height,
@@ -285,5 +295,6 @@ export default function transformProps(
     onContextMenu,
     xValueFormatter: formatTime,
     refs,
+    colorThresholdFormatters,
   };
 }
