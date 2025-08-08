@@ -18,8 +18,8 @@
 set -e
 
 # Packages needed for puppeteer:
-# apt update
-# apt install -y chromium
+apt update
+apt install -y chromium
 
 cd /app/superset-frontend
 npm install -f --no-optional --global webpack webpack-cli
@@ -27,18 +27,3 @@ npm install -f --no-optional
 
 echo "Running frontend"
 npm run dev
-
-
-# set -e
-
-# # ===== fix apt for EOL Debian buster =====
-# echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99ignore-release-date
-# cat >/etc/apt/sources.list <<'EOF'
-# deb [check-valid-until=no] http://archive.debian.org/debian buster main contrib non-free
-# deb [check-valid-until=no] http://archive.debian.org/debian buster-updates main contrib non-free
-# deb [check-valid-until=no] http://archive.debian.org/debian-security buster/updates main contrib non-free
-# EOF
-
-# apt-get -o Acquire::Check-Valid-Until=false update
-# apt-get install -y --no-install-recommends chromium
-
