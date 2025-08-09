@@ -40,6 +40,7 @@ import {
 import { getDateFormatter, parseMetricValue } from '../utils';
 import { getDefaultTooltip } from '../../utils/tooltip';
 import { Refs } from '../../types';
+import { getColorFormatters } from '@superset-ui/chart-controls';
 
 const defaultNumberFormatter = getNumberFormatter();
 export function renderTooltipFactory(
@@ -93,6 +94,8 @@ export default function transformProps(
     yAxisFormat,
     currencyFormat,
     timeRangeFixed,
+    conditionalFormatting,
+    conditionalFormattingText,
   } = formData;
   const granularity = extractTimegrain(rawFormData);
   const {
@@ -102,6 +105,11 @@ export default function transformProps(
     from_dttm: fromDatetime,
     to_dttm: toDatetime,
   } = queriesData[0];
+  const colorThresholdFormattersBg =
+    getColorFormatters(conditionalFormatting, data, false) ?? [];
+  const colorThresholdFormattersText =
+    getColorFormatters(conditionalFormattingText, data, false) ?? [];
+
   const refs: Refs = {};
   const metricName = getMetricLabel(metric);
   const compareLag = Number(compareLag_) || 0;
@@ -285,5 +293,7 @@ export default function transformProps(
     onContextMenu,
     xValueFormatter: formatTime,
     refs,
+    colorThresholdFormattersBg,
+    colorThresholdFormattersText,
   };
 }
