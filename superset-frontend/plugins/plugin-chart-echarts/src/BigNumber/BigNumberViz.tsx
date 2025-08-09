@@ -33,11 +33,9 @@ import { EventHandlers } from '../types';
 const defaultNumberFormatter = getNumberFormatter();
 
 const PROPORTION = {
-  // text size: proportion of the chart container sans trendline
   KICKER: 0.1,
   HEADER: 0.3,
   SUBHEADER: 0.125,
-  // trendline size: proportion of the whole chart container
   TRENDLINE: 0.3,
 };
 
@@ -66,11 +64,25 @@ class BigNumberVis extends React.PureComponent<BigNumberVizProps> {
     return `${names} no-trendline`;
   }
 
+  getBackgroundColor() {
+    const { bigNumber, colorThresholdFormattersBg } = this.props;
+    if (
+      !colorThresholdFormattersBg ||
+      colorThresholdFormattersBg.length === 0 ||
+      bigNumber === null
+    ) {
+      return undefined;
+    }
+    return colorThresholdFormattersBg
+      .map(fmt => fmt.getColorFromValue(bigNumber as number))
+      .find(Boolean);
+  }
+
   createTemporaryContainer() {
     const container = document.createElement('div');
     container.className = this.getClassName();
-    container.style.position = 'absolute'; // so it won't disrupt page layout
-    container.style.opacity = '0'; // and not visible
+    container.style.position = 'absolute';
+    container.style.opacity = '0';
     return container;
   }
 
@@ -128,34 +140,31 @@ class BigNumberVis extends React.PureComponent<BigNumberVizProps> {
   }
 
   renderHeader(maxHeight: number) {
-    const { bigNumber, headerFormatter, width, colorThresholdFormatters } =
+    const { bigNumber, headerFormatter, width, colorThresholdFormattersText } =
       this.props;
+
     // @ts-ignore
     const text = bigNumber === null ? t('No data') : headerFormatter(bigNumber);
 
-    const hasThresholdColorFormatter =
-      Array.isArray(colorThresholdFormatters) &&
-      colorThresholdFormatters.length > 0;
-
-    let numberColor;
-    if (hasThresholdColorFormatter) {
-      colorThresholdFormatters!.forEach(formatter => {
-        const formatterResult = bigNumber
-          ? formatter.getColorFromValue(bigNumber as number)
-          : false;
-        if (formatterResult) {
-          numberColor = formatterResult;
-        }
+    let numberColor: string | undefined;
+    if (
+      Array.isArray(colorThresholdFormattersText) &&
+      colorThresholdFormattersText.length > 0
+    ) {
+      colorThresholdFormattersText.forEach(fmt => {
+        const c = bigNumber
+          ? fmt.getColorFromValue(bigNumber as number)
+          : undefined;
+        if (c) numberColor = c;
       });
-    } else {
-      numberColor = 'black';
     }
+    if (!numberColor) numberColor = 'inherit';
 
     const container = this.createTemporaryContainer();
     document.body.append(container);
     const fontSize = computeMaxFontSize({
       text,
-      maxWidth: width - 8, // Decrease 8px for more precise font size
+      maxWidth: width - 8,
       maxHeight,
       className: 'header-line',
       container,
@@ -172,11 +181,7 @@ class BigNumberVis extends React.PureComponent<BigNumberVizProps> {
     return (
       <div
         className="header-line"
-        style={{
-          fontSize,
-          height: maxHeight,
-          color: numberColor,
-        }}
+        style={{ fontSize, height: maxHeight, color: numberColor }}
         onContextMenu={onContextMenu}
       >
         {text}
@@ -228,7 +233,6 @@ class BigNumberVis extends React.PureComponent<BigNumberVizProps> {
   renderTrendline(maxHeight: number) {
     const { width, trendLineData, echartOptions, refs } = this.props;
 
-    // if can't find any non-null values, no point rendering the trendline
     if (!trendLineData?.some(d => d[1] !== null)) {
       return null;
     }
@@ -280,13 +284,14 @@ class BigNumberVis extends React.PureComponent<BigNumberVizProps> {
       subheaderFontSize,
     } = this.props;
     const className = this.getClassName();
+    const backgroundColor = this.getBackgroundColor();
 
     if (showTrendLine) {
       const chartHeight = Math.floor(PROPORTION.TRENDLINE * height);
       const allTextHeight = height - chartHeight;
 
       return (
-        <div className={className}>
+        <div className={className} style={{ backgroundColor }}>
           <div className="text-container" style={{ height: allTextHeight }}>
             {this.renderFallbackWarning()}
             {this.renderKicker(
@@ -309,7 +314,7 @@ class BigNumberVis extends React.PureComponent<BigNumberVizProps> {
     }
 
     return (
-      <div className={className} style={{ height }}>
+      <div className={className} style={{ height, backgroundColor }}>
         {this.renderFallbackWarning()}
         {this.renderKicker((kickerFontSize || 0) * height)}
         {this.renderHeader(Math.ceil(headerFontSize * height))}
