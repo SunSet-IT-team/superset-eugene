@@ -40,6 +40,7 @@ export default function buildQuery(formData: QueryFormData) {
           : []),
       ],
       ...(isXAxisSet(formData) ? {} : { is_timeseries: true }),
+      order_desc: false,
       post_processing: [
         pivotOperator(formData, baseQueryObject),
         rollingWindowOperator(formData, baseQueryObject),
