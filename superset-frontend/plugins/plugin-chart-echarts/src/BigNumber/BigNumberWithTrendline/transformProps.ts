@@ -113,60 +113,71 @@ export default function transformProps(
   const xAxisLabel = getXAxisLabel(rawFormData) as string;
   let trendLineData: TimeSeriesDatum[] | undefined;
   let percentChange = 0;
-  let bigNumber = data.length === 0 ? null : data[0][metricName];
-  let timestamp = data.length === 0 ? null : data[0][xAxisLabel];
-  let bigNumberFallback;
+  let bigNumber: number | null =
+    data.length === 0 ? null : (data as any)[0]?.[metricName] ?? null;
+  let timestamp: number | null =
+    data.length === 0 ? null : (data as any)[0]?.[xAxisLabel] ?? null;
+  let bigNumberFallback: TimeSeriesDatum | undefined;
 
   const metricColtypeIndex = colnames.findIndex(name => name === metricName);
   const metricColtype =
     metricColtypeIndex > -1 ? coltypes[metricColtypeIndex] : null;
 
   if (data.length > 0) {
-    const sortedData = (data as BigNumberDatum[])
-      .map(d => [d[xAxisLabel], parseMetricValue(d[metricName])])
-      // sort in time descending order
-      .sort((a, b) => (a[0] !== null && b[0] !== null ? b[0] - a[0] : 0));
+    const sortedAsc: TimeSeriesDatum[] = (data as BigNumberDatum[])
+      .map(
+        d =>
+          [
+            d[xAxisLabel] as number | null,
+            (parseMetricValue(d[metricName]) as number | null) ?? null,
+          ] as [number | null, number | null],
+      )
+      .filter(([ts]) => ts !== null)
+      .sort((a, b) => (a[0]! as number) - (b[0]! as number))
+      .map(([ts, val]) => [ts as number, val] as TimeSeriesDatum);
 
-    bigNumber = sortedData[0][1];
-    timestamp = sortedData[0][0];
-
-    if (bigNumber === null) {
-      bigNumberFallback = sortedData.find(d => d[1] !== null);
-      bigNumber = bigNumberFallback ? bigNumberFallback[1] : null;
-      timestamp = bigNumberFallback ? bigNumberFallback[0] : null;
-    }
-
-    if (compareLag > 0) {
-      const compareIndex = compareLag;
-      if (compareIndex < sortedData.length) {
-        const compareValue = sortedData[compareIndex][1];
-        // compare values must both be non-nulls
-        if (bigNumber !== null && compareValue !== null) {
-          percentChange = compareValue
-            ? (bigNumber - compareValue) / Math.abs(compareValue)
-            : 0;
-          formattedSubheader = `${formatPercentChange(
-            percentChange,
-          )} ${compareSuffix}`;
-        }
+    const cumulative: TimeSeriesDatum[] = [];
+    let run = 0;
+    for (const [ts, val] of sortedAsc) {
+      if (val === null || val === undefined) {
+        cumulative.push([ts, null]);
+      } else {
+        run += Number(val) || 0;
+        cumulative.push([ts, run]);
       }
     }
-    sortedData.reverse();
-    // @ts-ignore
-    trendLineData = showTrendLine ? sortedData : undefined;
+
+    const lastNonNull = [...cumulative].reverse().find(d => d[1] !== null);
+    bigNumber = lastNonNull ? (lastNonNull[1] as number) : null;
+    timestamp = lastNonNull ? (lastNonNull[0] as number) : null;
+    bigNumberFallback = lastNonNull;
+
+    if (compareLag > 0 && cumulative.length > compareLag) {
+      const lastIdx = cumulative.length - 1;
+      const prevIdx = lastIdx - compareLag;
+      const curr = cumulative[lastIdx][1];
+      const prev = cumulative[prevIdx][1];
+      if (curr !== null && prev !== null) {
+        percentChange = prev
+          ? (Number(curr) - Number(prev)) / Math.abs(Number(prev))
+          : 0;
+        formattedSubheader = `${formatPercentChange(
+          percentChange,
+        )} ${compareSuffix}`;
+      }
+    }
+
+    trendLineData = showTrendLine ? cumulative : undefined;
   }
 
   let className = '';
-  if (percentChange > 0) {
-    className = 'positive';
-  } else if (percentChange < 0) {
-    className = 'negative';
-  }
+  if (percentChange > 0) className = 'positive';
+  else if (percentChange < 0) className = 'negative';
 
   let metricEntry: Metric | undefined;
   if (chartProps.datasource?.metrics) {
     metricEntry = chartProps.datasource.metrics.find(
-      metricEntry => metricEntry.metric_name === metric,
+      m => m.metric_name === metric,
     );
   }
 
@@ -193,14 +204,18 @@ export default function transformProps(
 
   if (trendLineData && timeRangeFixed && fromDatetime) {
     const toDatetimeOrToday = toDatetime ?? Date.now();
-    if (!trendLineData[0][0] || trendLineData[0][0] > fromDatetime) {
-      trendLineData.unshift([fromDatetime, null]);
+    if (
+      !trendLineData[0][0] ||
+      (trendLineData[0][0] as number) > (fromDatetime as number)
+    ) {
+      trendLineData.unshift([fromDatetime as number, null]);
     }
     if (
       !trendLineData[trendLineData.length - 1][0] ||
-      trendLineData[trendLineData.length - 1][0]! < toDatetimeOrToday
+      (trendLineData[trendLineData.length - 1][0] as number) <
+        (toDatetimeOrToday as number)
     ) {
-      trendLineData.push([toDatetimeOrToday, null]);
+      trendLineData.push([toDatetimeOrToday as number, null]);
     }
   }
 
@@ -217,34 +232,20 @@ export default function transformProps(
             color: mainColor,
             areaStyle: {
               color: new graphic.LinearGradient(0, 0, 0, 1, [
-                {
-                  offset: 0,
-                  color: mainColor,
-                },
-                {
-                  offset: 1,
-                  color: theme.colors.grayscale.light5,
-                },
+                { offset: 0, color: mainColor },
+                { offset: 1, color: theme.colors.grayscale.light5 },
               ]),
             },
           },
         ],
         xAxis: {
-          min: trendLineData[0][0],
-          max: trendLineData[trendLineData.length - 1][0],
+          min: trendLineData[0][0] as number,
+          max: trendLineData[trendLineData.length - 1][0] as number,
           show: false,
           type: 'value',
         },
-        yAxis: {
-          scale: !startYAxisAtZero,
-          show: false,
-        },
-        grid: {
-          left: 0,
-          right: 0,
-          top: 0,
-          bottom: 0,
-        },
+        yAxis: { scale: !startYAxisAtZero, show: false },
+        grid: { left: 0, right: 0, top: 0, bottom: 0 },
         tooltip: {
           ...getDefaultTooltip(refs),
           show: !inContextMenu,
@@ -253,9 +254,7 @@ export default function transformProps(
         },
         aria: {
           enabled: true,
-          label: {
-            description: `Big number visualization ${subheader}`,
-          },
+          label: { description: `Big number visualization ${subheader}` },
         },
       }
     : {};
