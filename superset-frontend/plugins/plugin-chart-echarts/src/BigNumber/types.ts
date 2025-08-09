@@ -95,5 +95,10 @@ export type BigNumberVizProps = {
   xValueFormatter?: TimeFormatter;
   formData?: BigNumberWithTrendlineFormData;
   refs: Refs;
+
+  /** @deprecated */
   colorThresholdFormatters?: ColorFormatters;
+
+  colorThresholdFormattersBg?: ColorFormatters;
+  colorThresholdFormattersText?: ColorFormatters;
 };
