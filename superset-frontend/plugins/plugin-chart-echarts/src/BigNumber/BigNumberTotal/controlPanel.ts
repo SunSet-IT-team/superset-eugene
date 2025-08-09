@@ -25,43 +25,6 @@ import {
   getStandardizedControls,
 } from '@superset-ui/chart-controls';
 import { headerFontSize, subheaderFontSize } from '../sharedControls';
-function buildMapStateToProps() {
-  return function mapStateToProps(explore: any, _unused: any, chart: any) {
-    const rawVerbose =
-      (explore?.datasource &&
-      (explore.datasource as any)?.hasOwnProperty('verbose_map')
-        ? (explore.datasource as Dataset).verbose_map
-        : explore?.datasource?.columns) ?? {};
-
-    const verboseMap: Record<string, string> =
-      rawVerbose && typeof rawVerbose === 'object' && !Array.isArray(rawVerbose)
-        ? (rawVerbose as Record<string, string>)
-        : {};
-
-    const qr = (chart?.queriesResponse?.[0] ?? {}) as {
-      colnames?: string[];
-      coltypes?: GenericDataType[];
-    };
-
-    const colnames = Array.isArray(qr.colnames) ? qr.colnames : [];
-    const coltypes = Array.isArray(qr.coltypes) ? qr.coltypes : [];
-
-    const numericColumns =
-      colnames.length && coltypes.length
-        ? colnames
-            .filter((name, i) => coltypes[i] === GenericDataType.Numeric)
-            .map(name => ({
-              value: name,
-              label: verboseMap[name] ?? name,
-            }))
-        : [];
-
-    return {
-      columnOptions: numericColumns,
-      verboseMap,
-    };
-  };
-}
 
 export default {
   controlPanelSections: [
@@ -100,41 +63,6 @@ export default {
         ['currency_format'],
         [
           {
-            name: 'conditional_formatting',
-            config: {
-              type: 'ConditionalFormattingControl',
-              renderTrigger: true,
-              label: t('Conditional Formatting (background)'),
-              description: t(
-                'Apply conditional background color formatting based on the metric value',
-              ),
-              shouldMapStateToProps() {
-                return true;
-              },
-              mapStateToProps: buildMapStateToProps(),
-            },
-          },
-        ],
-        [
-          {
-            name: 'conditional_formatting_text',
-            config: {
-              type: 'ConditionalFormattingControl',
-              renderTrigger: true,
-              label: t('Conditional Formatting (text)'),
-              description: t(
-                'Apply conditional text color formatting for the big number',
-              ),
-              shouldMapStateToProps() {
-                return true;
-              },
-              mapStateToProps: buildMapStateToProps(),
-            },
-          },
-        ],
-
-        [
-          {
             name: 'time_format',
             config: {
               type: 'SelectControl',
@@ -158,6 +86,45 @@ export default {
               description: t(
                 'Use date formatting even when metric value is not a timestamp',
               ),
+            },
+          },
+        ],
+        [
+          {
+            name: 'conditional_formatting',
+            config: {
+              type: 'ConditionalFormattingControl',
+              renderTrigger: true,
+              label: t('Conditional Formatting'),
+              description: t('Apply conditional color formatting to metric'),
+              shouldMapStateToProps() {
+                return true;
+              },
+              mapStateToProps(explore, _, chart) {
+                const verboseMap = explore?.datasource?.hasOwnProperty(
+                  'verbose_map',
+                )
+                  ? (explore?.datasource as Dataset)?.verbose_map
+                  : explore?.datasource?.columns ?? {};
+                const { colnames, coltypes } =
+                  chart?.queriesResponse?.[0] ?? {};
+                const numericColumns =
+                  Array.isArray(colnames) && Array.isArray(coltypes)
+                    ? colnames
+                        .filter(
+                          (colname: string, index: number) =>
+                            coltypes[index] === GenericDataType.Numeric,
+                        )
+                        .map(colname => ({
+                          value: colname,
+                          label: verboseMap[colname] ?? colname,
+                        }))
+                    : [];
+                return {
+                  columnOptions: numericColumns,
+                  verboseMap,
+                };
+              },
             },
           },
         ],

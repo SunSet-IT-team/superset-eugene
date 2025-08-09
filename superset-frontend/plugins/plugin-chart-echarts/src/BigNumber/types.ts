@@ -27,10 +27,7 @@ import {
   TimeFormatter,
   ValueFormatter,
 } from '@superset-ui/core';
-import {
-  ColorFormatters,
-  ConditionalFormattingConfig,
-} from '@superset-ui/chart-controls';
+import { ColorFormatters } from '@superset-ui/chart-controls';
 import { BaseChartProps, Refs } from '../types';
 
 export interface BigNumberDatum {
@@ -41,12 +38,14 @@ export type BigNumberTotalFormData = QueryFormData & {
   metric?: QueryFormMetric;
   yAxisFormat?: string;
   forceTimestampFormatting?: boolean;
-  conditionalFormatting?: ConditionalFormattingConfig[];
-  conditionalFormattingText?: ConditionalFormattingConfig[];
 };
 
 export type BigNumberWithTrendlineFormData = BigNumberTotalFormData & {
-  colorPicker: { r: number; g: number; b: number };
+  colorPicker: {
+    r: number;
+    g: number;
+    b: number;
+  };
   compareLag?: string | number;
 };
 
@@ -96,6 +95,5 @@ export type BigNumberVizProps = {
   xValueFormatter?: TimeFormatter;
   formData?: BigNumberWithTrendlineFormData;
   refs: Refs;
-  colorThresholdFormattersBg?: ColorFormatters; // backgroundColor
-  colorThresholdFormattersText?: ColorFormatters; // textColor
+  colorThresholdFormatters?: ColorFormatters;
 };

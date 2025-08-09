@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import { smartDateFormatter, t, GenericDataType } from '@superset-ui/core';
+import { smartDateFormatter, t } from '@superset-ui/core';
 import {
   ControlPanelConfig,
   ControlSubSectionHeader,
@@ -24,7 +24,6 @@ import {
   D3_TIME_FORMAT_OPTIONS,
   getStandardizedControls,
   temporalColumnMixin,
-  Dataset,
 } from '@superset-ui/chart-controls';
 import React from 'react';
 import { headerFontSize, subheaderFontSize } from '../sharedControls';
@@ -119,6 +118,7 @@ const config: ControlPanelConfig = {
               renderTrigger: true,
               visibility(props) {
                 const { time_range: timeRange } = props.form_data;
+                // only display this option when a time range is selected
                 return !!timeRange && timeRange !== 'No filter';
               },
             },
@@ -135,7 +135,6 @@ const config: ControlPanelConfig = {
         [subheaderFontSize],
         ['y_axis_format'],
         ['currency_format'],
-
         [
           {
             name: 'time_format',
@@ -164,94 +163,13 @@ const config: ControlPanelConfig = {
             },
           },
         ],
-        [
-          {
-            name: 'conditional_formatting',
-            config: {
-              type: 'ConditionalFormattingControl',
-              renderTrigger: true,
-              label: t('Conditional Formatting (background)'),
-              description: t(
-                'Apply conditional color formatting to the background based on the metric value',
-              ),
-              shouldMapStateToProps() {
-                return true;
-              },
-              mapStateToProps(explore, _, chart) {
-                const verboseMap = explore?.datasource?.hasOwnProperty(
-                  'verbose_map',
-                )
-                  ? (explore?.datasource as Dataset)?.verbose_map
-                  : explore?.datasource?.columns ?? {};
-                const { colnames, coltypes } =
-                  chart?.queriesResponse?.[0] ?? {};
-                const numericColumns =
-                  Array.isArray(colnames) && Array.isArray(coltypes)
-                    ? colnames
-                        .filter(
-                          (colname: string, index: number) =>
-                            coltypes[index] === GenericDataType.Numeric,
-                        )
-                        .map(colname => ({
-                          value: colname,
-                          label: (verboseMap as any)[colname] ?? colname,
-                        }))
-                    : [];
-                return {
-                  columnOptions: numericColumns,
-                  verboseMap,
-                };
-              },
-            },
-          },
-        ],
-        [
-          {
-            name: 'conditional_formatting_text',
-            config: {
-              type: 'ConditionalFormattingControl',
-              renderTrigger: true,
-              label: t('Conditional Formatting (text)'),
-              description: t(
-                'Apply conditional color formatting to the number text',
-              ),
-              shouldMapStateToProps() {
-                return true;
-              },
-              mapStateToProps(explore, _, chart) {
-                const verboseMap = explore?.datasource?.hasOwnProperty(
-                  'verbose_map',
-                )
-                  ? (explore?.datasource as Dataset)?.verbose_map
-                  : explore?.datasource?.columns ?? {};
-                const { colnames, coltypes } =
-                  chart?.queriesResponse?.[0] ?? {};
-                const numericColumns =
-                  Array.isArray(colnames) && Array.isArray(coltypes)
-                    ? colnames
-                        .filter(
-                          (colname: string, index: number) =>
-                            coltypes[index] === GenericDataType.Numeric,
-                        )
-                        .map(colname => ({
-                          value: colname,
-                          label: (verboseMap as any)[colname] ?? colname,
-                        }))
-                    : [];
-                return {
-                  columnOptions: numericColumns,
-                  verboseMap,
-                };
-              },
-            },
-          },
-        ],
       ],
     },
     {
       label: t('Advanced Analytics'),
       expanded: false,
       controlSetRows: [
+        // eslint-disable-next-line react/jsx-key
         [
           <ControlSubSectionHeader>
             {t('Rolling Window')}
@@ -272,7 +190,8 @@ const config: ControlPanelConfig = {
                 ['cumsum', t('cumsum')],
               ],
               description: t(
-                'Defines a rolling window function to apply, works along with the [Periods] text box',
+                'Defines a rolling window function to apply, works along ' +
+                  'with the [Periods] text box',
               ),
             },
           },
@@ -285,7 +204,8 @@ const config: ControlPanelConfig = {
               label: t('Periods'),
               isInt: true,
               description: t(
-                'Defines the size of the rolling window function, relative to the time granularity selected',
+                'Defines the size of the rolling window function, ' +
+                  'relative to the time granularity selected',
               ),
             },
           },
@@ -298,7 +218,11 @@ const config: ControlPanelConfig = {
               label: t('Min Periods'),
               isInt: true,
               description: t(
-                'The minimum number of rolling periods required to show a value',
+                'The minimum number of rolling periods required to show ' +
+                  'a value. For instance if you do a cumulative sum on 7 days ' +
+                  'you may want your "Min Period" to be 7, so that all data points ' +
+                  'shown are the total of 7 periods. This will hide the "ramp up" ' +
+                  'taking place over the first 7 periods',
               ),
             },
           },
@@ -352,8 +276,13 @@ const config: ControlPanelConfig = {
     },
   ],
   controlOverrides: {
-    y_axis_format: { label: t('Number format') },
-    x_axis: { label: t('TEMPORAL X-AXIS'), ...temporalColumnMixin },
+    y_axis_format: {
+      label: t('Number format'),
+    },
+    x_axis: {
+      label: t('TEMPORAL X-AXIS'),
+      ...temporalColumnMixin,
+    },
   },
   formDataOverrides: formData => ({
     ...formData,

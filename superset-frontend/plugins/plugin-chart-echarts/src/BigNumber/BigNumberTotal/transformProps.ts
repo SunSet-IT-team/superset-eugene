@@ -19,6 +19,7 @@
 import {
   ColorFormatters,
   getColorFormatters,
+  Metric,
 } from '@superset-ui/chart-controls';
 import {
   GenericDataType,
@@ -26,7 +27,6 @@ import {
   extractTimegrain,
   QueryFormData,
   getValueFormatter,
-  Metric,
 } from '@superset-ui/core';
 import { BigNumberTotalChartProps, BigNumberVizProps } from '../types';
 import { getDateFormatter, parseMetricValue } from '../utils';
@@ -52,23 +52,21 @@ export default function transformProps(
     forceTimestampFormatting,
     timeFormat,
     yAxisFormat,
+    conditionalFormatting,
     currencyFormat,
-    conditionalFormatting, // background
-    conditionalFormattingText, // text
-  } = formData as any;
-
+  } = formData;
   const refs: Refs = {};
-  const { data = [], coltypes = [] } = queriesData[0] ?? {};
+  const { data = [], coltypes = [] } = queriesData[0];
   const granularity = extractTimegrain(rawFormData as QueryFormData);
   const metricName = getMetricLabel(metric);
   const formattedSubheader = subheader;
   const bigNumber =
-    data.length === 0 ? null : parseMetricValue((data as any)[0]?.[metricName]);
+    data.length === 0 ? null : parseMetricValue(data[0][metricName]);
 
   let metricEntry: Metric | undefined;
   if (chartProps.datasource?.metrics) {
-    metricEntry = (chartProps.datasource.metrics as Metric[] | undefined)?.find(
-      m => (m as any).metric_name === metric,
+    metricEntry = chartProps.datasource.metrics.find(
+      metricItem => metricItem.metric_name === metric,
     );
   }
 
@@ -95,11 +93,11 @@ export default function transformProps(
 
   const { onContextMenu } = hooks;
 
-  const empty = [] as ColorFormatters;
-  const colorThresholdFormattersBg =
-    getColorFormatters(conditionalFormatting, data, false) ?? empty;
-  const colorThresholdFormattersText =
-    getColorFormatters(conditionalFormattingText, data, false) ?? empty;
+  const defaultColorFormatters = [] as ColorFormatters;
+
+  const colorThresholdFormatters =
+    getColorFormatters(conditionalFormatting, data, false) ??
+    defaultColorFormatters;
 
   return {
     width,
@@ -111,8 +109,6 @@ export default function transformProps(
     subheader: formattedSubheader,
     onContextMenu,
     refs,
-
-    colorThresholdFormattersBg,
-    colorThresholdFormattersText,
+    colorThresholdFormatters,
   };
 }
