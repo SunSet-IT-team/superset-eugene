@@ -31,7 +31,7 @@ import {
   sharedControls,
   SORT_SERIES_CHOICES,
 } from '@superset-ui/chart-controls';
-import { JsonArray, t } from '@superset-ui/core';
+import { JsonArray, t, validateNumber } from '@superset-ui/core';
 import {
   legendAdvancedSection,
   paddingSection,
@@ -346,16 +346,14 @@ const config: ControlPanelConfig = {
           {
             name: 'minBarPercent',
             config: {
-              type: 'SliderControl',
+              type: 'TextControl',
               label: t('Minimum bar threshold (%)'),
               renderTrigger: true,
-              min: 0,
-              max: 100,
-              step: 0.1,
-              default: 0,
+              default: '0',
               description: t(
-                'Hide value labels on bars that are less than this percentage of their series total',
+                'Hide value labels on bars that are less than this percentage of their series total. Enter a number between 0 and 100.',
               ),
+              validators: [validateNumber({ min: 0, max: 100 })],
               visibility: ({ controls }: ControlPanelsContainerProps) =>
                 Boolean(controls?.show_value?.value),
             },
