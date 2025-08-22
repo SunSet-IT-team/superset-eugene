@@ -86,6 +86,7 @@ type DashboardInfo = {
   title: string;
   slug: string;
   certifiedBy: string;
+  businessUnit: string;
   certificationDetails: string;
   isManagedExternally: boolean;
 };
@@ -112,6 +113,7 @@ const PropertiesModal = ({
   const [roles, setRoles] = useState<Roles>([]);
   const saveLabel = onlyApply ? t('Apply') : t('Save');
   const [tags, setTags] = useState<TagType[]>([]);
+  const [dashboardIconUrl, setDashboardIconUrl] = useState<string>(''); // Ссылка на икноку
   const categoricalSchemeRegistry = getCategoricalSchemeRegistry();
 
   const tagsAsSelectValues = useMemo(() => {
@@ -125,20 +127,38 @@ const PropertiesModal = ({
 
   const handleErrorResponse = async (response: Response) => {
     const { error, statusText, message } = await getClientErrorObject(response);
-    let errorText = error || statusText || t('An error has occurred');
-    if (typeof message === 'object' && 'json_metadata' in message) {
-      errorText = (message as { json_metadata: string }).json_metadata;
-    } else if (typeof message === 'string') {
-      errorText = message;
 
-      if (message === 'Forbidden') {
-        errorText = t('You do not have permission to edit this dashboard');
+    let baseText = error || statusText || t('An error has occurred');
+    let content: React.ReactNode = baseText;
+
+    if (typeof message === 'string') {
+      content =
+        message === 'Forbidden'
+          ? t('You do not have permission to edit this dashboard')
+          : message;
+    } else if (typeof message === 'object' && message) {
+      const jm = (message as any).json_metadata;
+      if (jm !== undefined) {
+        content =
+          typeof jm === 'string' ? (
+            jm
+          ) : (
+            <pre style={{ whiteSpace: 'pre-wrap', margin: 0 }}>
+              {JSON.stringify(jm, null, 2)}
+            </pre>
+          );
+      } else {
+        content = (
+          <pre style={{ whiteSpace: 'pre-wrap', margin: 0 }}>
+            {JSON.stringify(message, null, 2)}
+          </pre>
+        );
       }
     }
 
     Modal.error({
       title: t('Error'),
-      content: errorText,
+      content,
       okButtonProps: { danger: true, className: 'btn-danger' },
     });
   };
@@ -174,6 +194,7 @@ const PropertiesModal = ({
         dashboard_title,
         slug,
         certified_by,
+        business_unit,
         certification_details,
         owners,
         roles,
@@ -185,6 +206,7 @@ const PropertiesModal = ({
         title: dashboard_title,
         slug: slug || '',
         certifiedBy: certified_by || '',
+        businessUnit: business_unit || '',
         certificationDetails: certification_details || '',
         isManagedExternally: is_managed_externally || false,
       };
@@ -202,9 +224,23 @@ const PropertiesModal = ({
       ]);
 
       setJsonMetadata(metaDataCopy ? jsonStringify(metaDataCopy) : '');
+      setDashboardIconUrl(metaDataCopy?.thumbnail_override ?? '');
     },
     [form],
   );
+
+  useEffect(() => {
+    try {
+      const obj = jsonMetadata?.length ? JSON.parse(jsonMetadata) : {};
+      if (typeof obj.thumbnail_override === 'string') {
+        setDashboardIconUrl(obj.thumbnail_override);
+      } else {
+        setDashboardIconUrl('');
+      }
+    } catch {
+      setDashboardIconUrl('');
+    }
+  }, [jsonMetadata]);
 
   const fetchDashboardDetails = useCallback(() => {
     setIsLoading(true);
@@ -345,14 +381,14 @@ const PropertiesModal = ({
   };
 
   const onFinish = () => {
-    const { title, slug, certifiedBy, certificationDetails } =
+    const { title, slug, businessUnit, certifiedBy, certificationDetails } =
       form.getFieldsValue();
     let currentColorScheme = colorScheme;
     let colorNamespace = '';
     let currentJsonMetadata = jsonMetadata;
 
     // validate currentJsonMetadata
-    let metadata;
+    let metadata: any;
     try {
       if (
         !currentJsonMetadata.startsWith('{') ||
@@ -394,6 +430,14 @@ const PropertiesModal = ({
       metadata.shared_label_colors = {};
       metadata.color_scheme_domain = [];
     }
+    const trimmedIcon =
+      typeof dashboardIconUrl === 'string' ? dashboardIconUrl.trim() : '';
+
+    if (trimmedIcon) {
+      metadata.thumbnail_override = trimmedIcon; // кладём вд json_metadata
+    } else {
+      delete metadata.thumbnail_override; // очищаем если пусто
+    }
 
     currentJsonMetadata = jsonStringify(metadata);
 
@@ -434,6 +478,7 @@ const PropertiesModal = ({
       owners,
       colorScheme: currentColorScheme,
       colorNamespace,
+      businessUnit,
       certifiedBy,
       certificationDetails,
       ...moreOnSubmitProps,
@@ -451,6 +496,7 @@ const PropertiesModal = ({
           slug: slug || null,
           json_metadata: currentJsonMetadata || null,
           owners: (owners || []).map(o => o.id),
+          business_unit: businessUnit || null,
           certified_by: certifiedBy || null,
           certification_details:
             certifiedBy && certificationDetails ? certificationDetails : null,
@@ -724,6 +770,33 @@ const PropertiesModal = ({
             </StyledFormItem>
             <p className="help-block">
               {t('Any additional detail to show in the certification tooltip.')}
+            </p>
+          </Col>
+        </Row>
+        <Row gutter={16}>
+          <Col xs={24} md={12}>
+            <StyledFormItem label={t('Business unit')} name="businessUnit">
+              <Input type="text" disabled={isLoading} />
+            </StyledFormItem>
+          </Col>
+        </Row>
+        <Row gutter={16}>
+          <Col xs={24} md={12}>
+            <StyledFormItem label={t('Icon image URL')}>
+              <Input
+                type="text"
+                disabled={isLoading}
+                value={dashboardIconUrl}
+                onChange={e => setDashboardIconUrl(e.target.value)}
+                placeholder={t('https://… or data:image/png;base64,…')}
+                data-test="dashboard-icon-url-input"
+                allowClear
+              />
+            </StyledFormItem>
+            <p className="help-block">
+              {t(
+                'Link to an image for the dashboard icon (http(s) or data URI).',
+              )}
             </p>
           </Col>
         </Row>
