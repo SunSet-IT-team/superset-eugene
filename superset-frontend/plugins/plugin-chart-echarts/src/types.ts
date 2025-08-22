@@ -84,6 +84,7 @@ export enum LegendOrientation {
 export enum LegendType {
   Scroll = 'scroll',
   Plain = 'plain',
+  Limited3 = 'limited3',
 }
 
 export type ForecastValue = {
