@@ -53,6 +53,7 @@ export default function transformProps(
     timeFormat,
     yAxisFormat,
     conditionalFormatting,
+    conditionalFormattingText,
     currencyFormat,
   } = formData;
   const refs: Refs = {};
@@ -93,12 +94,14 @@ export default function transformProps(
 
   const { onContextMenu } = hooks;
 
-  const defaultColorFormatters = [] as ColorFormatters;
-
-  const colorThresholdFormatters =
+  const defaultColorFormatters: ColorFormatters = [];
+  const colorThresholdFormattersBg =
     getColorFormatters(conditionalFormatting, data, false) ??
     defaultColorFormatters;
 
+  const colorThresholdFormattersText =
+    getColorFormatters(conditionalFormattingText, data, false) ??
+    defaultColorFormatters;
   return {
     width,
     height,
@@ -109,6 +112,7 @@ export default function transformProps(
     subheader: formattedSubheader,
     onContextMenu,
     refs,
-    colorThresholdFormatters,
+    colorThresholdFormattersBg,
+    colorThresholdFormattersText,
   };
 }
