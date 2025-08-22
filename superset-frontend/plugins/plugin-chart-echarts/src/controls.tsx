@@ -34,6 +34,7 @@ import {
 } from './constants';
 import { defaultXAxis } from './defaults';
 import { DEFAULT_FORM_DATA } from './Timeseries/constants';
+import { LegendType } from './types';
 
 const {
   legendFontSize,
@@ -64,7 +65,7 @@ const legendFontSizeControl: ControlSetItem = {
     renderTrigger: true,
     isInt: true,
     default: legendFontSize,
-    description: t('Legend\'s font size'),
+    description: t("Legend's font size"),
     visibility: ({ controls }: ControlPanelsContainerProps) =>
       Boolean(controls?.show_legend?.value),
   },
@@ -91,8 +92,9 @@ const legendTypeControl: ControlSetItem = {
     freeForm: false,
     label: t('Type'),
     choices: [
-      ['scroll', t('Scroll')],
-      ['plain', t('Plain')],
+      [LegendType.Scroll, t('Scroll')],
+      [LegendType.Plain, t('Plain')],
+      [LegendType.Limited3, t('3 строки')],
     ],
     default: legendType,
     renderTrigger: true,
