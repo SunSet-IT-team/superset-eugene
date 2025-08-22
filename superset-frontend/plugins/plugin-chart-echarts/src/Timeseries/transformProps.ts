@@ -104,6 +104,7 @@ import {
   OrientationType,
   TimeseriesChartTransformedProps,
 } from './types';
+import { legendOptionFor } from '../utils/legend';
 
 export default function transformProps(
   chartProps: EchartsTimeseriesChartProps,

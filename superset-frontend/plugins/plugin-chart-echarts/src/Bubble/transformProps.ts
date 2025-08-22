@@ -28,13 +28,14 @@ import {
 import { EchartsBubbleChartProps, EchartsBubbleFormData } from './types';
 import { DEFAULT_FORM_DATA, MINIMUM_BUBBLE_SIZE } from './constants';
 import { defaultGrid } from '../defaults';
-import { getLegendProps, getMinAndMaxFromBounds } from '../utils/series';
+import { getMinAndMaxFromBounds } from '../utils/series';
 import { Refs } from '../types';
 import { parseAxisBound } from '../utils/controls';
 import { getDefaultTooltip } from '../utils/tooltip';
 import { getPadding } from '../Timeseries/transformers';
 import { convertInteger } from '../utils/convertInteger';
 import { NULL_STRING } from '../constants';
+import { legendOptionFor } from '../utils/legend';
 
 function normalizeSymbolSize(
   nodes: ScatterSeriesOption[],
@@ -158,6 +159,20 @@ export default function transformProps(chartProps: EchartsBubbleChartProps) {
     convertInteger(xAxisTitleMargin),
   );
 
+  const keys = (series || [])
+    .map(s => (s as any)?.name ?? (s as any)?.id)
+    .filter(k => typeof k === 'string' || typeof k === 'number')
+    .map(k => String(k))
+    .filter(k => k.length > 0);
+
+  const legend = legendOptionFor(
+    keys,
+    legendType,
+    legendOrientation,
+    showLegend,
+    theme,
+  );
+
   const xAxisType = logXAxis ? AxisType.Log : AxisType.Value;
   const echartOptions: EChartsCoreOption = {
     series,
@@ -198,10 +213,7 @@ export default function transformProps(chartProps: EchartsBubbleChartProps) {
       max: yAxisMax,
       type: logYAxis ? AxisType.Log : AxisType.Value,
     },
-    legend: {
-      ...getLegendProps(legendType, legendOrientation, showLegend, theme),
-      data: Array.from(legends),
-    },
+    legend,
     tooltip: {
       show: !inContextMenu,
       ...getDefaultTooltip(refs),

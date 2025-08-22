@@ -37,11 +37,11 @@ import { DEFAULT_GRAPH_SERIES_OPTION } from './constants';
 import {
   getChartPadding,
   getColtypesMapping,
-  getLegendProps,
   sanitizeHtml,
 } from '../utils/series';
 import { getDefaultTooltip } from '../utils/tooltip';
 import { Refs } from '../types';
+import { legendOptionFor } from '../utils/legend';
 
 type EdgeWithStyles = GraphEdgeItemOption & {
   lineStyle: Exclude<GraphEdgeItemOption['lineStyle'], undefined>;
@@ -315,6 +315,20 @@ export default function transformProps(
     },
   ];
 
+  const keys = (series || [])
+    .map(s => (s as any)?.name ?? (s as any)?.id)
+    .filter(k => typeof k === 'string' || typeof k === 'number')
+    .map(k => String(k))
+    .filter(k => k.length > 0);
+
+  const legend = legendOptionFor(
+    keys,
+    legendType,
+    legendOrientation,
+    showLegend,
+    theme,
+  );
+
   const echartOptions: EChartsCoreOption = {
     animationDuration: DEFAULT_GRAPH_SERIES_OPTION.animationDuration,
     animationEasing: DEFAULT_GRAPH_SERIES_OPTION.animationEasing,
@@ -329,10 +343,7 @@ export default function transformProps(
           nodes,
         ),
     },
-    legend: {
-      ...getLegendProps(legendType, legendOrientation, showLegend, theme),
-      data: categoryList,
-    },
+    legend,
     series,
   };
 

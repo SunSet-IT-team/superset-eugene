@@ -40,13 +40,13 @@ import {
   extractGroupbyLabel,
   getChartPadding,
   getColtypesMapping,
-  getLegendProps,
   sanitizeHtml,
 } from '../utils/series';
 import { defaultGrid } from '../defaults';
 import { DEFAULT_LEGEND_FORM_DATA, OpacityEnum } from '../constants';
 import { getDefaultTooltip } from '../utils/tooltip';
 import { Refs } from '../types';
+import { legendOptionFor } from '../utils/legend';
 
 const percentFormatter = getNumberFormatter(NumberFormats.PERCENT_2_POINT);
 
@@ -230,6 +230,20 @@ export default function transformProps(
     color: theme.colors.grayscale.dark2,
   };
 
+  const keys = (series || [])
+    .map(s => (s as any)?.name ?? (s as any)?.id)
+    .filter(k => typeof k === 'string' || typeof k === 'number')
+    .map(k => String(k))
+    .filter(k => k.length > 0);
+
+  const legend = legendOptionFor(
+    keys,
+    legendType,
+    legendOrientation,
+    showLegend,
+    theme,
+  );
+
   const series: FunnelSeriesOption[] = [
     {
       type: 'funnel',
@@ -274,10 +288,7 @@ export default function transformProps(
           percentCalculationType,
         }),
     },
-    legend: {
-      ...getLegendProps(legendType, legendOrientation, showLegend, theme),
-      data: keys,
-    },
+    legend,
     series,
   };
 

@@ -63,7 +63,6 @@ import {
   extractShowValueIndexes,
   getAxisType,
   getColtypesMapping,
-  getLegendProps,
   getMinAndMaxFromBounds,
   getOverMaxHiddenFormatter,
 } from '../utils/series';
@@ -94,6 +93,7 @@ import {
   getXAxisFormatter,
   getYAxisFormatter,
 } from '../utils/formatters';
+import { legendOptionFor } from '../utils/legend';
 
 const getFormatter = (
   customFormatters: Record<string, ValueFormatter>,
@@ -500,6 +500,21 @@ export default function transformProps(
     convertInteger(xAxisTitleMargin),
   );
 
+  const keys = (series || [])
+    .map(s => (s as any)?.name ?? (s as any)?.id)
+    .filter(k => typeof k === 'string' || typeof k === 'number')
+    .map(k => String(k))
+    .filter(k => k.length > 0);
+
+  const legend = legendOptionFor(
+    keys,
+    legendType,
+    legendOrientation,
+    showLegend,
+    theme,
+    zoomable,
+  );
+
   const { setDataMask = () => {}, onContextMenu } = hooks;
   const alignTicks = yAxisIndex !== yAxisIndexB;
 
@@ -649,13 +664,7 @@ export default function transformProps(
       },
     },
     legend: {
-      ...getLegendProps(
-        legendType,
-        legendOrientation,
-        showLegend,
-        theme,
-        zoomable,
-      ),
+      legend,
       formatter: v => getXAxisCategoryFormatter(true, chartLevel)(v),
       // @ts-ignore
       data: rawSeriesA

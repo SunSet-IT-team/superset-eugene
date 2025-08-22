@@ -40,11 +40,11 @@ import {
   extractGroupbyLabel,
   getChartPadding,
   getColtypesMapping,
-  getLegendProps,
 } from '../utils/series';
 import { defaultGrid } from '../defaults';
 import { Refs } from '../types';
 import { getDefaultTooltip } from '../utils/tooltip';
+import { legendOptionFor } from '../utils/legend';
 
 export function formatLabel({
   params,
@@ -227,6 +227,20 @@ export default function transformProps(
     },
   ];
 
+  const keys = (series || [])
+    .map(s => (s as any)?.name ?? (s as any)?.id)
+    .filter(k => typeof k === 'string' || typeof k === 'number')
+    .map(k => String(k))
+    .filter(k => k.length > 0);
+
+  const legend = legendOptionFor(
+    keys,
+    legendType,
+    legendOrientation,
+    showLegend,
+    theme,
+  );
+
   const echartOptions: EChartsCoreOption = {
     grid: {
       ...defaultGrid,
@@ -236,10 +250,7 @@ export default function transformProps(
       show: !inContextMenu,
       trigger: 'item',
     },
-    legend: {
-      ...getLegendProps(legendType, legendOrientation, showLegend, theme),
-      data: Array.from(columnsLabelMap.keys()),
-    },
+    legend,
     series,
     radar: {
       shape: isCircle ? 'circle' : 'polygon',
