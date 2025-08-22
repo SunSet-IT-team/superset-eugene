@@ -27,7 +27,6 @@ import {
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { rgba } from 'emotion-rgba';
 import { AntdSlider } from 'src/components';
-import { InputNumber } from 'src/components/Input';
 import { FilterBarOrientation } from 'src/dashboard/types';
 import { PluginFilterRangeProps } from './types';
 import { StatusMessage, StyledFormItem, FilterPluginStyle } from '../common';
@@ -127,21 +126,6 @@ const Wrapper = styled.div<{
       }
     }
   `}
-`;
-
-const InputContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.gridUnit * 2}px;
-  margin-bottom: ${({ theme }) => theme.gridUnit * 2}px;
-`;
-
-const StyledInputNumber = styled(InputNumber)`
-  width: 80px;
-  
-  .ant-input-number-handler-wrap {
-    display: none;
-  }
 `;
 
 const numberFormatter = getNumberFormatter(NumberFormats.SMART_NUMBER);
@@ -253,53 +237,6 @@ export default function RangeFilterPlugin(props: PluginFilterRangeProps) {
     setValue(value);
   }, []);
 
-  const handleMinInputChange = useCallback(
-    (newMin: number | null) => {
-      if (newMin === null || Number.isNaN(newMin)) return;
-      
-      if (newMin < min) newMin = min;
-      if (newMin > max) newMin = max;
-      
-      let newValue: [number, number];
-      
-      if (enableSingleMinValue) {
-        newValue = [newMin, max];
-      } else if (enableSingleExactValue) {
-        newValue = [newMin, newMin];
-      } else {
-        const currentMax = enableSingleMaxValue ? minMax[maxIndex] : Math.max(newMin, minMax[maxIndex]);
-        newValue = [newMin, currentMax];
-      }
-      
-      handleAfterChange(newValue);
-    },
-    [min, max, minMax, enableSingleMinValue, enableSingleMaxValue, enableSingleExactValue, handleAfterChange],
-  );
-
-  const handleMaxInputChange = useCallback(
-    (newMax: number | null) => {
-      if (newMax === null || Number.isNaN(newMax)) return;
-      
-      // Validate bounds
-      if (newMax < min) newMax = min;
-      if (newMax > max) newMax = max;
-      
-      let newValue: [number, number];
-      
-      if (enableSingleMaxValue) {
-        newValue = [min, newMax];
-      } else if (enableSingleExactValue) {
-        newValue = [newMax, newMax];
-      } else {
-        const currentMin = enableSingleMinValue ? minMax[minIndex] : Math.min(newMax, minMax[minIndex]);
-        newValue = [currentMin, newMax];
-      }
-      
-      handleAfterChange(newValue);
-    },
-    [min, max, minMax, enableSingleMinValue, enableSingleMaxValue, enableSingleExactValue, handleAfterChange],
-  );
-
   useEffect(() => {
     // when switch filter type and queriesData still not updated we need ignore this case (in FilterBar)
     if (row?.min === undefined && row?.max === undefined) {
@@ -373,74 +310,6 @@ export default function RangeFilterPlugin(props: PluginFilterRangeProps) {
 
   const step = max - min <= 1 ? stepHeuristic(min, max) : 1;
 
-  const renderInputFields = () => {
-    if (enableSingleExactValue) {
-      return (
-        <InputContainer>
-          <StyledInputNumber
-            min={min}
-            max={max}
-            step={step}
-            value={minMax[minIndex]}
-            onChange={handleMinInputChange}
-            onPressEnter={() => {}}
-          />
-        </InputContainer>
-      );
-    }
-
-    if (enableSingleMinValue) {
-      return (
-        <InputContainer>
-          <StyledInputNumber
-            min={min}
-            max={max}
-            step={step}
-            value={minMax[minIndex]}
-            onChange={handleMinInputChange}
-            onPressEnter={() => {}}
-          />
-        </InputContainer>
-      );
-    }
-
-    if (enableSingleMaxValue) {
-      return (
-        <InputContainer>
-          <StyledInputNumber
-            min={min}
-            max={max}
-            step={step}
-            value={minMax[maxIndex]}
-            onChange={handleMaxInputChange}
-            onPressEnter={() => {}}
-          />
-        </InputContainer>
-      );
-    }
-
-    return (
-      <InputContainer>
-        <StyledInputNumber
-          min={min}
-          max={minMax[maxIndex]}
-          step={step}
-          value={minMax[minIndex]}
-          onChange={handleMinInputChange}
-          onPressEnter={() => {}}
-        />
-        <StyledInputNumber
-          min={minMax[minIndex]}
-          max={max}
-          step={step}
-          value={minMax[maxIndex]}
-          onChange={handleMaxInputChange}
-          onPressEnter={() => {}}
-        />
-      </InputContainer>
-    );
-  };
-
   return (
     <FilterPluginStyle height={height} width={width}>
       {Number.isNaN(Number(min)) || Number.isNaN(Number(max)) ? (
@@ -460,7 +329,6 @@ export default function RangeFilterPlugin(props: PluginFilterRangeProps) {
             onMouseDown={() => setFilterActive(true)}
             onMouseUp={() => setFilterActive(false)}
           >
-            {renderInputFields()}
             {enableSingleMaxValue && (
               <AntdSlider
                 min={min}

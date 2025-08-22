@@ -1,13 +1,20 @@
 /**
  * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements. See the NOTICE file
+ * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
- * regarding copyright ownership. The ASF licenses this file
+ * regarding copyright ownership.  The ASF licenses this file
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at
+ * with the License.  You may obtain a copy of the License at
  *
  *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 import React, { MouseEvent } from 'react';
 import {
@@ -59,44 +66,29 @@ class BigNumberVis extends React.PureComponent<BigNumberVizProps> {
     return `${names} no-trendline`;
   }
 
-<<<<<<< HEAD
   getBackgroundColor() {
     const { bigNumber, colorThresholdFormatters } = this.props;
 
     if (
       !colorThresholdFormatters ||
       colorThresholdFormatters.length === 0 ||
-=======
-  // === NEW: background color from background rules ===
-  getBackgroundColor() {
-    const { bigNumber, colorThresholdFormattersBg } = this.props;
-    if (
-      !Array.isArray(colorThresholdFormattersBg) ||
-      colorThresholdFormattersBg.length === 0 ||
->>>>>>> origin/feat/dashboardIconField
       bigNumber === null
     ) {
       return undefined;
     }
-<<<<<<< HEAD
 
     const color = colorThresholdFormatters
       .map(formatter => formatter.getColorFromValue(bigNumber as number))
       .find(color => color);
 
     return color;
-=======
-    return colorThresholdFormattersBg
-      .map(fmt => fmt.getColorFromValue(bigNumber as number))
-      .find(Boolean);
->>>>>>> origin/feat/dashboardIconField
   }
 
   createTemporaryContainer() {
     const container = document.createElement('div');
     container.className = this.getClassName();
-    container.style.position = 'absolute';
-    container.style.opacity = '0';
+    container.style.position = 'absolute'; // so it won't disrupt page layout
+    container.style.opacity = '0'; // and not visible
     return container;
   }
 
@@ -141,19 +133,24 @@ class BigNumberVis extends React.PureComponent<BigNumberVizProps> {
     container.remove();
 
     return (
-      <div className="kicker" style={{ fontSize, height: maxHeight }}>
+      <div
+        className="kicker"
+        style={{
+          fontSize,
+          height: maxHeight,
+        }}
+      >
         {text}
       </div>
     );
   }
 
   renderHeader(maxHeight: number) {
-    const { bigNumber, headerFormatter, width, colorThresholdFormattersText } =
+    const { bigNumber, headerFormatter, width, colorThresholdFormatters } =
       this.props;
     // @ts-ignore
     const text = bigNumber === null ? t('No data') : headerFormatter(bigNumber);
 
-<<<<<<< HEAD
     const hasThresholdColorFormatter =
       Array.isArray(colorThresholdFormatters) &&
       colorThresholdFormatters.length > 0;
@@ -174,28 +171,13 @@ class BigNumberVis extends React.PureComponent<BigNumberVizProps> {
       });
     } else {
       numberColor = 'inherit';
-=======
-    // === NEW: text color from text rules (fallback: inherit) ===
-    let numberColor: string | undefined;
-    if (
-      Array.isArray(colorThresholdFormattersText) &&
-      colorThresholdFormattersText.length > 0
-    ) {
-      colorThresholdFormattersText.forEach(fmt => {
-        const c = bigNumber
-          ? fmt.getColorFromValue(bigNumber as number)
-          : undefined;
-        if (c) numberColor = c;
-      });
->>>>>>> origin/feat/dashboardIconField
     }
-    if (!numberColor) numberColor = 'inherit';
 
     const container = this.createTemporaryContainer();
     document.body.append(container);
     const fontSize = computeMaxFontSize({
       text,
-      maxWidth: width - 8, // a bit tighter for accurate fit
+      maxWidth: width - 8, // Decrease 8px for more precise font size
       maxHeight,
       className: 'header-line',
       container,
@@ -212,7 +194,11 @@ class BigNumberVis extends React.PureComponent<BigNumberVizProps> {
     return (
       <div
         className="header-line"
-        style={{ fontSize, height: maxHeight, color: numberColor }}
+        style={{
+          fontSize,
+          height: maxHeight,
+          color: numberColor,
+        }}
         onContextMenu={onContextMenu}
       >
         {text}
@@ -247,7 +233,13 @@ class BigNumberVis extends React.PureComponent<BigNumberVizProps> {
       container.remove();
 
       return (
-        <div className="subheader-line" style={{ fontSize, height: maxHeight }}>
+        <div
+          className="subheader-line"
+          style={{
+            fontSize,
+            height: maxHeight,
+          }}
+        >
           {text}
         </div>
       );
@@ -310,9 +302,6 @@ class BigNumberVis extends React.PureComponent<BigNumberVizProps> {
       subheaderFontSize,
     } = this.props;
     const className = this.getClassName();
-    const backgroundColor = this.getBackgroundColor();
-
-    // === NEW: background color via props rules ===
     const backgroundColor = this.getBackgroundColor();
 
     if (showTrendLine) {

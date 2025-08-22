@@ -26,7 +26,7 @@ import {
 } from '@superset-ui/chart-controls';
 import { headerFontSize, subheaderFontSize } from '../sharedControls';
 
-const config: ControlPanelConfig = {
+export default {
   controlPanelSections: [
     {
       label: t('Query'),
@@ -89,21 +89,18 @@ const config: ControlPanelConfig = {
             },
           },
         ],
-        // ===== Conditional formatting (background) =====
         [
           {
             name: 'conditional_formatting',
             config: {
               type: 'ConditionalFormattingControl',
               renderTrigger: true,
-              label: t('Conditional Formatting (background)'),
-              description: t(
-                'Apply conditional color formatting to the background based on the metric value',
-              ),
+              label: t('Conditional Formatting'),
+              description: t('Apply conditional color formatting to metric'),
               shouldMapStateToProps() {
                 return true;
               },
-              mapStateToProps(explore, _controls, chart) {
+              mapStateToProps(explore, _, chart) {
                 const verboseMap = explore?.datasource?.hasOwnProperty(
                   'verbose_map',
                 )
@@ -120,49 +117,7 @@ const config: ControlPanelConfig = {
                         )
                         .map(colname => ({
                           value: colname,
-                          label: (verboseMap as any)[colname] ?? colname,
-                        }))
-                    : [];
-                return {
-                  columnOptions: numericColumns,
-                  verboseMap,
-                };
-              },
-            },
-          },
-        ],
-        // ===== Conditional formatting (text) =====
-        [
-          {
-            name: 'conditional_formatting_text',
-            config: {
-              type: 'ConditionalFormattingControl',
-              renderTrigger: true,
-              label: t('Conditional Formatting (text)'),
-              description: t(
-                'Apply conditional color formatting to the number text',
-              ),
-              shouldMapStateToProps() {
-                return true;
-              },
-              mapStateToProps(explore, _controls, chart) {
-                const verboseMap = explore?.datasource?.hasOwnProperty(
-                  'verbose_map',
-                )
-                  ? (explore?.datasource as Dataset)?.verbose_map
-                  : explore?.datasource?.columns ?? {};
-                const { colnames, coltypes } =
-                  chart?.queriesResponse?.[0] ?? {};
-                const numericColumns =
-                  Array.isArray(colnames) && Array.isArray(coltypes)
-                    ? colnames
-                        .filter(
-                          (colname: string, index: number) =>
-                            coltypes[index] === GenericDataType.Numeric,
-                        )
-                        .map(colname => ({
-                          value: colname,
-                          label: (verboseMap as any)[colname] ?? colname,
+                          label: verboseMap[colname] ?? colname,
                         }))
                     : [];
                 return {
@@ -185,5 +140,4 @@ const config: ControlPanelConfig = {
     ...formData,
     metric: getStandardizedControls().shiftMetric(),
   }),
-};
-export default config;
+} as ControlPanelConfig;

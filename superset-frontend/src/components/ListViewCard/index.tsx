@@ -217,10 +217,10 @@ function ListViewCard({
               </div>
             </Link>
             <CoverFooter className="cover-footer">
-              {!loading && coverLeft && false && (
+              {!loading && coverLeft && (
                 <CoverFooterLeft>{coverLeft}</CoverFooterLeft>
               )}
-              {!loading && coverRight && false && (
+              {!loading && coverRight && (
                 <CoverFooterRight>{coverRight}</CoverFooterRight>
               )}
             </CoverFooter>
