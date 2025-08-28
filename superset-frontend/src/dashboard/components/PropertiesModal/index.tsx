@@ -86,7 +86,6 @@ type DashboardInfo = {
   title: string;
   slug: string;
   certifiedBy: string;
-  businessUnit: string;
   certificationDetails: string;
   isManagedExternally: boolean;
 };
@@ -194,7 +193,6 @@ const PropertiesModal = ({
         dashboard_title,
         slug,
         certified_by,
-        business_unit,
         certification_details,
         owners,
         roles,
@@ -206,7 +204,6 @@ const PropertiesModal = ({
         title: dashboard_title,
         slug: slug || '',
         certifiedBy: certified_by || '',
-        businessUnit: business_unit || '',
         certificationDetails: certification_details || '',
         isManagedExternally: is_managed_externally || false,
       };
@@ -496,7 +493,6 @@ const PropertiesModal = ({
           slug: slug || null,
           json_metadata: currentJsonMetadata || null,
           owners: (owners || []).map(o => o.id),
-          business_unit: businessUnit || null,
           certified_by: certifiedBy || null,
           certification_details:
             certifiedBy && certificationDetails ? certificationDetails : null,
