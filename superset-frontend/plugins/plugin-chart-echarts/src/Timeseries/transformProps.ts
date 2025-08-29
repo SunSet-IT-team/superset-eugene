@@ -55,8 +55,14 @@ import {
   TIMEGRAIN_TO_TIMESTAMP,
   TIMESERIES_CONSTANTS,
 } from '../constants';
-import { defaultGrid, defaultYAxis } from '../defaults';
-import { ForecastSeriesEnum, ForecastValue, Refs } from '../types';
+import { defaultGrid, defaultYAxis, defaultLegendPadding } from '../defaults';
+import {
+  ForecastSeriesEnum,
+  ForecastValue,
+  LegendOrientation,
+  LegendType,
+  Refs,
+} from '../types';
 import {
   extractAnnotationLabels,
   getAnnotationData,
@@ -104,6 +110,7 @@ import {
   OrientationType,
   TimeseriesChartTransformedProps,
 } from './types';
+import { fitLegendToRows } from '../utils/legendLayout';
 
 export default function transformProps(
   chartProps: EchartsTimeseriesChartProps,
@@ -135,8 +142,6 @@ export default function transformProps(
   } = datasource;
   const [queryData] = queriesData;
 
-  // TODO korus: переписать по уточнению требований
-
   const substituteColumn =
     typeof formData.xAxisSubstitute === 'string'
       ? formData.xAxisSubstitute
@@ -148,9 +153,7 @@ export default function transformProps(
   const dataTypes = getColtypesMapping(queryData);
   const annotationData = getAnnotationData(chartProps);
   const { chartLevel, numberFormat } = formData.customizeOptions
-    ?.lastNOptions || {
-    chartLevel: undefined,
-  };
+    ?.lastNOptions || { chartLevel: undefined };
 
   const {
     area,
@@ -212,6 +215,7 @@ export default function transformProps(
     ...formData,
     ...{ yAxisFormat: numberFormat || formData.yAxisFormat },
   };
+
   const refs: Refs = {};
   const groupBy = ensureIsArray(groupby);
   const labelMap = Object.entries(label_map).reduce((acc, entry) => {
@@ -226,15 +230,19 @@ export default function transformProps(
   }, {});
   const colorScale = CategoricalColorNamespace.getScale(colorScheme as string);
   const rebasedData = rebaseForecastDatum(data, verboseMap);
+
   let xAxisLabel = getXAxisLabel(chartProps.rawFormData) as string;
   const yAxisLabel = String(formData.groupby?.[0]);
+
   if (
     isPhysicalColumn(chartProps.rawFormData?.x_axis) &&
     isDefined(verboseMap[xAxisLabel])
   ) {
     xAxisLabel = verboseMap[xAxisLabel];
   }
+
   const isHorizontal = orientation === OrientationType.Horizontal;
+
   const { totalStackedValues, thresholdValues } = extractDataTotalValues(
     rebasedData,
     {
@@ -244,10 +252,10 @@ export default function transformProps(
       legendState,
     },
   );
+
   const extraMetricLabels = extractExtraMetrics(chartProps.rawFormData).map(
     getMetricLabel,
   );
-
   const isMultiSeries = groupBy.length || metrics?.length > 1;
 
   const selectorsMap = {
@@ -256,28 +264,14 @@ export default function transformProps(
   };
 
   const getKeyLabel = (key: string | AdhocColumn) => {
-    if (typeof key === 'string') {
-      return key;
-    }
-    if ('label' in key && typeof key.label === 'string') {
-      return key.label;
-    }
+    if (typeof key === 'string') return key;
+    if ('label' in key && typeof key.label === 'string') return key.label;
     return null;
   };
 
   const getSelectedSelectors = (key: string | AdhocColumn) => {
     const label = getKeyLabel(key);
     return label ? selectorsMap[label] : [];
-  };
-
-  const getSelectedSelectorsByXAxis = () => getSelectedSelectors(xAxisLabel);
-
-  const getSelectedSelectorsByGroup = () => {
-    const key = groupBy.find(k => {
-      const label = getKeyLabel(k);
-      return label ? selectorsMap[label] : [];
-    });
-    return key ? getSelectedSelectors(key) : [];
   };
 
   const [rawSeries, sortedTotalValues, minPositiveValue] = extractSeries(
@@ -309,13 +303,15 @@ export default function transformProps(
     isHorizontal,
     legendState,
   });
+
   const seriesContexts = extractForecastSeriesContexts(
-    Object.values(rawSeries).map(series => series.name as string),
+    Object.values(rawSeries).map(s => s.name as string),
   );
+
   const isAreaExpand = stack === StackControlsValue.Expand;
   const xAxisDataType = dataTypes?.[xAxisLabel] ?? dataTypes?.[xAxisOrig];
-
   const xAxisType = getAxisType(stack, xAxisForceCategorical, xAxisDataType);
+
   const series: SeriesOption[] = [];
 
   const forcePercentFormatter = Boolean(contributionMode || isAreaExpand);
@@ -333,8 +329,7 @@ export default function transformProps(
 
   const array = ensureIsArray(chartProps.rawFormData?.time_compare);
   const inverted = invert(verboseMap);
-
-  const offsetLineWidths = {};
+  const offsetLineWidths: Record<string, number> = {};
 
   rawSeries.forEach(entry => {
     const derivedSeries = isDerivedSeries(entry, chartProps.rawFormData);
@@ -352,6 +347,9 @@ export default function transformProps(
     }
 
     const entryName = String(entry.name || '');
+    the: {
+      // eslint-disable-next-line no-labels
+    }
     const seriesName = inverted[entryName] || entryName;
     const colorScaleKey = getOriginalSeries(seriesName, array);
 
@@ -390,18 +388,18 @@ export default function transformProps(
       },
     );
 
-    if (transformedSeries) {
-      if (stack === StackControlsValue.Stream) {
-        // bug in Echarts - `stackStrategy: 'all'` doesn't work with nulls, so we cast them to 0
-        series.push({
-          ...transformedSeries,
-          data: (transformedSeries.data as any).map(
-            (row: [string | number, number]) => [row[0], row[1] ?? 0],
-          ),
-        });
-      } else {
-        series.push(transformedSeries);
-      }
+    if (!transformedSeries) return;
+
+    if (stack === StackControlsValue.Stream) {
+      // для stream null → 0
+      series.push({
+        ...transformedSeries,
+        data: (transformedSeries.data as any).map(
+          (row: [string | number, number]) => [row[0], row[1] ?? 0],
+        ),
+      });
+    } else {
+      series.push(transformedSeries);
     }
   });
 
@@ -410,16 +408,13 @@ export default function transformProps(
       series.map(entry => entry.data) as [string | number, number][][],
       seriesType,
     );
-
     series.unshift(baselineSeries);
   }
+
   const selectedValues = (filterState.selectedValues || []).reduce(
     (acc: Record<string, number>, selectedValue: string) => {
       const index = series.findIndex(({ name }) => name === selectedValue);
-      return {
-        ...acc,
-        [index]: selectedValue,
-      };
+      return { ...acc, [index]: selectedValue };
     },
     {},
   );
@@ -474,11 +469,9 @@ export default function transformProps(
       }
     });
 
-  // axis bounds need to be parsed to replace incompatible values with undefined
   const [xAxisMin, xAxisMax] = (xAxisBounds || []).map(parseAxisBound);
   let [yAxisMin, yAxisMax] = (yAxisBounds || []).map(parseAxisBound);
 
-  // default to 0-100% range when doing row-level contribution chart
   if ((contributionMode === 'row' || isAreaExpand) && stack) {
     if (yAxisMin === undefined) yAxisMin = 0;
     if (yAxisMax === undefined) yAxisMax = 1;
@@ -494,12 +487,13 @@ export default function transformProps(
     xAxisDataType === GenericDataType.Temporal
       ? getTooltipTimeFormatter(tooltipTimeFormat)
       : getXAxisCategoryFormatter(true, chartLevel);
+
   const xAxisFormatter =
     xAxisDataType === GenericDataType.Temporal
       ? getXAxisFormatter(xAxisTimeFormat)
       : getXAxisCategoryFormatter(true, chartLevel);
 
-  const formattedValue = value => {
+  const formattedValue = (value: any) => {
     const result = xAxisFormatter?.(value);
     if (typeof result === 'string') {
       return result.length > 80 ? `${result.slice(0, 80)}...` : result;
@@ -514,14 +508,95 @@ export default function transformProps(
     onLegendStateChanged,
   } = hooks;
 
+  const legendNamesAll: string[] = rawSeries
+    .filter(
+      s =>
+        extractForecastSeriesContext(s.name || '').type ===
+        ForecastSeriesEnum.Observation,
+    )
+    .map(s => s.name || '')
+    .concat(extractAnnotationLabels(annotationLayers, annotationData))
+    .filter(n => n !== substituteColumn) as string[];
+
+  const isTopOrBottom =
+    legendOrientation === LegendOrientation.Top ||
+    legendOrientation === LegendOrientation.Bottom;
+
+  const isThreeRows = (legendType as any) === 'threeRows';
+
+  const baseLegendRaw = getAdvancedLegendProps(
+    isThreeRows ? (LegendType.Plain as any) : legendType,
+    legendFontSize,
+    legendOrientation,
+    showLegend,
+    theme,
+    zoomable,
+    legendState,
+  );
+  const baseLegend =
+    Array.isArray(baseLegendRaw) && baseLegendRaw.length
+      ? baseLegendRaw[0]
+      : (baseLegendRaw as any);
+
+  const hasSelector = !!baseLegend?.selector;
+  const selectorReserve = hasSelector ? 120 : 0;
+  const sideReserve = 24;
+  const availLegendWidth = Math.max(0, width - selectorReserve - sideReserve);
+
+  const pageOffset =
+    Number(
+      (legendState as any)?.pageOffset ?? (formData as any)?.legendOffset,
+    ) || 0;
+
+  let pagedNames = legendNamesAll;
+  let rowsUsed = 1;
+  let hidden = 0;
+  let hasPrev = false;
+  let hasNext = false;
+  let prevOffset = pageOffset;
+  let nextOffset = pageOffset;
+
+  if (isThreeRows && showLegend && isTopOrBottom) {
+    const fit = fitLegendToRows(legendNamesAll, {
+      orientation:
+        (legendOrientation === LegendOrientation.Top && ('top' as any)) ||
+        (legendOrientation === LegendOrientation.Bottom && ('bottom' as any)) ||
+        ('top' as any),
+      containerWidth: availLegendWidth,
+      theme,
+      itemGap: 12,
+      symbolWidth: 18,
+      maxRows: 3,
+      offset: pageOffset,
+    });
+    pagedNames = fit.visible;
+    rowsUsed = fit.rowsUsed;
+    hidden = fit.hiddenCount;
+    hasPrev = fit.hasPrev;
+    hasNext = fit.hasNext;
+    prevOffset = fit.prevOffset;
+    nextOffset = fit.nextOffset;
+  }
+
+  const userStep =
+    typeof legendMargin === 'number'
+      ? legendMargin
+      : Number.isFinite(Number(legendMargin))
+        ? Number(legendMargin)
+        : undefined;
+  const step = userStep ?? defaultLegendPadding[legendOrientation] ?? 0;
+  const effectiveLegendMargin =
+    showLegend && isTopOrBottom ? rowsUsed * step : userStep;
+
   const addYAxisLabelOffset = !!yAxisTitle;
   const addXAxisLabelOffset = !!xAxisTitle;
+
   const padding = getPadding(
     showLegend,
     legendOrientation,
     addYAxisLabelOffset,
     zoomable,
-    legendMargin,
+    effectiveLegendMargin,
     paddingRight,
     addXAxisLabelOffset,
     yAxisTitlePosition,
@@ -530,21 +605,12 @@ export default function transformProps(
     isHorizontal,
   );
 
-  const legendData = rawSeries
-    .filter(
-      entry =>
-        extractForecastSeriesContext(entry.name || '').type ===
-        ForecastSeriesEnum.Observation,
-    )
-    .map(entry => entry.name || '')
-    .concat(extractAnnotationLabels(annotationLayers, annotationData));
-
+  // X data для substituteColumn
   const xAxisRaw = substituteColumn
-    ? series[0]?.data?.map(r => (isHorizontal ? r[1] : r[0]))
+    ? (series[0]?.data as any)?.map((r: any) => (isHorizontal ? r[1] : r[0]))
     : undefined;
-
   const xAxisData = xAxisRaw
-    ? sortBySelector(xAxisRaw, selectorsMap)
+    ? sortBySelector(xAxisRaw, { ...selectorsMap })
     : undefined;
 
   let xAxis: any = {
@@ -555,12 +621,7 @@ export default function transformProps(
     nameLocation: 'middle',
     axisLabel: {
       hideOverlap: true,
-      formatter: (value: string, index: number) =>
-        // if (substituteColumn) {
-        //   return formattedValue(data[index][substituteColumn]);
-        // }
-
-        formattedValue(value),
+      formatter: (value: string) => formattedValue(value),
       rotate: xAxisLabelRotation,
     },
     minorTick: { show: minorTicks },
@@ -604,6 +665,18 @@ export default function transformProps(
     [padding.bottom, padding.left] = [padding.left, padding.bottom];
   }
 
+  const legend = {
+    ...baseLegend,
+    ...(isThreeRows ? { type: 'plain' } : {}),
+    width: availLegendWidth,
+    padding: [5, 0, 0, 0],
+    data: pagedNames,
+    formatter: (value: string) => {
+      const v = getXAxisCategoryFormatter(true, chartLevel)(value);
+      return v.length > 80 ? `${v.slice(0, 80)}...` : v;
+    },
+  };
+
   const echartOptions: EChartsCoreOption = {
     useUTC: true,
     grid: {
@@ -621,26 +694,23 @@ export default function transformProps(
         const xValue: number = richTooltip
           ? params[0].value[xIndex]
           : params.value[xIndex];
-        const forecastValue: any[] = richTooltip ? params : [params];
 
+        const forecastValue: any[] = richTooltip ? params : [params];
         if (richTooltip && tooltipSortByMetric) {
           forecastValue.sort((a, b) => b.data[yIndex] - a.data[yIndex]);
         }
 
         const rows: string[] = [];
-        const forecastValues: Record<string, ForecastValue> =
+        const fv: Record<string, ForecastValue> =
           extractForecastValuesFromTooltipParams(forecastValue, isHorizontal);
 
-        Object.keys(forecastValues).forEach(key => {
-          const value = forecastValues[key];
-          if (value.observation === 0 && stack) {
-            return;
-          }
+        Object.keys(fv).forEach(key => {
+          const value = fv[key];
+          if (value.observation === 0 && stack) return;
           const originalNumberFormatter = getNumberFormatter(',d');
-          // if there are no dimensions, key is a verbose name of a metric,
-          // otherwise it is a comma separated string where the first part is metric name
           const formatterKey =
             groupBy.length === 0 ? inverted[key] : labelMap[key]?.[0];
+
           const content = formatForecastTooltipSeries({
             ...value,
             seriesName: getXAxisCategoryFormatter(true, chartLevel)(key),
@@ -655,8 +725,10 @@ export default function transformProps(
                       formatterKey,
                     ) ?? defaultFormatter,
           });
+
           const contentStyle =
             key === focusedSeries ? 'font-weight: 700' : 'opacity: 0.7';
+
           rows.push(
             `<span style="${contentStyle}">${content.replaceAll(
               ',',
@@ -664,42 +736,26 @@ export default function transformProps(
             )}</span>`,
           );
         });
-        if (stack) {
-          rows.reverse();
-        }
-        rows.unshift(
-          `${
-            substituteColumn
-              ? tooltipFormatter(xAxisData?.[+xValue])
-              : tooltipFormatter(xValue)
-          }`,
-        );
+
+        if (stack) rows.reverse();
+
+        const xLabel = substituteColumn
+          ? tooltipFormatter(xAxisData?.[+xValue])
+          : tooltipFormatter(xValue);
+
+        rows.unshift(String(xLabel));
         return rows.join('<br />');
       },
     },
-    legend: {
-      ...getAdvancedLegendProps(
-        legendType,
-        legendFontSize,
-        legendOrientation,
-        showLegend,
-        theme,
-        zoomable,
-        legendState,
-      ),
-      padding: [5, 0, 0, 0],
-      data: legendData.filter(el => el !== substituteColumn) as string[],
-      formatter: value => {
-        const val = getXAxisCategoryFormatter(true, chartLevel)(value);
-        return val.length > 80 ? `${val.slice(0, 80)}...` : val;
-      },
-    },
+    legend,
     series: substituteColumn
       ? dedupSeries(series)
           .filter(s => s.name !== substituteColumn)
           .map(s => ({
             ...s,
-            data: s.data.map((r, i) => (isHorizontal ? [r[0], i] : [i, r[1]])),
+            data: (s.data as any).map((r: any, i: number) =>
+              isHorizontal ? [r[0], i] : [i, r[1]],
+            ),
           }))
       : dedupSeries(series),
     toolbox: {
@@ -708,7 +764,7 @@ export default function transformProps(
       right: TIMESERIES_CONSTANTS.toolboxRight,
       feature: {
         dataZoom: {
-          ...(stack ? { yAxisIndex: false } : {}), // disable y-axis zoom for stacked charts
+          ...(stack ? { yAxisIndex: false } : {}),
           title: {
             zoom: t('zoom area'),
             back: t('restore zoom'),
@@ -744,15 +800,25 @@ export default function transformProps(
     setDataMask,
     setControlValue,
     width,
-    legendData,
+
+    legendData: pagedNames,
+
+    legendPaging: {
+      pageOffset,
+      hasPrev,
+      hasNext,
+      prevOffset,
+      nextOffset,
+      total: legendNamesAll.length,
+      shown: pagedNames.length,
+      hidden,
+    },
+
     onContextMenu,
     onLegendStateChanged,
     onFocusedSeries,
     xValueFormatter: tooltipFormatter,
-    xAxis: {
-      label: xAxisLabel,
-      type: xAxisType,
-    },
+    xAxis: { label: xAxisLabel, type: xAxisType },
     refs,
     coltypeMapping: dataTypes,
   };

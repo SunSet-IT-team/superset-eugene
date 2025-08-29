@@ -16,9 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
-  DTTM_ALIAS,
   BinaryQueryObjectFilterClause,
   AxisType,
   getTimeFormatter,
@@ -57,14 +62,17 @@ export default function EchartsTimeseries({
   refs,
   emitCrossFilters,
   coltypeMapping,
-}: TimeseriesChartTransformedProps) {
+  legendState,
+}: TimeseriesChartTransformedProps & { legendState?: any }) {
   const { stack } = formData;
   const echartRef = useRef<EchartsHandler | null>(null);
   // eslint-disable-next-line no-param-reassign
   refs.echartRef = echartRef;
+
   const clickTimer = useRef<ReturnType<typeof setTimeout>>();
   const extraControlRef = useRef<HTMLDivElement>(null);
   const [extraControlHeight, setExtraControlHeight] = useState(0);
+
   useEffect(() => {
     const updatedHeight = extraControlRef.current?.offsetHeight || 0;
     setExtraControlHeight(updatedHeight);
@@ -75,12 +83,13 @@ export default function EchartsTimeseries({
     let model: ComponentModel | null = null;
     while (el) {
       // eslint-disable-next-line no-underscore-dangle
-      const modelInfo = el.__ecComponentInfo;
+      const modelInfo = (el as any).__ecComponentInfo;
       if (modelInfo != null) {
         model = globalModel.getComponent(modelInfo.mainType, modelInfo.index);
         break;
       }
-      el = el.parent;
+      // @ts-ignore
+      el = (el as any).parent;
     }
     return model;
   };
@@ -88,13 +97,10 @@ export default function EchartsTimeseries({
   const getCrossFilterDataMask = useCallback(
     (value: string) => {
       const selected: string[] = Object.values(selectedValues);
-      let values: string[];
-      if (selected.includes(value)) {
-        values = selected.filter(v => v !== value);
-      } else {
-        values = [value];
-      }
-      const groupbyValues = values.map(value => labelMap[value]);
+      const values = selected.includes(value)
+        ? selected.filter(v => v !== value)
+        : [value];
+      const groupbyValues = values.map(v => labelMap[v]);
       return {
         dataMask: {
           extraFormData: {
@@ -103,11 +109,9 @@ export default function EchartsTimeseries({
                 ? []
                 : groupby.map((col, idx) => {
                     const val = groupbyValues.map(v => v[idx]);
-                    if (val === null || val === undefined)
-                      return {
-                        col,
-                        op: 'IS NULL' as const,
-                      };
+                    if (val === null || val === undefined) {
+                      return { col, op: 'IS NULL' as const };
+                    }
                     return {
                       col,
                       op: 'IN' as const,
@@ -129,9 +133,7 @@ export default function EchartsTimeseries({
 
   const handleChange = useCallback(
     (value: string) => {
-      if (!emitCrossFilters) {
-        return;
-      }
+      if (!emitCrossFilters) return;
       setDataMask(getCrossFilterDataMask(value).dataMask);
     },
     [emitCrossFilters, setDataMask, getCrossFilterDataMask],
@@ -139,133 +141,203 @@ export default function EchartsTimeseries({
 
   const eventHandlers: EventHandlers = {
     click: props => {
-      if (clickTimer.current) {
-        clearTimeout(clickTimer.current);
-      }
-      // Ensure that double-click events do not trigger single click event. So we put it in the timer.
+      if (clickTimer.current) clearTimeout(clickTimer.current);
       clickTimer.current = setTimeout(() => {
         const { seriesName: name } = props;
         handleChange(name);
       }, TIMER_DURATION);
     },
-    mouseout: () => {
-      onFocusedSeries(null);
-    },
-    mouseover: params => {
-      onFocusedSeries(params.seriesName);
-    },
-    legendselectchanged: payload => {
-      onLegendStateChanged?.(payload.selected);
-    },
-    legendselectall: payload => {
-      onLegendStateChanged?.(payload.selected);
-    },
-    legendinverseselect: payload => {
-      onLegendStateChanged?.(payload.selected);
-    },
+    mouseout: () => onFocusedSeries(null),
+    mouseover: params => onFocusedSeries(params.seriesName),
+    legendselectchanged: payload => onLegendStateChanged?.(payload.selected),
+    legendselectall: payload => onLegendStateChanged?.(payload.selected),
+    legendinverseselect: payload => onLegendStateChanged?.(payload.selected),
     contextmenu: async eventParams => {
-      if (onContextMenu) {
-        eventParams.event.stop();
-        const { data, seriesName } = eventParams;
-        const drillToDetailFilters: BinaryQueryObjectFilterClause[] = [];
-        const drillByFilters: BinaryQueryObjectFilterClause[] = [];
-        const pointerEvent = eventParams.event.event;
-        const values = [
-          ...(eventParams.name ? [eventParams.name] : []),
-          ...(labelMap[seriesName] ?? []),
-        ];
-        const groupBy = ensureIsArray(formData.groupby);
-        if (data && xAxis.type === AxisType.Time) {
-          drillToDetailFilters.push({
-            col:
-              // if the xAxis is '__timestamp', granularity_sqla will be the column of filter
-              xAxis.label === DTTM_ALIAS
-                ? formData.granularitySqla
-                : xAxis.label,
-            grain: formData.timeGrainSqla,
-            op: '==',
-            val: data[0],
-            formattedVal: xValueFormatter(data[0]),
-          });
-        }
-        [
-          ...(xAxis.type === AxisType.Category && data ? [xAxis.label] : []),
-          ...groupBy,
-        ].forEach((dimension, i) =>
-          drillToDetailFilters.push({
-            col: dimension,
-            op: '==',
-            val: values[i],
-            formattedVal: String(values[i]),
-          }),
-        );
-        groupBy.forEach((dimension, i) => {
-          const val = labelMap[seriesName][i];
-          drillByFilters.push({
-            col: dimension,
-            op: '==',
-            val,
-            formattedVal: formatSeriesName(values[i], {
-              timeFormatter: getTimeFormatter(formData.dateFormat),
-              numberFormatter: getNumberFormatter(formData.numberFormat),
-              coltype: coltypeMapping?.[getColumnLabel(dimension)],
-            }),
-          });
-        });
-
-        onContextMenu(pointerEvent.clientX, pointerEvent.clientY, {
-          drillToDetail: drillToDetailFilters,
-          crossFilter: getCrossFilterDataMask(seriesName),
-          drillBy: { filters: drillByFilters, groupbyFieldName: 'groupby' },
+      if (!onContextMenu) return;
+      eventParams.event.stop();
+      const { data, seriesName } = eventParams;
+      const drillToDetailFilters: BinaryQueryObjectFilterClause[] = [];
+      const drillByFilters: BinaryQueryObjectFilterClause[] = [];
+      const pointerEvent = eventParams.event.event;
+      const values = [
+        ...(eventParams.name ? [eventParams.name] : []),
+        ...(labelMap[seriesName] ?? []),
+      ];
+      const groupBy = ensureIsArray(formData.groupby);
+      if (data && xAxis.type === AxisType.Time) {
+        drillToDetailFilters.push({
+          col:
+            xAxis.label === '__timestamp'
+              ? formData.granularitySqla
+              : xAxis.label,
+          grain: formData.timeGrainSqla,
+          op: '==',
+          val: data[0],
+          formattedVal: xValueFormatter(data[0]),
         });
       }
+      [
+        ...(xAxis.type === AxisType.Category && data ? [xAxis.label] : []),
+        ...groupBy,
+      ].forEach((dimension, i) =>
+        drillToDetailFilters.push({
+          col: dimension,
+          op: '==',
+          val: values[i],
+          formattedVal: String(values[i]),
+        }),
+      );
+      groupBy.forEach((dimension, i) => {
+        const val = labelMap[seriesName][i];
+        drillByFilters.push({
+          col: dimension,
+          op: '==',
+          val,
+          formattedVal: formatSeriesName(values[i], {
+            timeFormatter: getTimeFormatter(formData.dateFormat),
+            numberFormatter: getNumberFormatter(formData.numberFormat),
+            coltype: coltypeMapping?.[getColumnLabel(dimension)],
+          }),
+        });
+      });
+
+      onContextMenu(pointerEvent.clientX, pointerEvent.clientY, {
+        drillToDetail: drillToDetailFilters,
+        crossFilter: getCrossFilterDataMask(seriesName),
+        drillBy: { filters: drillByFilters, groupbyFieldName: 'groupby' },
+      });
     },
   };
 
   const zrEventHandlers: EventHandlers = {
     dblclick: params => {
-      // clear single click timer
-      if (clickTimer.current) {
-        clearTimeout(clickTimer.current);
-      }
+      if (clickTimer.current) clearTimeout(clickTimer.current);
       const pointInPixel = [params.offsetX, params.offsetY];
       const echartInstance = echartRef.current?.getEchartInstance();
       if (echartInstance?.containPixel('grid', pointInPixel)) {
-        // do not trigger if click unstacked chart's blank area
-        if (!stack && params.target?.type === 'ec-polygon') return;
+        if (!stack && (params as any).target?.type === 'ec-polygon') return;
         // @ts-ignore
         const globalModel = echartInstance.getModel();
-        const model = getModelInfo(params.target, globalModel);
+        const model = getModelInfo((params as any).target, globalModel);
         if (model) {
-          const { name } = model;
-          const legendState: LegendState = legendData.reduce(
-            (previous, datum) => ({
-              ...previous,
-              [datum]: datum === name,
-            }),
+          const { name } = model as any;
+          const state: LegendState = legendData.reduce(
+            (previous, datum) => ({ ...previous, [datum]: datum === name }),
             {},
           );
-          onLegendStateChanged?.(legendState);
+          onLegendStateChanged?.(state);
         }
       }
     },
   };
+
+  const isThreeRows = (formData.legendType as any) === 'threeRows';
+  const isTopOrBottom =
+    formData.legendOrientation === 'top' ||
+    formData.legendOrientation === 'bottom';
+  const showLegendArrows =
+    !!formData.showLegend && isThreeRows && isTopOrBottom;
+
+  const pageOffset = Number((legendState as any)?.pageOffset ?? 0);
+
+  const legendOption = useMemo(() => {
+    const lg = (echartOptions as any)?.legend;
+    if (Array.isArray(lg)) return lg[0] ?? {};
+    return lg ?? {};
+  }, [echartOptions]);
+
+  const legendOptionData: any[] = useMemo(
+    () => (legendOption?.data ? legendOption.data : []),
+    [legendOption],
+  );
+
+  const hasMoreDown = useMemo(() => {
+    if (!showLegendArrows) return false;
+    return legendOptionData.some((it: any) => {
+      const name = typeof it === 'string' ? it : it?.name;
+      if (typeof name !== 'string') return false;
+      const compact = name.replace(/\s+/g, '');
+      return compact.startsWith('…+') || compact.startsWith('...+');
+    });
+  }, [showLegendArrows, legendOptionData]);
+
+  const moveLegendPage = useCallback(
+    (delta: number) => {
+      const next = Math.max(0, pageOffset + delta);
+      onLegendStateChanged?.({
+        ...(legendState as any),
+        pageOffset: next,
+      } as any);
+    },
+    [onLegendStateChanged, legendState, pageOffset],
+  );
+
+  const ArrowButtons = showLegendArrows ? (
+    <div
+      style={{
+        position: 'absolute',
+        top: 0,
+        right: 8,
+        zIndex: 10,
+        display: 'flex',
+        gap: 6,
+        alignItems: 'center',
+        pointerEvents: 'auto',
+      }}
+    >
+      <button
+        type="button"
+        onClick={() => moveLegendPage(-1)}
+        title="Легенда: вверх (−1 строка)"
+        style={{
+          padding: '0 4px',
+          border: 'none',
+          background: 'transparent',
+        }}
+      >
+        ↑
+      </button>
+      <button
+        type="button"
+        onClick={() => moveLegendPage(+1)}
+        title="Легенда: вниз (+1 строка)"
+        style={{
+          padding: '0 4px',
+          border: 'none',
+          background: 'transparent',
+        }}
+      >
+        ↓
+      </button>
+    </div>
+  ) : null;
 
   return (
     <>
       <div ref={extraControlRef}>
         <ExtraControls formData={formData} setControlValue={setControlValue} />
       </div>
-      <Echart
-        ref={echartRef}
-        refs={refs}
-        height={height - extraControlHeight}
-        width={width}
-        echartOptions={echartOptions}
-        eventHandlers={eventHandlers}
-        zrEventHandlers={zrEventHandlers}
-        selectedValues={selectedValues}
-      />
+
+      <div
+        style={{
+          position: 'relative',
+          width,
+          height: height - extraControlHeight,
+        }}
+      >
+        {ArrowButtons}
+
+        <Echart
+          ref={echartRef}
+          refs={refs}
+          height={height - extraControlHeight}
+          width={width}
+          echartOptions={echartOptions}
+          eventHandlers={eventHandlers}
+          zrEventHandlers={zrEventHandlers}
+          selectedValues={selectedValues}
+        />
+      </div>
     </>
   );
 }
