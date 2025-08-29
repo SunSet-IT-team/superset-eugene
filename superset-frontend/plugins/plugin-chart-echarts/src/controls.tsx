@@ -64,7 +64,7 @@ const legendFontSizeControl: ControlSetItem = {
     renderTrigger: true,
     isInt: true,
     default: legendFontSize,
-    description: t('Legend\'s font size'),
+    description: t("Legend's font size"),
     visibility: ({ controls }: ControlPanelsContainerProps) =>
       Boolean(controls?.show_legend?.value),
   },
@@ -93,6 +93,7 @@ const legendTypeControl: ControlSetItem = {
     choices: [
       ['scroll', t('Scroll')],
       ['plain', t('Plain')],
+      ['threeRows', t('ThreeRows')],
     ],
     default: legendType,
     renderTrigger: true,
