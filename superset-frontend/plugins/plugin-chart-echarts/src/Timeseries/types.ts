@@ -92,6 +92,7 @@ export type EchartsTimeseriesFormData = QueryFormData & {
   percentageThreshold: number;
   orientation?: OrientationType;
   minBarPercent?: number;
+  legendBelowPadding?: number;
 } & LegendFormData &
   TitleFormData;
 

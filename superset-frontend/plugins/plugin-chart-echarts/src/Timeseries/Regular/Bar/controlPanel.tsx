@@ -340,6 +340,22 @@ const config: ControlPanelConfig = {
             },
           },
         ],
+        [
+          {
+            name: 'legendBelowPadding',
+            config: {
+              type: 'TextControl',
+              label: t('Legend gap below'),
+              description: t(
+                'Extra gap (in px) between the legend and the chart area when the legend is at the top or bottom.',
+              ),
+              default: 0,
+              min: 0,
+              step: 1,
+              renderTrigger: true,
+            },
+          },
+        ],
         ['color_scheme'],
         ...showValueSection,
         [
@@ -353,7 +369,7 @@ const config: ControlPanelConfig = {
               description: t(
                 'Hide value labels on bars that are less than this percentage of their series total. Enter a number between 0 and 100.',
               ),
-              validators: [validateNumber({ min: 0, max: 100 })],
+              // validators: [validateNumber({ min: 0, max: 100 })],
               visibility: ({ controls }: ControlPanelsContainerProps) =>
                 Boolean(controls?.show_value?.value),
             },

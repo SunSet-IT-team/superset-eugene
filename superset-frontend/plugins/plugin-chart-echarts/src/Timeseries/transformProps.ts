@@ -210,6 +210,7 @@ export default function transformProps(
     yAxisTitlePosition,
     zoomable,
     minBarPercent,
+    legendBelowPadding,
   }: EchartsTimeseriesFormData = {
     ...DEFAULT_FORM_DATA,
     ...formData,
@@ -584,9 +585,19 @@ export default function transformProps(
       : Number.isFinite(Number(legendMargin))
         ? Number(legendMargin)
         : undefined;
+
   const step = userStep ?? defaultLegendPadding[legendOrientation] ?? 0;
-  const effectiveLegendMargin =
-    showLegend && isTopOrBottom ? rowsUsed * step : userStep;
+
+  // новый зазор "от текста легенды" — двигаем ИМЕННО grid
+  const extraTextGapPx = showLegend
+    ? Math.max(0, convertInteger(legendBelowPadding || 0))
+    : 0;
+
+  // Top/Bottom — базовая логика умножения на число рядов + наш зазор
+  // Left/Right — раньше брался только userStep; добавим наш зазор тоже
+  const effectiveLegendMargin = showLegend
+    ? (isTopOrBottom ? rowsUsed * step : userStep ?? 0) + extraTextGapPx
+    : userStep;
 
   const addYAxisLabelOffset = !!yAxisTitle;
   const addXAxisLabelOffset = !!xAxisTitle;
