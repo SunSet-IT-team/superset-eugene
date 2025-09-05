@@ -89,6 +89,7 @@ export const DEFAULT_FORM_DATA: EchartsTimeseriesFormData = {
   sort_series_ascending: true,
   stackByDimension: false,
   minBarPercent: 0,
+  legendBelowPadding: 0,
 };
 
 export const TIME_SERIES_DESCRIPTION_TEXT: string = t(
